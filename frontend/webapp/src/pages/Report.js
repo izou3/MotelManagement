@@ -15,7 +15,7 @@ import MuiAlert from '@material-ui/lab/Alert';
 // formik and formik-material-ui
 import { Formik, Form, Field } from 'formik';
 
-import MaterialTable from 'material-table';
+import MaterialTable, { MTableBodyRow, EditRow } from 'material-table';
 import { TextField } from 'formik-material-ui';
 import { DatePicker } from 'formik-material-ui-pickers';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
@@ -290,10 +290,6 @@ const Report = ({
               headerStyle: {
                 fontWeight: 'bold',
               },
-              rowStyle: (rowData) => ({
-                backgroundColor:
-                  selectedRow === rowData.tableData.id ? '#EEE' : '#FFF',
-              }),
             }}
             editable={{
               isEditable: (rowData) => rowData.BookingID,

@@ -20,5 +20,8 @@ export const StyledTableRow = withStyles((theme) => ({
     '&:nth-of-type(odd)': {
       backgroundColor: theme.palette.action.hover,
     },
+    "&:hover": {
+      backgroundColor: 'rgba(63,80,181, 0.2)'
+    }
   },
 }))(TableRow);
