@@ -25,17 +25,17 @@ It is built as a full-stack javascript application and deployed to Digital Ocean
 
 # Documentation
 ## Table of Contents
-1. [Infrastructure](##Infrastructure)
-2. [Frontend-Website](##Landing Page)
-3. [Frontend-Management System](##Management System)
-4. [Backend-API](##Backend API)
-5. [Backend-Jobs](##Backend Jobs)
-6. [MySQL Database Schema](##MySQL Database Schema)
-7. [MongoDB Database Schema](##MongoDB Database Schema)
-8. [Development](##Development)
-9. [Testing](##Testing)
-10. [Debugging](##Debugging)
-11. [Deployment](##Deployment)
+1. [Infrastructure](#Infrastructure)
+2. [Frontend-Website](#Landing Page)
+3. [Frontend-Management System](#Management System)
+4. [Backend-API](#Backend API)
+5. [Backend-Jobs](#Backend Jobs)
+6. [MySQL Database Schema](#MySQL Database Schema)
+7. [MongoDB Database Schema](#MongoDB Database Schema)
+8. [Development](#Development)
+9. [Testing](#Testing)
+10. [Debugging](#Debugging)
+11. [Deployment](#Deployment)
 
 ## Infrastructure
 
