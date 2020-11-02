@@ -1,0 +1,71 @@
+Customer Database Schema:
+MAKE SURE TO CREATE THEM WITH INNODB engine for Transactional Support
+
+-- CREATE TABLE IndCustomer (
+-- 	BookingID BIGINT NOT NULL,
+--     CustomerID VARCHAR(9) NOT NULL,
+--     Price_paid DOUBLE(6, 2) NOT NULL,
+--     Tax DOUBLE(6, 2) NOT NULL,
+--     Check_In DATE NOT NULL,
+--     Check_Out DATE NOT NULL,
+--     Num_Guests TINYINT NOT NULL,
+--     ReservationID TINYINT NOT NULL,
+--     PaymentID TINYINT NOT NULL,
+--     RoomID TINYINT NOT NULL,
+--     Created_At DATETIME DEFAULT CURRENT_TIMESTAMP,
+--     Comments TINYTEXT,
+--     PRIMARY KEY(BookingID),
+--     FOREIGN KEY customer(CustomerID) REFERENCES customer(ID),
+--     FOREIGN KEY reservation(ReservationID) REFERENCES reservation(ID),
+--     FOREIGN KEY payment(PaymentID) REFERENCES payment(ID),
+--     INDEX search(CustomerID)
+-- );
+
+-- CREATE TABLE Customer(
+-- 	ID varchar(9) NOT NULL,
+--     YearID SMALLINT NOT NULL,
+--     MonthID TINYINT Not null,
+--     first_name VARCHAR(20) Not null,
+--     last_name VARCHAR(20) NOT NULL,
+--     email VARCHAR(50),
+--     phone BIGINT,
+--     state VARCHAR(10),
+--     PRIMARY KEY (ID),
+--     FOREIGN KEY year(YearID) REFERENCES year(ID),
+-- 	FOREIGN KEY month(MonthID) REFERENCES year(ID),
+--     INDEX search(YearID, MonthID),
+--     INDEX searchByName(first_name, last_name)
+-- );
+
+-- CREATE TABLE Reservations (
+-- 	ID TINYINT NOT NULL,
+--     Reservation VARCHAR(18),
+--     PRIMARY KEY(ID)
+-- );
+-- CREATE TABLE Payment (
+-- 	ID TINYINT NOT NULL,
+--     Payment VARCHAR(6),
+--     PRIMARY KEY(ID)
+-- );
+
+-- CREATE TABLE Year(
+-- 	ID TINYINT NOT NULL AUTO_INCREMENT,
+--     Year tinyint not null,
+--     primary key(id)
+-- );
+
+-- CREATE TABLE Month(
+-- 	ID TINYINT NOT NULL auto_increment,
+--     Month VARCHAR(5),
+--     primary key(id)
+-- );
+
+-- CREATE TABLE BlackList(
+-- 		BookingID BIGINT NOT NULL,
+--         Comments TEXT NOT NULL,
+--         PRIMARY KEY (BookingID),
+-- 		INDEX search(BookingID)
+-- );
+
+
+

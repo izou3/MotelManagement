@@ -1,0 +1,23 @@
+# SQL SetUp Queries
+.txt
+
+# Dependency directories
+node_modules/
+
+# dotenv environment variables file
+.env
+
+env.list
+
+data/
+
+build/
+
+dist/
+
+secrets
+
+# Testing with k8s
+deployment/k8s-test
+
+frontend/landing/src/setup/config

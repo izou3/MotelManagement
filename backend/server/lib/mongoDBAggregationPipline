@@ -1,0 +1,576 @@
+[
+  {
+    '$match': {
+      'YearID': 2020,
+      'MonthID': 10
+    }
+  }, {
+    '$project': {
+      '_id': 0,
+      'Date': '$Date',
+      'Refund': '$Refund',
+      'YearID': '$YearID',
+      'MonthID': '$MonthID',
+      'Stays': {
+        '$objectToArray': '$Stays'
+      }
+    }
+  }, {
+    '$project': {
+      'Date': '$Date',
+      'YearID': '$YearID',
+      'MonthID': '$MonthID',
+      'Refund': '$Refund.Amount',
+      'Stays': '$Stays.v.Room'
+    }
+  }, {
+    '$project': {
+      'Date': '$Date',
+      'YearID': '$YearID',
+      'MonthID': '$MonthID',
+      'Refund': '$Refund',
+      'Stays': {
+        '$filter': {
+          'input': '$Stays',
+          'as': 'room',
+          'cond': {
+            '$eq': [
+              '$$room.paid', true
+            ]
+          }
+        }
+      }
+    }
+  }, {
+    '$unwind': {
+      'path': '$Stays',
+      'includeArrayIndex': 'stayOfDate',
+      'preserveNullAndEmptyArrays': true
+    }
+  }, {
+    '$project': {
+      'Date': '$Date',
+      'YearID': '$YearID',
+      'MonthID': '$MonthID',
+      'Refund': '$Refund',
+      'StayOfDate': {
+        '$cond': {
+          'if': {
+            '$eq': [
+              '$stayOfDate', null
+            ]
+          },
+          'then': -1,
+          'else': '$stayOfDate'
+        }
+      },
+      'StayOver': {
+        '$cond': {
+          'if': {
+            '$or': [
+              {
+                '$eq': [
+                  '$Stays.type', 'N'
+                ]
+              }, {
+                '$eq': [
+                  '$Stays.type', 'S/O'
+                ]
+              }
+            ]
+          },
+          'then': 1,
+          'else': 0
+        }
+      },
+      'Weekly': {
+        '$cond': {
+          'if': {
+            '$or': [
+              {
+                '$eq': [
+                  '$Stays.type', 'WK1'
+                ]
+              }, {
+                '$eq': [
+                  '$Stays.type', 'WK2'
+                ]
+              }, {
+                '$eq': [
+                  '$Stays.type', 'WK3'
+                ]
+              }
+            ]
+          },
+          'then': 1,
+          'else': 0
+        }
+      },
+      'NoTaxStay': {
+        '$cond': {
+          'if': {
+            '$eq': [
+              '$Stays.type', 'NO'
+            ]
+          },
+          'then': 1,
+          'else': 0
+        }
+      },
+      'PaymentType': '$Stays.payment',
+      'PaymentNet': {
+        '$subtract': [
+          '$Stays.rate', '$Stays.tax'
+        ]
+      },
+      'PaymentTax': '$Stays.tax',
+      'PaymentGross': '$Stays.rate',
+      'GrossNoTax': {
+        '$cond': {
+          'if': {
+            '$eq': [
+              '$Stays.type', 'NO'
+            ]
+          },
+          'then': '$Stays.rate',
+          'else': 0
+        }
+      }
+    }
+  }, {
+    '$group': {
+      '_id': {
+        'Date': '$Date',
+        'PaymentType': '$PaymentType',
+        'YearID': '$YearID',
+        'MonthID': '$MonthID',
+        'Refund': '$Refund'
+      },
+      'StayOvers': {
+        '$sum': '$StayOver'
+      },
+      'Weekly': {
+        '$sum': '$Weekly'
+      },
+      'NoTaxStay': {
+        '$sum': '$NoTaxStay'
+      },
+      'Net': {
+        '$sum': '$PaymentNet'
+      },
+      'Tax': {
+        '$sum': '$PaymentTax'
+      },
+      'Gross': {
+        '$sum': '$PaymentGross'
+      },
+      'GrossNoTax': {
+        '$sum': '$GrossNoTax'
+      }
+    }
+  }, {
+    '$addFields': {
+      'netCash': {
+        '$cond': {
+          'if': {
+            '$eq': [
+              '$_id.PaymentType', 'C'
+            ]
+          },
+          'then': {
+            '$round': [
+              '$Net', 2
+            ]
+          },
+          'else': 0
+        }
+      },
+      'taxCash': {
+        '$cond': {
+          'if': {
+            '$eq': [
+              '$_id.PaymentType', 'C'
+            ]
+          },
+          'then': {
+            '$round': [
+              '$Tax', 2
+            ]
+          },
+          'else': 0
+        }
+      },
+      'grossCash': {
+        '$cond': {
+          'if': {
+            '$eq': [
+              '$_id.PaymentType', 'C'
+            ]
+          },
+          'then': {
+            '$round': [
+              '$Gross', 2
+            ]
+          },
+          'else': 0
+        }
+      },
+      'netCard': {
+        '$cond': {
+          'if': {
+            '$eq': [
+              '$_id.PaymentType', 'CC'
+            ]
+          },
+          'then': {
+            '$round': [
+              '$Net', 2
+            ]
+          },
+          'else': 0
+        }
+      },
+      'taxCard': {
+        '$cond': {
+          'if': {
+            '$eq': [
+              '$_id.PaymentType', 'CC'
+            ]
+          },
+          'then': {
+            '$round': [
+              '$Tax', 2
+            ]
+          },
+          'else': 0
+        }
+      },
+      'grossCard': {
+        '$cond': {
+          'if': {
+            '$eq': [
+              '$_id.PaymentType', 'CC'
+            ]
+          },
+          'then': {
+            '$round': [
+              '$Gross', 2
+            ]
+          },
+          'else': 0
+        }
+      },
+      'grossNoTaxCash': {
+        '$cond': {
+          'if': {
+            '$eq': [
+              '$_id.PaymentType', 'C'
+            ]
+          },
+          'then': {
+            '$round': [
+              '$GrossNoTax', 2
+            ]
+          },
+          'else': 0
+        }
+      },
+      'grossNoTaxCredit': {
+        '$cond': {
+          'if': {
+            '$eq': [
+              '$_id.PaymentType', 'CC'
+            ]
+          },
+          'then': {
+            '$round': [
+              '$GrossNoTax', 2
+            ]
+          },
+          'else': 0
+        }
+      }
+    }
+  }, {
+    '$group': {
+      '_id': {
+        'Date': '$_id.Date',
+        'YearID': '$_id.YearID',
+        'MonthID': '$_id.MonthID',
+        'Refund': '$_id.Refund'
+      },
+      'StayOver': {
+        '$sum': '$StayOvers'
+      },
+      'Weekly': {
+        '$sum': '$Weekly'
+      },
+      'NoTaxStay': {
+        '$sum': '$NoTaxStay'
+      },
+      'NetCash': {
+        '$sum': '$netCash'
+      },
+      'TaxCash': {
+        '$sum': '$taxCash'
+      },
+      'GrossCash': {
+        '$sum': '$grossCash'
+      },
+      'NetCard': {
+        '$sum': '$netCard'
+      },
+      'TaxCard': {
+        '$sum': '$taxCard'
+      },
+      'GrossCard': {
+        '$sum': '$grossCard'
+      },
+      'GrossNoTaxCash': {
+        '$sum': '$grossNoTaxCash'
+      },
+      'GrossNoTaxCredit': {
+        '$sum': '$grossNoTaxCredit'
+      }
+    }
+  }, {
+    '$addFields': {
+      'Refund': '$_id.Refund',
+      'occupied': {
+        '$add': [
+          '$StayOver', '$Weekly', '$NoTaxStay'
+        ]
+      },
+      'NetTotal': {
+        '$add': [
+          '$NetCash', '$NetCard'
+        ]
+      },
+      'TaxTotal': {
+        '$add': [
+          '$TaxCash', '$TaxCard'
+        ]
+      },
+      'GrossTotal': {
+        '$subtract': [
+          {
+            '$add': [
+              '$GrossCash', '$GrossCard'
+            ]
+          }, '$_id.Refund'
+        ]
+      }
+    }
+  }, {
+    '$sort': {
+      '_id': 1
+    }
+  }, {
+    '$facet': {
+      'TaxReport': [
+        {
+          '$group': {
+            '_id': {
+              'YearID': '$_id.YearID',
+              'MonthID': '$_id.MonthID'
+            },
+            'TaxReport': {
+              '$push': {
+                'Date': {
+                  '$dateToString': {
+                    'format': '%Y-%m-%d',
+                    'date': '$_id.Date'
+                  }
+                },
+                'Occupied': '$occupied',
+                'StayOver': '$StayOver',
+                'Weekly': '$Weekly',
+                'NoTaxStay': '$NoTaxStay',
+                'NetCash': '$NetCash',
+                'TaxCash': '$TaxCash',
+                'GrossCash': '$GrossCash',
+                'NetCard': '$NetCard',
+                'TaxCard': '$TaxCard',
+                'GrossCard': '$GrossCard',
+                'GrossNoTaxCash': '$GrossNoTaxCash',
+                'GrossNoTaxCard': '$GrossNoTaxCredit',
+                'NetTotal': '$NetTotal',
+                'TaxTotal': '$TaxTotal',
+                'Refund': '$Refund',
+                'GrossTotal': '$GrossTotal'
+              }
+            }
+          }
+        }
+      ],
+      'FinalReport': [
+        {
+          '$group': {
+            '_id': {
+              'YearID': '$_id.YearID',
+              'MonthID': '$_id.MonthID'
+            },
+            'Occupied': {
+              '$avg': '$occupied'
+            },
+            'StayOver': {
+              '$avg': '$StayOver'
+            },
+            'Weekly': {
+              '$avg': '$Weekly'
+            },
+            'NoTaxStay': {
+              '$avg': '$NoTaxStay'
+            },
+            'NetCash': {
+              '$sum': '$NetCash'
+            },
+            'TaxCash': {
+              '$sum': '$TaxCash'
+            },
+            'GrossCash': {
+              '$sum': '$GrossCash'
+            },
+            'NetCard': {
+              '$sum': '$NetCard'
+            },
+            'TaxCard': {
+              '$sum': '$TaxCard'
+            },
+            'GrossCard': {
+              '$sum': '$GrossCard'
+            },
+            'GrossNoTaxCash': {
+              '$sum': '$GrossNoTaxCash'
+            },
+            'GrossNoTaxCard': {
+              '$sum': '$GrossNoTaxCredit'
+            },
+            'NetTotal': {
+              '$sum': '$NetTotal'
+            },
+            'TaxTotal': {
+              '$sum': '$TaxTotal'
+            },
+            'Refund': {
+              '$sum': '$Refund'
+            },
+            'GrossTotal': {
+              '$sum': '$GrossTotal'
+            }
+          }
+        }
+      ]
+    }
+  }, {
+    '$project': {
+      'IndTaxReport': {
+        '$arrayElemAt': [
+          '$TaxReport', 0
+        ]
+      },
+      'FinalReport': {
+        '$arrayElemAt': [
+          '$FinalReport', 0
+        ]
+      }
+    }
+  }, {
+    '$project': {
+      'IndTaxReport': '$IndTaxReport.TaxReport',
+      'FinalReport': [
+        {
+          'Date': '$FinalReport._id.MonthID',
+          'Occupied': {
+            '$round': [
+              '$FinalReport.Occupied', 2
+            ]
+          },
+          'StayOver': {
+            '$round': [
+              '$FinalReport.StayOver', 2
+            ]
+          },
+          'Weekly': {
+            '$round': [
+              '$FinalReport.Weekly', 2
+            ]
+          },
+          'NoTaxStay': {
+            '$round': [
+              '$FinalReport.NoTaxStay', 2
+            ]
+          },
+          'NetCash': {
+            '$round': [
+              '$FinalReport.NetCash', 2
+            ]
+          },
+          'TaxCash': {
+            '$round': [
+              '$FinalReport.TaxCash', 2
+            ]
+          },
+          'GrossCash': {
+            '$round': [
+              '$FinalReport.GrossCash', 2
+            ]
+          },
+          'NetCard': {
+            '$round': [
+              '$FinalReport.NetCard', 2
+            ]
+          },
+          'TaxCard': {
+            '$round': [
+              '$FinalReport.TaxCard', 2
+            ]
+          },
+          'GrossCard': {
+            '$round': [
+              '$FinalReport.GrossCard', 2
+            ]
+          },
+          'GrossNoTaxCash': {
+            '$round': [
+              '$FinalReport.GrossNoTaxCash', 2
+            ]
+          },
+          'GrossNoTaxCard': {
+            '$round': [
+              '$FinalReport.GrossNoTaxCard', 2
+            ]
+          },
+          'NetTotal': {
+            '$round': [
+              '$FinalReport.NetTotal', 2
+            ]
+          },
+          'TaxTotal': {
+            '$round': [
+              '$FinalReport.TaxTotal', 2
+            ]
+          },
+          'Refund': {
+            '$round': [
+              '$FinalReport.Refund', 2
+            ]
+          },
+          'GrossTotal': {
+            '$round': [
+              '$FinalReport.GrossTotal', 2
+            ]
+          }
+        }
+      ]
+    }
+  }, {
+    '$project': {
+      'FinalReport': {
+        '$concatArrays': [
+          '$IndTaxReport', '$FinalReport'
+        ]
+      }
+    }
+  }
+]

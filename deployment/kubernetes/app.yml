@@ -1,0 +1,45 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: webapp
+spec:
+  selector:
+    app: webapp
+  ports:
+    - protocol: "TCP"
+      # Port accessible inside cluster
+      port: 80
+      # Port to forward to inside the pod.
+      # Port that containers in pods are listening on
+      targetPort: 80
+  # type: NodePort
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp
+spec:
+  selector:
+    matchLabels:
+      app: webapp
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      containers:
+        - name: webapp
+          # imagePullPolicy: IfNotPresent
+          image: izou3/webapp:1.0 # Local Docker Image
+          # image: tutum/hello-world
+          lifecycle:
+            preStop:
+              exec:
+                # Gracefully Shut Down Nginx if Exited
+                command: ["/usr/sbin/nginx","-s","quit"]
+          ports:
+            - containerPort: 80 # containers in deployment listen on PORT: 80
+

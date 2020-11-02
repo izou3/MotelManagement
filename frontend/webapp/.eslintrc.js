@@ -1,0 +1,21 @@
+module.exports = {
+  extends: ['airbnb', 'prettier', 'plugin:react-hooks/recommended'],
+  plugins: ['prettier'],
+  rules: {
+    'react/jsx-curly-newline': 'off',
+    'no-restricted-globals': 'off',
+    'prettier/prettier': 'warn',
+    'no-unused-vars': 'warn',
+    'no-console': 'warn',
+    'no-process-exit': 'off',
+    'no-var': 'error',
+    'prefer-const': 'error',
+    'global-require': 'off',
+    'no-plusplus': 'off',
+    'react/jsx-filename-extension': 'off',
+    'react/prop-types': 'off',
+    'react/jsx-props-no-spreading': 'off',
+    'no-alert': 'off',
+    'no-underscore-dangle': 'off',
+  },
+};
