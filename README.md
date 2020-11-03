@@ -320,6 +320,10 @@ position field:
 3 = Housekeepers
 ```
 
+**Future Issues to Resolve:**
+1. When a user that is authenticated into the app clears all cookies from their browser, app automatically logs out the user.
+2. When a user is automatically logged out after their token has expired, when they log back in, prevent the initial page load and preserve their state so they can leave right where they left off.
+
 *How Authorization Works* 
 To limit access of certain pages of the app, a `<PrivateRoute>` component is wrapped around each page of the app to restrict both unautenticated users and unauthroized staff. 
 
@@ -519,14 +523,173 @@ const checkTokenExpirationMiddleware = (store) => (next) => (action) => {
 applyMiddleware(checkTokenExpirationMiddleware, thunk)
 ```
 
-**Future Issues to Resolve:**
-1. When a user that is authenticated into the app clears all cookies from their browser, app automatically logs out the user.
-2. When a user is automatically logged out after their token has expired, when they log back in, prevent the initial page load and preserve their state so they can leave right where they left off.
-
 
 <a name="Backend-API"/>
 
 ## Backend API
+
+The backend api server serves as a gateway between the frontend and the database, manipluating data through transaction queries and mongo aggregations to return the desired result that the frontend requests. 
+
+All backend api requests go through `/api` route where an express router autenticates the request and sends the it to the matching router.
+All staff requests go through `/user` route where an express router authenticates requests for CRUD operations on staff data but directs login and logout requests to their matching router.
+
+This app makes use of the following modules: 
+  - *[ExpressJS](#https://expressjs.com/)* Middleware: for API routering and server side rendering.
+  - *[jsonwebtoken](#https://github.com/auth0/node-jsonwebtoken)*: for securing APIs in http-only cookies
+  - *[mysql2 driver](#https://github.com/sidorares/node-mysql2)*: for accessing  and writing to MySQL DB with Promise support
+  - *[mongoose driver](#https://mongoosejs.com/)*: for accessing and writing to MongoDB 
+  - *[morgan](#https://github.com/expressjs/morgan) and [winston](#https://github.com/winstonjs/winston)* for logging
+  - *[sequelize for MySQL](#https://sequelize.org/)*: for running migration and seed files
+  - *[nodemailer](#https://nodemailer.com/about/)*: for sending reservation confirmation emails with gmail
+
+
+The backend is currently organized into 10 services which contain all the logic of each endpoint requests: 
+
+---
+### Authentication Service (MongoDB)
+---
+This service is in charge of maintaining the *Staff Collection* which consists of all the employee who are authorized to the use application as well as logging users in and out and securing API endpoints
+
+The authentication service has the following methods that *DO NOT* require an authentication middleware: 
+  - `loginRequired()`: Executes the subsequent middleware if `req.user` is defined. Else throw a 401 Error
+  - `login()`: Signs a jwt token with staff data and sends the token to the client as httpOnly cookie if username and password matches a document in Staff Collection.
+  - `logout()`: clears the token httpOnly cookie 
+
+The authentication service has the following methods that *DO* require an authentication middleware: 
+  -`getAllStaff()`: returns all the authorizied users in stored in the Staff Collection
+  -`register()`: creates a new new staff document in the Staff Collection
+  -`updateStaff()`: updates a staff in the Staff Collection
+  -`deleteStaff()`: deletes a staff in the Staff Collection
+
+**How Authentication Works**
+The authentication strategy used by this app is a pretty straightforward and simple one. 
+
+1. Users makes a request to the backend
+2. An authentication middleware first checks for a jwt-token in the cookies. 
+  - If it exists, decode it, assign it to `req.user` and move onto the next middleware. 
+  - Else assign `req.user = null` and move onto the next middleware
+
+```bash 
+  app.use((req, res, next) => {
+    const { token } = req.cookies;
+
+    try {
+      if (!token) throw new Error('Undefined Token');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+      req.user = decoded;
+    } catch (err) {
+      req.user = undefined;
+    } finally {
+      next();
+    }
+  });
+```
+3. If request is though `/api`, request must go through `loginRequired` middleware to check for the authorization of the request based on the definition of `req.user`, which was asigned in the previous middleware
+
+```bash
+  loginRequired: (req, res, next) => {
+    if (req.user) {
+      return next();
+    }
+    // 401 Error
+    const error = new Error('Unauthorized User');
+    error.status = 401;
+    res.status(401);
+    return next(error);
+  },
+```
+
+4. If `req.user` is defined, move onto the next middleware which defines the api endpoints. Else direct to the express error middleware. 
+
+---
+### Customer Service (MySQL)
+---
+This service is in charge of CRUD and cross-database queries to MySQL database. 
+
+**Search Queries**
+Queries against the customers stored in the tables of the MySQL DB to join their attributes together in order to from a complete customer object. These queries all use INNER JOINS and are searched by checkIn or checkOut period, BookingID, and FirstName attributes. 
+
+**Create Query - addNewCustomer()**
+This is a cross database transaction query that removes reservations stored in the *Current Reservation Collection* of the MongoDB and adds them to two tables (Customer and IndCustomer) in the MySQL DB. 
+
+  1. Add part of the reservation data to Customer Table in MySQL
+  2. Add the remaining data of the reservation to IndCustomer table in MySQL 
+  3. Delete the reservation record from DailyReport document for that day 
+  4. Delete the reservation record from Current Reservation Collection 
+
+*If any of the above steps fail, the whole process is aborted and the DB go back to their original states*
+
+**Update Query**
+This is just a transactional query that adds part of the updated data to **Customer Table** and the remaining data to the **IndCustomer Table** both in MySQL 
+
+---
+### Blacklist Service (MySQL)
+---
+This is a basic service that allows customers in the MySQL DB to have their `BookingID` field added to a Blacklist table in MySQL as well as removed from. Users can also edit a `comment` field for the Blacklisted Customer.
+
+---
+### Current Reservation Service (MongoDB)
+---
+This service is in charge of allowing the frontend to interact with the **Current Reservation and Daily Report Collections** 
+
+**Search Queries**
+Methods to search the **Current Reservation Collection** by BookingID, FirstName, checkIn/checkOut period
+
+**CRUD Queries**
+Since the **Current Reservation Collection** MUST be in sync with the **Daily Report Collection**, all CRUD operations on records in the **Current Reservation Collection** with field `checked==1` are transaction queries that apply the changes to both the **Current Reservation and Daily Report Collections**
+
+---
+### Pending Reservation Service (MongoDB)
+---
+This service is in charge of allowing the frontend to interact with the **Pending Reservation Collection** 
+
+**Search Queries**
+Methods to search the **Pending Reservation Collection** by BookingID, FirstName, checkIn/checkOut period
+
+**CRUD Queries**
+Methods to create, update, read, or delete reservations from the **Pending Reservation Collection**
+
+---
+### Delete Reservation Service (MongoDB)
+---
+This service is in charge of allowing the frontend to interact with the **Delete Reservation Collection** 
+
+**Search Queries**
+Methods to search the **Delete Reservation Collection** by BookingID, FirstName, checkIn/checkOut period
+
+**CRUD Queries**
+Methods to create, update, read, or delete reservations from the **Delete Reservation Collection**
+
+---
+### DailyReport Service (MongoDB)
+---
+This service contains two primary methods for interaction with the **DailyReport Collection**
+
+**updateGuestRecord()**
+A transaction query that updates reservation records in **DailyReport Collection** as well as its corresponding record in the **Current Reservation Collection**
+
+**generateDailyReport()**
+This query is used by the background processing job. Its purpose is to generate a a new Daily Report document for the given day based on the previous day's Daily Report Document. It loops though 26 rooms of the motel and generates a reservation and housekeeping record for each based on three conditions 
+
+  - Guest exists and is not yet due 
+  - Guest exists and is due today (can choose to extend stay of check out. This is change is made in updateGuestRecord())
+  - Guest does not exist
+
+---
+### Maintenance Log Service (MongoDB)
+---
+Service to add and delete new maintenace logs to the **Maintenace Log Collection** as well as add, update, and delete entries for each room of a specific maintenacen log. 
+
+---
+### Housekeeping Sheet Service (MongoDB)
+---
+Shares data with the **DailyReport Collection** with just one method to just update housekeeping entry for a specified room for a housekeeping sheet on a specified date.
+
+---
+### Tax Report Service (Mongo Aggregation)
+---
+This service is in charge of genrating a tax report using the documents in the **DailyReport Collection**. The tax report is stored anywhere in the database so it'll need to be generated with every request. To do this, it takes advantage of the mongo aggregation framework using a 12 stage pipeline to generate an array of object that has records for every day of the month and a final record of total and averages. This array is then parsed into a csv object that is send to the frontend for the user to download. 
+
 
 <a name="Backend-Jobs"/>
 
