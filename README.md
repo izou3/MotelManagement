@@ -5,13 +5,13 @@
 
 </div>
 
-This project is landing page (website) and management system for small-scale hotel operations with ability to manage/track revenue in short-term and long-term stayss, tax reports/revenue, as well as housekeeping operations and maintenance logs with more features to come in the future! 
+This project is a landing page (website) and management system for small-scale hotel operations with ability to manage/track revenue in short-term and long-term stays, email reservation confirmation, generate tax reports/revenue, as well as track housekeeping operations and maintenance logs with more features to come in the future! 
 
 It is built as a full-stack javascript application and deployed to Digital Ocean Kubernetes with static files served from DigitalOcean Spaces. See below for [infrastructure](#Infrastructure).
   - **Frontend-Hotel Website**: SSR App Boilerplated with RazzleJS and Styled with MaterialUI 
   - **Frontend-Management System**: React-Redux App Styled with MaterialUI, 
   - **Backend-API**: Express-Node API Server with JWT Authentication
-  - **Backend-Jobs**: Repeating Jobs and Email Queue using AgendaJS and Agendash
+  - **Backend-Jobs**: Repeating Jobs and an Email Messaging Queue using AgendaJS and Agendash
   - **Database** MySQL DB on DigitalOcean Managed DB and MongoDB on MongoAtlas
 
 <div align="center">
@@ -48,6 +48,7 @@ npm install
 4. Run Sequlize Migration and Seed files `npm run migrateToDev`
 
 5. Edit `.env` located in the backend root directory with appropriate variables and save
+> If you don't want to have the email messaging queue running as part of the app, you don't have to fill those Google OAUTH fields but if you do, you can either enter your existing info or obtain them from this [tutorial](#https://medium.com/@nickroach_50526/sending-emails-with-node-js-using-smtp-gmail-and-oauth2-316fe9c790a1)
 
 `npm start` Starts API-Server on localhost:3001
 
@@ -94,7 +95,7 @@ Note that you must run one or the either of the landing or management system fro
 3. [Frontend-Management System](#Management-System)
 4. [Backend-API](#Backend-API)
 5. [Backend-Jobs](#Backend-Jobs)
-6. [MySQL Database Schema](#MySQL-Database Schema)
+6. [MySQL Database Schema](#MySQL-Database-Schema)
 7. [MongoDB Database Schema](#MongoDB-Database-Schema)
 8. [Development](#Development)
 9. [Testing](#Testing)
@@ -1039,19 +1040,18 @@ The agenda instance is backed by a collection in the MongoDB where it stores job
 ## MySQL Database Schema
 The MySQL database schema holds reservations who have checked out called *Customers*. The schema described below was designed with the intent of storing repeat customers. 
 
-*Customer Table: A Customer's definiton*
+*Customer Table*: 
 
    | CustomerID    | YearID | MonthID | first_name | last_name | email | phone | state |
    | ------------- |:------:| :------:| :---------:| :--------:| :----:| :----:| -----:|
 
-*IndCustomer Table: Individual Stays of a Customer described by their CustomerID in the above table*
 
-   | BookingID     | CustomerID | price_paid | tax | check_in | check_out | num_guests | ReservationID | PaymentID | RoomID | 
-   | ------------- |:----------:| :---------:| :--:| :-------:| :--------:| :---------:| :------------:| :--------:| :-----:|
-created_at | comments  |
-:---------:| ---------:|
+*IndCustomer Table (For repeat guests):*
 
- *Reservation Type*           
+   | BookingID     | CustomerID | price_paid | tax | check_in | check_out | num_guests | ReservationID | PaymentID | RoomID | created_at | comments  |
+   | ------------- |:----------:| :---------:| :--:| :-------:| :--------:| :---------:| :------------:| :--------:| :-----:| :---------:| ---------:|
+   
+ *Reservation Type*            
  | ID    | Reservtion |    
  | ----- | ----------:|    
  |   0   |   Walk-In  |
@@ -1060,7 +1060,7 @@ created_at | comments  |
  |   3   |   Expedia  |
  |   4   |   AirBnB   |
  |   5   |    Other   |
-
+ 
   *Payment Type*            
  | ID    | Reservtion |    
  | ----- | ----------:|    
@@ -1075,7 +1075,7 @@ created_at | comments  |
 ## MongoDB Database Schema
 The MongoDB has several collections but some of the collections reuse the same model so below is just a documentation of the models used. They can also be viewed in more details under `/backend/server/models`
 
-*Reservation Model: describes a reservation data/record and used by Current, Pending, and Delete Reservation Collection* 
+**Reservation Model**: describes a reservation data/record and used by Current, Pending, and Delete Reservation Collection
 ```bash
 {
   Checked: 
@@ -1101,7 +1101,7 @@ The MongoDB has several collections but some of the collections reuse the same m
 }
 ```
 
-*DailyReport Model: describes a daily report for a given day which contains records of reservation and housekeeping for each room*
+**DailyReport Model**: describes a daily report for a given day which contains records of reservation and housekeeping for each room
 ```bash
 {
   YearID: 
@@ -1140,7 +1140,7 @@ The MongoDB has several collections but some of the collections reuse the same m
 }
 ```
 
-*Maintenance Model: models documents for Maintenance Log Collection
+**Maintenance Model**: models documents for Maintenance Log Collection
 ```bash
   {
     _id:
@@ -1157,7 +1157,7 @@ The MongoDB has several collections but some of the collections reuse the same m
   }
 ```
 
-*Staff Model: Stores authenticated users in Staff Collection
+**Staff Model**: Stores authenticated users in Staff Collection
 ```bash
   {
     firstName:
