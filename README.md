@@ -100,7 +100,8 @@ Note that you must run one or the either of the landing or management system fro
 9. [Testing](#Testing)
 10. [Debugging](#Debugging)
 11. [Deployment](#Deployment)
-12. [Credits](#Credit)
+12. [Future Features and Issues](#Future-Features-and-Issues)
+13. [Credits](#Credit)
 
 <a name="Infrastructure"/>
 
@@ -690,35 +691,567 @@ Shares data with the **DailyReport Collection** with just one method to just upd
 ---
 This service is in charge of genrating a tax report using the documents in the **DailyReport Collection**. The tax report is stored anywhere in the database so it'll need to be generated with every request. To do this, it takes advantage of the mongo aggregation framework using a 12 stage pipeline to generate an array of object that has records for every day of the month and a final record of total and averages. This array is then parsed into a csv object that is send to the frontend for the user to download. 
 
+<div align="center">
+<img src="/uploads/ad9e1b6f188224e2811c362281be64ea/TaxReportExample.JPG"  width="80%" height="80%">
+
+*This is only an example tax report with Daily Report records for the following date. A real-world one would contain all the dates of the month*
+
+</div> 
+
+The general flow of the aggregation pipeline first identifies the DailyReport Collection's Document by the month and year. After it filters out unneccessary data, unwinds individual room records and groups them back together as well as adding new necessary fields for the tax report. The process is described in details below.
+
+1. Matches necessary DailyReport documents for the month of tax report to generate
+```bash
+  $match: {
+    YearID: Number(this.year),
+    MonthID: Number(this.month),
+  },
+```
+
+2. Projects neccessary fields and turns `Stays` object into an array
+```bash 
+  $project: {
+    _id: 0,
+    Date: '$Date',
+    Refund: '$Refund',
+    YearID: '$YearID',
+    MonthID: '$MonthID',
+    Stays: {
+      $objectToArray: '$Stays',
+    },
+  },
+```    
+
+3. Filters out the housekeeping record for room, only requiring the reservation record
+```bash
+  $project: {
+    Date: '$Date',
+    YearID: '$YearID',
+    MonthID: '$MonthID',
+    Refund: '$Refund.Amount',
+    Stays: '$Stays.v.Room',
+  },
+```
+
+4. Only require records that are not empty or due to stayover and haven't yet paid
+```bash
+  $project: {
+    Date: '$Date',
+    YearID: '$YearID',
+    MonthID: '$MonthID',
+    Refund: '$Refund',
+    Stays: {
+      $filter: {
+        input: '$Stays',
+        as: 'room',
+        cond: {
+          $eq: ['$$room.paid', true],
+        },
+      },
+    },
+```
+5. Unwind all documents in the `Stays` array
+```bash
+  $unwind: {
+    path: '$Stays',
+    includeArrayIndex: 'stayOfDate',
+    preserveNullAndEmptyArrays: true,
+  },
+```
+
+6. For each document (reservation record of each room each day for the month), project out their attributes 
+```bash
+$project: {
+  Date: '$Date',
+  YearID: '$YearID',
+  MonthID: '$MonthID',
+  Refund: '$Refund',
+  StayOfDate: {
+    $cond: {
+      if: {
+        $eq: ['$stayOfDate', null],
+      },
+      then: -1,
+      else: '$stayOfDate',
+    },
+  },
+  StayOver: {
+    $cond: {
+      if: {
+        $or: [
+          {
+            $eq: ['$Stays.type', 'N'],
+          },
+          {
+            $eq: ['$Stays.type', 'S/O'],
+          },
+        ],
+      },
+      then: 1,
+      else: 0,
+    },
+  },
+  Weekly: {
+    $cond: {
+      if: {
+        $or: [
+          {
+            $eq: ['$Stays.type', 'WK1'],
+          },
+          {
+            $eq: ['$Stays.type', 'WK2'],
+          },
+          {
+            $eq: ['$Stays.type', 'WK3'],
+          },
+        ],
+      },
+      then: 1,
+      else: 0,
+    },
+  },
+  NoTaxStay: {
+    $cond: {
+      if: {
+        $eq: ['$Stays.type', 'NO'],
+      },
+      then: 1,
+      else: 0,
+    },
+  },
+  PaymentType: '$Stays.payment',
+  PaymentNet: {
+    $subtract: ['$Stays.rate', '$Stays.tax'],
+  },
+  PaymentTax: '$Stays.tax',
+  PaymentGross: '$Stays.rate',
+  GrossNoTax: {
+    $cond: {
+      if: {
+        $eq: ['$Stays.type', 'NO'],
+      },
+      then: '$Stays.rate',
+      else: 0,
+    },
+  },
+}
+```
+
+7. Group all documents (reservation record of each room each day for the month) by their date and payment method and sum up their earnings and number of stay types. By the end of this stage, there should be two documents for every date with each document has the earnings for their payment type. 
+
+*For instance: if there is 30 DailyReport Documents for a month, there would now at this stage be 60 documents with 30 documents containing earnings for those 30 days in cash and the other 30 documents with earnings in card*
+```bash
+$group: {
+  _id: {
+    Date: '$Date',
+    PaymentType: '$PaymentType',
+    YearID: '$YearID',
+    MonthID: '$MonthID',
+    Refund: '$Refund',
+  },
+  StayOvers: {
+    $sum: '$StayOver',
+  },
+  Weekly: {
+    $sum: '$Weekly',
+  },
+  NoTaxStay: {
+    $sum: '$NoTaxStay',
+  },
+  Net: {
+    $sum: '$PaymentNet',
+  },
+  Tax: {
+    $sum: '$PaymentTax',
+  },
+  Gross: {
+    $sum: '$PaymentGross',
+  },
+  GrossNoTax: {
+    $sum: '$GrossNoTax',
+  },
+},
+```
+
+8. Adds in the neccessary fields so that when the documents are grouped together in the next stage, we can determine the earnings for each payment type (Card/Cash) as well as their combine totel. Therefore we add some dummary variables in this stage to hold attributes that we need at the end. 
+```bash
+$addFields: {
+  netCash: {
+    $cond: {
+      if: {
+        $eq: ['$_id.PaymentType', 'C'],
+      },
+      then: {
+        $round: ['$Net', 2],
+      },
+      else: 0,
+    },
+  },
+  taxCash: {
+    $cond: {
+      if: {
+        $eq: ['$_id.PaymentType', 'C'],
+      },
+      then: {
+        $round: ['$Tax', 2],
+      },
+      else: 0,
+    },
+  },
+  grossCash: {
+    $cond: {
+      if: {
+        $eq: ['$_id.PaymentType', 'C'],
+      },
+      then: {
+        $round: ['$Gross', 2],
+      },
+      else: 0,
+    },
+  },
+  netCard: {
+    $cond: {
+      if: {
+        $eq: ['$_id.PaymentType', 'CC'],
+      },
+      then: {
+        $round: ['$Net', 2],
+      },
+      else: 0,
+    },
+  },
+  taxCard: {
+    $cond: {
+      if: {
+        $eq: ['$_id.PaymentType', 'CC'],
+      },
+      then: {
+        $round: ['$Tax', 2],
+      },
+      else: 0,
+    },
+  },
+  grossCard: {
+    $cond: {
+      if: {
+        $eq: ['$_id.PaymentType', 'CC'],
+      },
+      then: {
+        $round: ['$Gross', 2],
+      },
+      else: 0,
+    },
+  },
+  grossNoTaxCash: {
+    $cond: {
+      if: {
+        $eq: ['$_id.PaymentType', 'C'],
+      },
+      then: {
+        $round: ['$GrossNoTax', 2],
+      },
+      else: 0,
+    },
+  },
+  grossNoTaxCredit: {
+    $cond: {
+      if: {
+        $eq: ['$_id.PaymentType', 'CC'],
+      },
+      then: {
+        $round: ['$GrossNoTax', 2],
+      },
+      else: 0,
+    },
+  },
+  
+```
+
+9. Groups the documents by combining the payment so that we now have a document for each date and half of the documents from our previous stage as well as the fields we need. 
+```bash
+$group: {
+  _id: {
+    Date: '$_id.Date',
+    YearID: '$_id.YearID',
+    MonthID: '$_id.MonthID',
+    Refund: '$_id.Refund',
+  },
+  StayOver: {
+    $sum: '$StayOvers',
+  },
+  Weekly: {
+    $sum: '$Weekly',
+  },
+  NoTaxStay: {
+    $sum: '$NoTaxStay',
+  },
+  NetCash: {
+    $sum: '$netCash',
+  },
+  TaxCash: {
+    $sum: '$taxCash',
+  },
+  GrossCash: {
+    $sum: '$grossCash',
+  },
+  NetCard: {
+    $sum: '$netCard',
+  },
+  TaxCard: {
+    $sum: '$taxCard',
+  },
+  GrossCard: {
+    $sum: '$grossCard',
+  },
+  GrossNoTaxCash: {
+    $sum: '$grossNoTaxCash',
+  },
+  GrossNoTaxCredit: {
+    $sum: '$grossNoTaxCredit',
+  },
+    
+```
+The last 4 stages simply just adds in the remaining fields we need to finish out the tax report by summing up current fields and formats the data correctly for a desired output. You can view the whole pipline under `/backend/server/services/report/TaxReport.js`
 
 <a name="Backend-Jobs"/>
 
 ## Backend Jobs
+The background processing express server runs an [AgendaJS](#https://github.com/agenda/agenda) instance on `PORT:3002` as well as [Agendash](#https://github.com/agenda/agendash) dashboard to track all the jobs located on `localhost:3002/dash`. 
+
+The agenda instance is backed by a collection in the MongoDB where it stores job deinfitions as well as a job queue. The instance is will process the collection for jobs it has to run every 1 minute with each instance able to lock up 2 jobs at once for every process. 
+
+```bash 
+    const agenda = new Agenda()
+      .processEvery('1 minute')
+      .lockLimit(2)
+      .mongo(connection.db, 'AgendaJobs');
+```
+
+**Current Jobs**
+---
+  - **GenerateDailyReport**: A repeating job that generates a new DailyReport every day at 4am MT 
+  - **UpdateCurrent**: A repeating job that moves reservation checking in within 48 hours of the current day from **Pending Reservation Collecion* to *Current Reservation Collection* 
+  - **ReservationConfirmation**: An email messsaging queue. Emails are produced and passed into the queue by the **API-Server** whenever a new reservation is created. The **Agenda** server instance then consumers the emails and sends them out
+
 
 <a name="MySQL-Database-Schema"/>
 
 ## MySQL Database Schema
+The MySQL database schema holds reservations who have checked out called *Customers*. The schema described below was designed with the intent of storing repeat customers. 
+
+*Customer Table: A Customer's definiton*
+
+   | CustomerID    | YearID | MonthID | first_name | last_name | email | phone | state |
+   | ------------- |:------:| :------:| :---------:| :--------:| :----:| :----:| -----:|
+
+*IndCustomer Table: Individual Stays of a Customer described by their CustomerID in the above table*
+
+   | BookingID     | CustomerID | price_paid | tax | check_in | check_out | num_guests | ReservationID | PaymentID | RoomID | 
+   | ------------- |:----------:| :---------:| :--:| :-------:| :--------:| :---------:| :------------:| :--------:| :-----:|
+created_at | comments  |
+:---------:| ---------:|
+
+ *Reservation Type*           
+ | ID    | Reservtion |    
+ | ----- | ----------:|    
+ |   0   |   Walk-In  |
+ |   1   | Phone-Call |
+ |   2   |   Booking  |
+ |   3   |   Expedia  |
+ |   4   |   AirBnB   |
+ |   5   |    Other   |
+
+  *Payment Type*            
+ | ID    | Reservtion |    
+ | ----- | ----------:|    
+ |   0   |    Card    |
+ |   1   |    Cash    |
+ |   2   |    Check   |
+ |   3   |    Other   |
+
 
 <a name="MongoDB-Database-Schema"/>
 
 ## MongoDB Database Schema
+The MongoDB has several collections but some of the collections reuse the same model so below is just a documentation of the models used. They can also be viewed in more details under `/backend/server/models`
+
+*Reservation Model: describes a reservation data/record and used by Current, Pending, and Delete Reservation Collection* 
+```bash
+{
+  Checked: 
+  BookingID: 
+  CustomerID: 
+  YearID: 
+  MonthID: 
+  ReservationID:
+  PaymentID: 
+  RoomID: 
+  StateID: 
+  firstName: 
+  lastName: 
+  email: 
+  phone: 
+  pricePaid:
+  tax: 
+  checkIn: 
+  checkOut: 
+  numGuests: 
+  comments: 
+  created_date: 
+}
+```
+
+*DailyReport Model: describes a daily report for a given day which contains records of reservation and housekeeping for each room*
+```bash
+{
+  YearID: 
+  MonthID:
+  Date:
+  Refund: { 
+    Amount: 
+    Notes: 
+  },
+  Stays: {
+    101: {
+      Room: {
+        BookingID:
+        type: 
+        payment:
+        startDate: 
+        endDate: 
+        paid: 
+        rate: 
+        tax:
+        notes:
+        initial:
+      },
+      Housekeeping: {
+        status:
+        type:
+        houseKeeper:
+        notes:
+      }
+    }, 
+    102: 
+    103: 
+    ...
+    126:
+  }
+}
+```
+
+*Maintenance Model: models documents for Maintenance Log Collection
+```bash
+  {
+    _id:
+    Name:
+    Facilities: [{
+      completed:
+      date: 
+      description: 
+      cost:
+    }],
+    101: [],
+    ...
+    126: [],
+  }
+```
+
+*Staff Model: Stores authenticated users in Staff Collection
+```bash
+  {
+    firstName:
+    lastName: 
+    username:
+    email:
+    hashPassword:
+    position:
+    created_date:
+  }
+```
 
 <a name="Development"/>
 
 ## Development
 
+For the frontend, this project uses create-react-app and RazzleJS boilerplates with webpack for rapid development, codesandbox for design and style testing and redux-dev-tools for react-redux development. 
+
+For the backend, this project uses ExpressJS framework to create servers and postman to test api endpoints. 
+
+For the database: 
+  - For MySQL, this project runs a MySQL server locally with a UI of the database using MySQL workbench
+  - For Mongo, this projects connects to a MongoDB cluster dev database on MongoAtlas 
+
+This project uses Editor Config to standardize editor configuration 
+Visit http://editorconfig.org for details 
+
+This project uses Eslint to detect suspicious code in JS files 
+
 <a name="Testing"/>
 
 ## Testing
+This project uses Mocha and Chai for testing of backend services. **NOTE** that current testing of the codebase is just a few unit tests of the backend services and the code coverage is a very low percentage. This will be implemented further in the future as well as frontend testing and usage of React propTypes.
+
+Visit http://mochajs.org and http://chaijs.org for details.
+
+To execute test: 
+
+```bash 
+cd backend/
+npm test 
+```
 
 <a name="Debugging"/>
 
 ## Debugging
 
+This project uses https://www.npmjs.com/package/debug for development logging in the backend. To start `nodemon` and enable logging:
+
+```bash
+cd backend/
+npm run debug
+```
+
 <a name="Deployment"/>
 
 ## Deployment
+This project can be deployment two ways as seen in the `/deployment` directory, using docker-compose with nginx or with kubernetes. I will go into details about the current deployment which is with DigitalOcean Kubernetes
+
+All four services are built into a docker image as described by the `Dockerfile` in each services' directory. These images are hosted publically on Dockerhub with their own repo to track version.
+  - **Frontend-Management**: an NGINX image that serves the static file index.html of SPA at every route request. The separate JS files are served separately in a CDN
+  - **Frontend-Landing**: a Node image that server-side renders a website with separate JS files served separately in a CDN
+  - **Backend-API**: a Node image that runs an Express API server
+  - **Backend-Agenda**: a Node image that runs a background processing server
+
+Each image is pulled into pods into kubernetes cluster which is currently running a replica of one pod per service. There are currently four deployments running with each deployment corresponding to each service (Management System Frontend, Website, API Server, Agenda Server). 
+> The `api` and `agenda` deployments all pass in a kubernetes secret with corresponding environment variables
+
+The pods of each deployment are exposed through kubernetes' default service ClusterIP that is configured to listen on `PORT:80`. 
+
+In front of the kubernetes cluster is an NGINX Ingress Controller which exposes the kubernetes cluster on a public IP address. The address is then mapped to two DNS A records: 
+  - `bigskylodge.com` routes to hotel website
+  - `admin.bigskylodge.com/staff` routes to management system 
+  - `admin.bigskylodge.com/api` routes to Express API server
+  - `admin.bigskylodge.com/dash` routes to background-processing dashboard 
+
+The MySQL database is hosted on DigitalOcean Managed Database and MongoDB is hosted on MongoAtlas. Both database whitelists the public IP address of the kubernetes nodes.
+
+The static and media files of the frontend are hosted on CDN using DigitalOcean Spaces. 
+
+<a name="Future-Features-and-Issues"/>
+
+## Future Features and Issues
+
+**Features**
+ - **Booking Engine**: a booking engine that takes in reservations, stores credit card information securely, and connects to the management system 
+ - **Analytics**: a analytics feature in the management system 
+ - **Decoupled Authentication**: decouple the authentication service from the backend into its own server and strenghten it
+
+**Issues**
+  - When a user that is authenticated into the app clears all cookies from their browser, app automatically logs out the user.
+  - When a user is automatically logged out after their token has expired, when they log back in, prevent the initial page load and preserve their state so they can leave right where they left off.
 
 <a name="Credits"/>
 
 ## Credits
+This project would not be possible without the huge open source community out there. All the fantastic modules, cool UI features, free services, medium blogs, and detailed documentations that have made this project possible and helped me learn and grow alot. Thank you! 
