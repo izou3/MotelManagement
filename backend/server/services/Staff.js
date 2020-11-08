@@ -28,7 +28,13 @@ module.exports = {
     error.status = 401;
     res.status(401);
     return next(error);
-    // return res.status(401).json({ message: 'Unauthorized User' });
+  },
+
+  loginCheck: (req, res) => {
+    if (req.user) {
+      return res.status(200).send({ message: 'Authenticated' });
+    }
+    return res.status(401).send({ message: 'UnAuthorized Access' });
   },
 
   /**
@@ -101,7 +107,7 @@ module.exports = {
           },
           config.jwtKey,
           {
-            expiresIn: 3600, // 30 Minute Expiration Date
+            expiresIn: 3600, // 60 Minute Expiration Date
           }
         );
         return res

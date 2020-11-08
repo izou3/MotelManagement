@@ -1,5 +1,8 @@
 node_modules
 data
 tests
+db
 
-webpack
+webpack.api.config.js
+webpack.jobs.config.js
+.md

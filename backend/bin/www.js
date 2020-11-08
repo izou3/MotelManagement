@@ -82,7 +82,7 @@ Promise.all([mongoPromise(), sqlPromise()])
     // Handle server errors
     server.on('error', (error) => {
       if (error.syscall !== 'listen') {
-        console.log(error);
+        logger.error(error);
         throw error;
       }
 

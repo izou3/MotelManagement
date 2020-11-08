@@ -13,7 +13,7 @@ const logger = require('./lib/logger');
 const routes = require('./routes/index');
 const authRoutes = require('./routes/authRoute');
 
-const { loginRequired } = require('./services/Staff');
+const { loginRequired, loginCheck } = require('./services/Staff');
 
 /*
  * Main Express Middleware
@@ -65,6 +65,9 @@ module.exports = (param) => {
       next();
     }
   });
+
+  // Test to see if authentication exists
+  app.use('/validAccess', loginCheck);
 
   // Authentication Routes of Login, Register, and Logout
   app.use('/user', authRoutes());

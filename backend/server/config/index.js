@@ -19,6 +19,7 @@ module.exports = {
     },
     mongoLocalReplicaSetURL: process.env.LOCAL_MONGO_REPLICASET_CONNECT,
     mongoLocalURL: process.env.LOCAL_MONGO_CONNECT,
+    emailTemplatePath: process.env.DEV_EMAIL_TEMPLATE_PATH,
   },
   test: {
     sitename: 'Big Sky Lodge [Test]',
@@ -36,6 +37,7 @@ module.exports = {
         database: process.env.TEST_SQLDB,
       },
     },
+    emailTemplatePath: process.env.DEV_EMAIL_TEMPLATE_PATH,
   },
   production: {
     sitename: 'Big Sky Lodge',
@@ -43,6 +45,7 @@ module.exports = {
     AGENDA_PORT: process.env.AGENDA_PORT,
     RoomNum: process.env.ROOM_NUM,
     jwtKey: process.env.JWT_SECRET_KEY,
+    emailTemplatePath: process.env.PROD_EMAIL_TEMPLATE_PATH,
     database: {
       mongo: process.env.PRODUCTION_MONGODB_DSN,
       sql: {
