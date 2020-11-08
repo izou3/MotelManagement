@@ -312,7 +312,29 @@ The data is displayed for each room and can be manipluated based on the followin
 ---
 The **Staff Page** tracks the user accounts who have access to the management system. Authroized users can add, update, and delete employees from that list.
 
-Once a employee logins, their jwt token will expire 30 minutes from the time it is signed. After that 30 minutes is up, any subsequent dispatch will logout the user and require a login for a new token. More details of this can be found below in challenges.
+Once a employee logins, their jwt token will expire 60 minutes from the time it is signed. After that 60 minutes is up, any subsequent dispatch will logout the user and require a login for a new token. More details of this can be found below in challenges.
+
+Along with this, before any disptach of thunks/API requests, a request is made to the server to check for the existence of any httpOnly cookies that may have been cleared from the browser tab:
+```bash 
+    axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+  ```
+  
+After this request is a conditon to check for the **authState** which will prevent any subsequent statements from being executed if a logout has been dispatched from either the `checkTokenExpiration Middleware` or the previous request for the existence of httpOnly cookies:
+```bash
+  const state = getState();
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
+```
+
 
 The management system also takes into consideration the authorization of each user based on the `position` field 
 ```bash 
@@ -323,8 +345,8 @@ position field:
 ```
 
 **Future Issues to Resolve:**
-1. When a user that is authenticated into the app clears all cookies from their browser, app automatically logs out the user.
-2. When a user is automatically logged out after their token has expired, when they log back in, prevent the initial page load and preserve their state so they can leave right where they left off.
+1. When a user is automatically logged out after their token has expired, when they log back in, prevent the initial page load and preserve their state so they can leave right where they left off.
+2. Set a duration so that if a user is inactive for a specified time, app will log itself out. 
 
 *How Authorization Works* 
 To limit access of certain pages of the app, a `<PrivateRoute>` component is wrapped around each page of the app to restrict both unautenticated users and unauthroized staff. 
@@ -1255,4 +1277,6 @@ The static and media files of the frontend are hosted on CDN using DigitalOcean 
 
 ## Credits
 This project would not be possible without the huge open source community out there. All the fantastic modules, cool UI features, free services, medium blogs, and detailed documentations that have made this project possible and helped me learn and grow alot. Thank you! 
+
+Also thanks to [gifcap](#https://gifcap.dev/) for the easy animations!
 
