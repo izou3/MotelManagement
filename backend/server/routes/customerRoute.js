@@ -30,7 +30,7 @@ module.exports = (param) => {
       const first = req.body.firstName;
       const last = req.body.lastName;
       const { email } = req.body;
-      const { phone } = req.body;
+      const phone = req.body.phone ? req.body.phone : 0;
       const state = req.body.StateID;
 
       const bookingid = req.body.BookingID;
@@ -73,7 +73,7 @@ module.exports = (param) => {
       const first = req.body.firstName;
       const last = req.body.lastName;
       const { email } = req.body;
-      const { phone } = req.body;
+      const phone = req.body.phone ? req.body.phone : 0;
       const state = req.body.StateID;
 
       const { BookingID } = req.body;
@@ -114,5 +114,13 @@ module.exports = (param) => {
           return res.status(400).json({ message: err.message });
         });
     });
+
+  // 404 Error Handler
+  router.use((req, res, next) => {
+    const error = new Error('Undefined Route');
+    error.status = 404;
+    next(error);
+  });
+
   return router;
 };

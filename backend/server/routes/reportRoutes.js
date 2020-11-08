@@ -111,7 +111,9 @@ module.exports = () => {
     }
   });
 
-  // Tax Report Route
+  /**
+   * @route route to generate a new Tax Report
+   */
   router.route('/tax').get(async (req, res) => {
     const { MonthID } = req.query;
     const { YearID } = req.query;
@@ -133,6 +135,13 @@ module.exports = () => {
         debug(err);
         return res.status(400).json({ message: err.message });
       });
+  });
+
+  // 404 Error Handler
+  router.use((req, res, next) => {
+    const error = new Error('Undefined Route');
+    error.status = 404;
+    next(error);
   });
 
   return router;

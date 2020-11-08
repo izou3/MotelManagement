@@ -94,7 +94,7 @@ module.exports = (param) => {
      */
     .post((req, res) => {
       const { roomType } = req.query;
-      return Current.addNewCurrReservation(req, roomType)
+      return Current.addNewCurrReservation(req, roomType, agenda)
         .then((data) => {
           debug(data);
           res.send(data);
@@ -199,6 +199,13 @@ module.exports = (param) => {
         res.status(400).json({ message: err.message });
       }
     });
+
+  // 404 Error Middleware
+  router.use((req, res, next) => {
+    const error = new Error('Undefined Route');
+    error.status = 404;
+    next(error);
+  });
 
   return router;
 };

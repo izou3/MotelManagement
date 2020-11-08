@@ -45,5 +45,12 @@ module.exports = (param) => {
       }
     });
 
+  // 404 Error Handler
+  router.use((req, res, next) => {
+    const error = new Error('Undefined Route');
+    error.status = 404;
+    next(error);
+  });
+
   return router;
 };

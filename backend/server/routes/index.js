@@ -45,9 +45,10 @@ module.exports = (param) => {
   // Maintenance Collection Query Operations Performed Against Mongo
   router.use('/maintenance', MaintenanceRoutes());
 
-  router.use((req, res) => {
+  router.use((req, res, next) => {
     const error = new Error('Undefined Route');
-    res.status(404).json({ message: error.message });
+    error.status = 404;
+    next(error);
   });
 
   return router;

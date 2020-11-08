@@ -224,5 +224,13 @@ module.exports = (param) => {
       .then((result) => res.json(result))
       .catch((err) => res.status(400).json({ message: err.message }));
   });
+
+  // 404 Error Middleware
+  router.use((req, res, next) => {
+    const error = new Error('Undefined Route');
+    error.status = 404;
+    next(error);
+  });
+
   return router;
 };

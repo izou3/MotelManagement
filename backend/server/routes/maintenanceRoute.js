@@ -10,6 +10,9 @@ const router = express.Router();
 const Maintenance = require('../services/report/Maintenance');
 
 module.exports = () => {
+  /**
+   * @route to add, read, and delete Maintenance Logs
+   */
   router
     .route('/')
     .get(async (req, res) => {
@@ -59,6 +62,9 @@ module.exports = () => {
         });
     });
 
+  /**
+   * @route to add, update, and delete log entries in a maintenance log
+   */
   router
     .route('/logEntry')
     .post((req, res) => {
@@ -106,6 +112,13 @@ module.exports = () => {
           res.status(400).json({ message: err.message });
         });
     });
+
+  // 404 Error Handler
+  router.use((req, res, next) => {
+    const error = new Error('Undefined Route');
+    error.status = 404;
+    next(error);
+  });
 
   return router;
 };
