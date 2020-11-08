@@ -6,8 +6,7 @@ import React from 'react';
 // MaterialUI Components
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import Divider from '@material-ui/core/Divider';
-import { Card, Grid, Box, Paper } from '@material-ui/core';
+import { Card, Grid, Box, Paper, Divider } from '@material-ui/core';
 import CardContent from '@material-ui/core/CardContent';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
@@ -102,6 +101,9 @@ const useStyles = makeStyles((theme) => ({
     zIndex: '1000',
     position: 'absolute',
   },
+  divider: {
+    margin: theme.spacing(4,0,0),
+  }
 }));
 
 /**
@@ -261,15 +263,6 @@ const Home = ({
                     <Typography variant="h6">{info.Stayovers}</Typography>
                   </CardContent>
                 </Card>
-                {/* <Card className={classes.dailySummary}>
-            <Typography variant="button" display="block">
-              Check-Out
-            </Typography>
-            <Divider />
-            <CardContent>
-              <Typography variant="h6">{info.CheckOut}</Typography>
-            </CardContent>
-          </Card> */}
                 <Card className={classes.dailySummary}>
                   <Typography variant="button" display="block">
                     Check-In
@@ -292,9 +285,15 @@ const Home = ({
               <Paper elevation={3} style={{ marginTop: '1em' }}>
                 <Calendar className={classes.calendar} />
               </Paper>
+              <Divider className={classes.divider} />
+                <Typography variant="h6" align="center">48 HOUR ARRIVALS</Typography>
+              <Divider />
               <Paper>
                 <PageTable resList={pendRes} handleOpen={loadFormOnAction} />
               </Paper>
+              <Divider className={classes.divider} />
+                <Typography variant="h6" align="center">OVERDUE RESERVATIONS</Typography>
+              <Divider />
               <Paper>
                 <PageTable resList={overRes} handleOpen={loadFormOnAction} />
               </Paper>

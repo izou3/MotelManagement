@@ -29,6 +29,8 @@ import {
   loadMaintenanceFail,
 } from '../actions/reportActions';
 
+import { logoutUser } from '../actions/authActions';
+
 /**
  * Thunks for General Report
  * @param {*} date
@@ -38,8 +40,20 @@ import {
  * Thunks for Daily Report
  */
 export const loadDailyReport = (date) => async (dispatch, getState) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
   return axios
@@ -90,12 +104,26 @@ export const loadDailyReport = (date) => async (dispatch, getState) => {
     });
 };
 
-export const updateDailyReport = (date, data) => async (dispatch, getState) => {
+export const updateDailyReport = (date, data) => async (
+  dispatch, getState
+) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
+
   const { report } = state.reportState;
   const current = state.currRes.reservation;
-
-  if (!state.authState.isAuthenticated) return null;
 
   // Generate Proper CheckIn and CheckOut Dates
   data.startDate = moment(data.startDate).format('YYYY-MM-DDT12:00:00[Z]');
@@ -128,11 +156,24 @@ export const updateDailyReport = (date, data) => async (dispatch, getState) => {
 };
 
 export const updateDailyReportRefund = (refund) => async (
-  dispatch,
-  getState
+  dispatch, getState
 ) => {
-  const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
+  const state =getState();
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
+
   dispatch(showLoading());
   return axios
     .put(`/api/dailyreport/refund`, refund)
@@ -158,11 +199,22 @@ export const updateDailyReportRefund = (refund) => async (
 
 // Load The HouseKeeping Report Sheet
 export const loadHouseKeepingReportOnSearch = (date) => async (
-  dispatch,
-  getState
+  dispatch, getState
 ) => {
+
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
   return axios
@@ -208,11 +260,23 @@ export const updateHouseKeepingReportOnAction = (data) => async (
   dispatch,
   getState
 ) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
+
   const { houseKeepingReport } = state.houseKeepingState;
   const { date } = state.houseKeepingState;
-
-  if (!state.authState.isAuthenticated) return null;
 
   dispatch(showLoading());
   return axios
@@ -243,11 +307,22 @@ export const updateHouseKeepingReportOnAction = (data) => async (
  * Thunks for Maintenance Log
  */
 export const initialMaintenanceLog = () => async (dispatch, getState) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
-
   const requestOne = axios.get(`/api/maintenance?name=General`); // Get Maintenance Log
   const requestTwo = axios.get(`/api/maintenance`); // Get Names
 
@@ -280,8 +355,20 @@ export const initialMaintenanceLog = () => async (dispatch, getState) => {
 };
 
 export const addMaintenanceLog = (name) => async (dispatch, getState) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
   return axios
@@ -317,12 +404,21 @@ export const addMaintenanceLog = (name) => async (dispatch, getState) => {
     });
 };
 
-export const searchMaintenanceLog = (searchID) => async (
-  dispatch,
-  getState
-) => {
+export const searchMaintenanceLog = (searchID) => async (dispatch, getState) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
   return axios
@@ -353,12 +449,21 @@ export const searchMaintenanceLog = (searchID) => async (
 };
 
 // Thunks for Individual Maintenance Log Entries
-export const addLogEntry = (name, field, newEntry) => async (
-  dispatch,
-  getState
-) => {
+export const addLogEntry = (name, field, newEntry) => async (dispatch, getState) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
   return axios
@@ -383,12 +488,21 @@ export const addLogEntry = (name, field, newEntry) => async (
     });
 };
 
-export const updateLogEntry = (name, field, updatedEntry) => async (
-  dispatch,
-  getState
-) => {
+export const updateLogEntry = (name, field, updatedEntry) => async (dispatch, getState) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
   return axios
@@ -413,12 +527,21 @@ export const updateLogEntry = (name, field, updatedEntry) => async (
     });
 };
 
-export const deleteLogEntry = (name, field, ID) => async (
-  dispatch,
-  getState
-) => {
+export const deleteLogEntry = (name, field, ID) => async (dispatch, getState) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
   return axios
@@ -449,8 +572,20 @@ export const deleteLogEntry = (name, field, ID) => async (
  * Thunk for Generating Tax Report
  */
 export const generateTaxReport = (MonthID, YearID) => async (dispatch, getState) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
   axios.get(`/api/dailyreport/tax?MonthID=${MonthID}&YearID=${YearID}`)

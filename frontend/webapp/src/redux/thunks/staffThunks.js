@@ -15,15 +15,28 @@ import {
 
 import { loadFormFail } from '../actions/formActions';
 
+import { logoutUser } from '../actions/authActions';
+
 /**
  * Add New Staff
  */
 export const createNewStaff = (newStaff) => async (dispatch, getState) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
-
   axios.post('/user', newStaff)
     .then((response) => {
       const currentStaff = state.staffState.staff;
@@ -52,8 +65,20 @@ export const createNewStaff = (newStaff) => async (dispatch, getState) => {
  * load All Staff Members
  */
 export const getAllStaff = () => async (dispatch, getState) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
   return axios.get('/user')
@@ -82,8 +107,20 @@ export const getAllStaff = () => async (dispatch, getState) => {
  * Update Staff Member with Matching Username
  */
 export const updateStaff = (updatedObj) => async (dispatch, getState) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   const currentStaff = state.staffState.staff;
   dispatch(showLoading());
@@ -119,8 +156,20 @@ export const updateStaff = (updatedObj) => async (dispatch, getState) => {
  * Delete Staff
  */
 export const deleteStaff = (username) => async (dispatch, getState) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   const currentStaff = state.staffState.staff;
   dispatch(showLoading());

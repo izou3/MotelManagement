@@ -116,7 +116,6 @@ function Staff({
   const classes = useStyles();
 
   React.useEffect(() => {
-    console.log('here in effect');
     initialStaffLoad()
   }, [initialStaffLoad]);
 

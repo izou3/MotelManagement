@@ -1,17 +1,19 @@
 import express from 'express';
+const { createProxyMiddleware } = require('http-proxy-middleware');
 import { render } from '@jaredpalmer/after';
 import routes from './setup/routes';
 import Document from './Modules/common/Document';
-import path from 'path'; 
+import path from 'path';
 
-const publicFolder = process.env.NODE_ENV === 'production' ? path.join(__dirname, '../build/public') : 'public'; 
+const publicFolder = process.env.NODE_ENV === 'production' ? path.join(__dirname, '../build/public') : 'public';
 
 const assets = require(process.env.RAZZLE_ASSETS_MANIFEST);
 const chunks = require(process.env.RAZZLE_CHUNKS_MANIFEST);
 
-//process.env.RAZZLE_PUBLIC_DIR 
+//process.env.RAZZLE_PUBLIC_DIR
 
 const server = express();
+
 server
   .disable('x-powered-by')
   .use(express.static(publicFolder))

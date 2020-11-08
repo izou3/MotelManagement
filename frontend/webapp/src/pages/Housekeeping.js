@@ -207,10 +207,6 @@ const Report = ({
               headerStyle: {
                 fontWeight: 'bold',
               },
-              rowStyle: (rowData) => ({
-                backgroundColor:
-                  selectedRow === rowData.tableData.id ? '#EEE' : '#FFF',
-              }),
             }}
             editable={{
               onRowUpdate: (newData) =>

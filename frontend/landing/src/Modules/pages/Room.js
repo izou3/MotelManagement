@@ -116,7 +116,7 @@ const useStyles = makeStyles(theme => ({
       height: '350px',
     },
     [theme.breakpoints.up('lg')]: {
-      height: '450px',
+      height: '480px',
     },
   },
   MainPost: {
@@ -130,7 +130,7 @@ const useStyles = makeStyles(theme => ({
       margin: theme.spacing(1,1,1),
     },
     [theme.breakpoints.up('sm')]: {
-      height: '350px',
+      height: '400px',
       margin: theme.spacing(2,2,2)
     },
     [theme.breakpoints.up('lg')]: {
@@ -166,7 +166,7 @@ const useStyles = makeStyles(theme => ({
       margin: theme.spacing(1,1,1),
     },
     [theme.breakpoints.up('sm')]: {
-      margin: theme.spacing(3,5,3),
+      margin: theme.spacing(2,5,1),
     },
     [theme.breakpoints.up('lg')]: {
       margin: theme.spacing(5,7,5),
@@ -175,6 +175,7 @@ const useStyles = makeStyles(theme => ({
   policies: {
     [theme.breakpoints.down('xs')]: {
       padding: theme.spacing(1,1,1),
+      margin: theme.spacing(0, 0, 7),
     },
     [theme.breakpoints.up('sm')]: {
       padding: theme.spacing(3,10,3),
@@ -238,7 +239,7 @@ function Room (props) {
               <CardContent>
                 <Typography variant="body2" component="p">
                   Enjoy our quiet and relaxing single queen rooms facing our fresh
-                  yard out front. Room is equippied with FREE wifi, Dish HD TV,
+                  yard out front. Room is equippied with FREE wifi, Dish TV,
                   alarm clock, microwave, and mini-fridge. NON-SMOKING. Sleeps 2.
                 </Typography>
               </CardContent>
@@ -261,7 +262,7 @@ function Room (props) {
               <CardContent>
                 <Typography variant="body2" component="p">
                   A gorgeous and breathtaking view of Rapid City awaits outside your window.
-                  Room is equippied with FREE wifi, Dish HD TV, alarm clock, microwave, and mini-fridge.
+                  Room is equippied with FREE wifi, Dish TV, alarm clock, microwave, and mini-fridge.
                   NON-SMOKING. Sleeps 4.
                 </Typography>
               </CardContent>
@@ -283,9 +284,9 @@ function Room (props) {
               />
               <CardContent>
                 <Typography variant="body2" component="p">
-                  A gorgeous and breathtaking view of Rapid City awaits outside your window, with an attachment
-                  bedroom and extra full bed for privacy. Room is equippied with FREE wifi, Dish HD TV, alarm clock,
-                  microwave, and mini-fridge. NON-SMOKING. Sleeps 5.
+                  A gorgeous room with two full beds and an attachment bedroom
+                  with extra full bed and TV for privacy. Room is equippied with
+                  FREE wifi, Dish TV, xmicrowave, and mini-fridge. NON-SMOKING. Sleeps 5.
                 </Typography>
               </CardContent>
             </Card>
@@ -306,7 +307,7 @@ function Room (props) {
               />
               <CardContent>
                 <Typography variant="body2" component="p">
-                  Enjoy our extra spacious double queen rooms. Room is equippied with FREE wifi, Dish HD TV, alarm clock,
+                  Enjoy our extra spacious double queen rooms. Room is equippied with FREE wifi, Dish TV, alarm clock,
                   microwave, and mini-fridge. NON-SMOKING. Sleeps 4.
                 </Typography>
               </CardContent>

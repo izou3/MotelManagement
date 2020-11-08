@@ -34,6 +34,7 @@ import DashboardIcon from '@material-ui/icons/Dashboard';
 import AssessmentIcon from '@material-ui/icons/Assessment';
 import ContactsIcon from '@material-ui/icons/Contacts';
 import AssignmentIcon from '@material-ui/icons/Assignment';
+import MailOutlineIcon from '@material-ui/icons/MailOutline';
 
 const drawerWidth = 240;
 
@@ -149,6 +150,14 @@ const NavBarLink = (props) => {
                   <ContactsIcon />
                 </ListItemIcon>
                 <ListItemText primary="Search" />
+              </ListItem>
+            </Link>
+            <Link to="/dash" className={classes.linkLabels}>
+              <ListItem button>
+                <ListItemIcon>
+                  <MailOutlineIcon />
+                </ListItemIcon>
+                <ListItemText primary="Email" />
               </ListItem>
             </Link>
             <Link to="/staff/report" className={classes.linkLabels}>

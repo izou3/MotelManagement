@@ -9,6 +9,7 @@ import {
   SEARCH_BLACKLIST_CUSTOMER,
 } from '../actions/searchActions';
 
+// Search Type defines what db should be queried
 const initialSearchState = {
   searchType: 'none',
   results: [],

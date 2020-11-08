@@ -9,11 +9,11 @@ const defaultTheme = createMuiTheme({
     MuiCssBaseline: {
       '@global': {
         html: {
-          [breakpoints.down('xs')]: {
+          [breakpoints.up('xs')]: {
             fontSize: '0.9rem'
           },
-          [breakpoints.up('sm')]: {
-            fontSize:'1.2rem'
+          [breakpoints.up('lg')]: {
+            fontSize: '1.2rem',
           },
           [breakpoints.up('xl')]: {
             fontSize: '1.8rem'

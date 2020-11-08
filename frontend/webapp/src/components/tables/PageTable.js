@@ -45,8 +45,7 @@ const useStyles = makeStyles((theme) => ({
 export default function PageTable(props) {
   const classes = useStyles();
   const [page, setPage] = React.useState(0);
-  const rowsPerPage = 3;
-  // const [rowsPerPage, setRowsPerPage] = React.useState(1);
+  const rowsPerPage = 5;
 
   const { resList } = props;
 
@@ -72,7 +71,7 @@ export default function PageTable(props) {
             {resList
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((res) => (
-                <StyledTableRow key={res.BookingID}>
+                <StyledTableRow key={res.BookingID} tabIndex={-1}>
                   <StyledTableCell>
                     <IconButton
                       onClick={() =>
@@ -105,7 +104,7 @@ export default function PageTable(props) {
         </Table>
       </TableContainer>
       <TablePagination
-        rowsPerPageOptions={[3]}
+        rowsPerPageOptions={[5]}
         component="div"
         count={resList.length}
         rowsPerPage={rowsPerPage}

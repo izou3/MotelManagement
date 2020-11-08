@@ -21,6 +21,8 @@ import { DatePicker } from 'formik-material-ui-pickers';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
 
+import logger from '../logger';
+
 const useStyles = makeStyles((theme) => ({
   textField: {
     margin: theme.spacing(0, 0, 2),
@@ -333,15 +335,15 @@ const ResForm = (props) => {
 
                 onSubmit={(values, { setSubmitting }) => {
                   if (actionType === 'action1') {
-                    console.log('Create Staff');
+                    logger('Create Staff');
                     props.action1(values);
                   } else if (actionType === 'action2') {
-                    console.log('Update Staff');
+                    logger('Update Staff');
                     delete values.password;
-                    console.log(values);
+                    logger(values);
                     props.action2(values);
                   } else if (actionType === 'action3') {
-                    console.log('Delete Staff');
+                    logger('Delete Staff');
                     props.action3(values.username);
                   }
                   setSubmitting(false);
@@ -542,7 +544,6 @@ const ResForm = (props) => {
                 }}
                 onSubmit={(values, { setSubmitting }) => {
                   setSubmitting(true);
-                  console.log(values);
                   if (actionType === 'action1') {
                     props.action1(
                       {

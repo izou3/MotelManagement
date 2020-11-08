@@ -26,11 +26,11 @@ const useStyles = makeStyles(theme => ({
         },
         [theme.breakpoints.up('sm')]: {
           height: '400px',
-          margin: theme.spacing(20, 0, 0),
+          margin: theme.spacing(20, 0, 15),
           padding: theme.spacing(5,5,5),
         },
         [theme.breakpoints.up('xl')] :{
-            margin: theme.spacing(30, 0, 0),
+            margin: theme.spacing(30, 0, 25),
             padding: theme.spacing(5,5,5),
             height: '600px'
         },

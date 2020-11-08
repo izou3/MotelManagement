@@ -16,11 +16,25 @@ import {
   updateCheckOut,
 } from '../actions/actions';
 
+import { logoutUser } from '../actions/authActions';
+
 import { loadReport, loadHouseKeepingReport } from '../actions/reportActions';
 
 const initialPageLoad = (date) => async (dispatch, getState) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
   const reservationRequest = axios.get('/api/reservation/CurrReservation');

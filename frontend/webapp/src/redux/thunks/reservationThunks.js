@@ -17,6 +17,8 @@ import {
 
 import { loadSearchResultSuccess } from '../actions/searchActions';
 
+import { logoutUser } from '../actions/authActions';
+
 import {
   updateReport,
   updateHouseKeepingReport,
@@ -25,11 +27,25 @@ import {
 import { loadFormFail } from '../actions/formActions';
 
 export const createNewRes = (resData) => (dispatch, getState) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
+
   dispatch(showLoading());
 
-  const currThreshold = moment().add(2, 'days');
+  const currThreshold = moment(moment(moment().add(3, 'days')).format('YYYY-MM-DD'));
+  console.log(currThreshold);
 
   const currentTime = moment().format('hhmmssSS');
   const randDig1 = Math.floor(Math.random() * 9);
@@ -76,7 +92,6 @@ export const createNewRes = (resData) => (dispatch, getState) => {
   const { houseKeepingReport } = state.houseKeepingState;
   let checkIn = state.info.CheckIn;
   let stayOver = state.info.Stayovers;
-  const roomType = houseKeepingReport[insertObj.RoomID - 101].type;
 
   return new Promise((resolve, reject) => {
     // Check to see if reservation room is occupied
@@ -86,6 +101,7 @@ export const createNewRes = (resData) => (dispatch, getState) => {
 
     if (currThreshold.isAfter(moment(resData.checkIn))) {
       // add new reservation to current reservation
+      const roomType = houseKeepingReport[insertObj.RoomID - 101].type;
       axios
         .post(
           `/api/reservation/CurrReservation?roomType=${roomType}`,
@@ -152,7 +168,8 @@ export const createNewRes = (resData) => (dispatch, getState) => {
         });
     }
   }).catch((err) => {
-    const message = err.message ? err.message : err;
+    // Server error vs client error
+    const message = err.message ? err.message : 'Failed to Create Reservation!';
     dispatch(batchActions([hideLoading(), snackBarFail(message)]));
   });
 };
@@ -162,8 +179,20 @@ export const updateCurrRes = (updatedRes, prevRoom = 0) => async (
   dispatch,
   getState
 ) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null; // Case if Token has Expired
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
   const currRes = state.currRes.reservation;
@@ -173,7 +202,6 @@ export const updateCurrRes = (updatedRes, prevRoom = 0) => async (
   let checkIn = state.info.CheckIn;
   const dailyReport = state.reportState.report;
   const { houseKeepingReport } = state.houseKeepingState;
-  const roomType = houseKeepingReport[updatedRes.RoomID - 101].type;
 
   const pendingThreshold = moment().add(2, 'days');
 
@@ -184,6 +212,7 @@ export const updateCurrRes = (updatedRes, prevRoom = 0) => async (
   );
 
   return new Promise((resolve, reject) => {
+    const roomType = houseKeepingReport[updatedRes.RoomID - 101].type;
     if (
       updatedRes.Checked === 1 &&
       currRes[updatedRes.RoomID - 101].BookingID &&
@@ -304,8 +333,9 @@ export const updateCurrRes = (updatedRes, prevRoom = 0) => async (
         });
     }
   }).catch((err) => {
+    const message = err.message ? err.message : 'Failed to Update!';
     dispatch(
-      batchActions([loadFormFail(), hideLoading(), snackBarFail(err.message)])
+      batchActions([loadFormFail(), hideLoading(), snackBarFail(message)])
     );
   });
 };
@@ -317,8 +347,19 @@ export const moveCurrRes = (
   origin,
   destination
 ) => async (dispatch, getState) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
   const currRes = state.currRes.reservation;
@@ -330,7 +371,6 @@ export const moveCurrRes = (
   let stayOvers = state.info.Stayovers;
   const dailyReport = state.reportState.report;
   const { houseKeepingReport } = state.houseKeepingState;
-  const roomType = houseKeepingReport[prevRoom - 101].type;
 
   // Generate Proper CheckIn and CheckOut Dates
   updatedRes.checkIn = moment(updatedRes.checkIn).format('YYYY-MM-DDT12:00:00[Z]');
@@ -339,6 +379,7 @@ export const moveCurrRes = (
   );
 
   return new Promise((resolve, reject) => {
+    const roomType = houseKeepingReport[prevRoom - 101].type;
     if (destination === 'arrival' && origin === 'current') {
       axios
         .put(
@@ -431,16 +472,29 @@ export const moveCurrRes = (
         .catch((err) => reject(err));
     }
   }).catch((err) => {
+    const message = err.message ? err.message : 'Failed to Move Reservation!';
     dispatch(
-      batchActions([loadFormFail(), hideLoading(), snackBarFail(err.message)])
+      batchActions([loadFormFail(), hideLoading(), snackBarFail(message)])
     );
   });
 };
 
 // Move reservations from Current Collection to Delete Collection
 export const deleteCurrRes = (BookingID) => async (dispatch, getState) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   const overRes = state.overRes.reservation;
 
@@ -466,15 +520,28 @@ export const deleteCurrRes = (BookingID) => async (dispatch, getState) => {
       })
       .catch((err) => reject(err));
   }).catch((err) => {
+    const message = err.message ? err.message : 'Failed to Delete Reservation!';
     dispatch(
-      batchActions([loadFormFail(), hideLoading(), snackBarFail(err.message)])
+      batchActions([loadFormFail(), hideLoading(), snackBarFail(message)])
     );
   });
 };
 
 export const checkInRes = (resObj) => async (dispatch, getState) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
   let pending = state.pendRes.reservation;
@@ -485,7 +552,6 @@ export const checkInRes = (resObj) => async (dispatch, getState) => {
   let stayOvers = state.info.Stayovers;
   const dailyReport = state.reportState.report;
   const { houseKeepingReport } = state.houseKeepingState;
-  const roomType = houseKeepingReport[resObj.RoomID - 101].type;
 
   // Generate Proper CheckIn and CheckOut Dates
   resObj.checkIn = moment(resObj.checkIn).format('YYYY-MM-DDT12:00:00[Z]');
@@ -494,6 +560,7 @@ export const checkInRes = (resObj) => async (dispatch, getState) => {
   );
 
   return new Promise((resolve, reject) => {
+    const roomType = houseKeepingReport[resObj.RoomID - 101].type;
     if (current[resObj.RoomID - 101].BookingID) {
       reject(new Error('Cannot Check In Guest into Occupied Room'));
     } else {
@@ -550,15 +617,28 @@ export const checkInRes = (resObj) => async (dispatch, getState) => {
         });
     }
   }).catch((err) => {
+    const message = err.message ? err.message : 'Failed to Check-In Guest!';
     dispatch(
-      batchActions([loadFormFail(), hideLoading(), snackBarFail(err.message)])
+      batchActions([loadFormFail(), hideLoading(), snackBarFail(message)])
     );
   });
 };
 
 export const checkOutRes = (resObj) => async (dispatch, getState) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
   const current = state.currRes.reservation;
@@ -567,51 +647,70 @@ export const checkOutRes = (resObj) => async (dispatch, getState) => {
   let stayOvers = state.info.Stayovers;
   const dailyReport = state.reportState.report;
   const { houseKeepingReport } = state.houseKeepingState;
-  const roomType = houseKeepingReport[resObj.RoomID - 101].type;
 
-  return axios
-    .post(`/api/resCustomer/checkOutReservation?roomType=${roomType}`, resObj)
-    .then((response) => {
-      const prevRoom = response.data.Room.RoomID;
-      current[prevRoom - 101] = {
-        RoomID: prevRoom,
-      };
-      dailyReport[prevRoom - 101] = {
-        ...response.data.UpdatedReport.Stays[`${prevRoom}`].Room,
-        RoomID: prevRoom,
-      };
-      houseKeepingReport[prevRoom - 101] = {
-        ...response.data.UpdatedReport.Stays[`${prevRoom}`].HouseKeeping,
-        RoomID: prevRoom,
-      };
+  return new Promise((resolve, reject) => {
+    const roomType = houseKeepingReport[resObj.RoomID - 101].type;
 
-      available++;
-      stayOvers--;
+    return axios
+      .post(`/api/resCustomer/checkOutReservation?roomType=${roomType}`, resObj)
+      .then((response) => {
+        const prevRoom = response.data.Room.RoomID;
+        current[prevRoom - 101] = {
+          RoomID: prevRoom,
+        };
+        dailyReport[prevRoom - 101] = {
+          ...response.data.UpdatedReport.Stays[`${prevRoom}`].Room,
+          RoomID: prevRoom,
+        };
+        houseKeepingReport[prevRoom - 101] = {
+          ...response.data.UpdatedReport.Stays[`${prevRoom}`].HouseKeeping,
+          RoomID: prevRoom,
+        };
 
-      dispatch(
-        batchActions([
-          updateAvailable(available),
-          updateStayOvers(stayOvers),
-          loadCurrResSuccess(current),
-          updateReport(dailyReport),
-          updateHouseKeepingReport(houseKeepingReport),
-          loadFormFail(),
-          hideLoading(),
-          snackBarSuccess('Checked Out Guest'),
-        ])
-      );
-    })
-    .catch((err) => {
-      dispatch(
-        batchActions([loadFormFail(), hideLoading(), snackBarFail(err.message)])
-      );
-    });
+        available++;
+        stayOvers--;
+
+        dispatch(
+          batchActions([
+            updateAvailable(available),
+            updateStayOvers(stayOvers),
+            loadCurrResSuccess(current),
+            updateReport(dailyReport),
+            updateHouseKeepingReport(houseKeepingReport),
+            loadFormFail(),
+            hideLoading(),
+            snackBarSuccess('Checked Out Guest'),
+          ])
+        );
+      })
+      .catch((err) => {
+        reject(new Error("Failed to CheckOut Guest"));
+      });
+  })
+  .catch((err) => {
+    const message = err.message ? err.message : 'Failed to Check-In Guest!';
+    dispatch(
+      batchActions([loadFormFail(), hideLoading(), snackBarFail(message)])
+    );
+  });
 };
 
 // update Reservations in Pending Collection
 export const updateReservation = (updatedRes) => async (dispatch, getState) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
 
@@ -704,8 +803,20 @@ export const updateDelReservation = (updatedRes) => async (
   dispatch,
   getState
 ) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
 
@@ -748,9 +859,20 @@ export const updateDelReservation = (updatedRes) => async (
 
 // Move reservation from Pending into Delete Collection
 export const cancelReservation = (BookingID) => async (dispatch, getState) => {
-  const state = getState();
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
 
-  if (!state.authState.isAuthenticated) return null;
+  const state = getState();
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
   return axios
@@ -784,8 +906,20 @@ export const cancelReservation = (BookingID) => async (dispatch, getState) => {
 };
 
 export const permDelReservation = (BookingID) => async (dispatch, getState) => {
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
   return axios

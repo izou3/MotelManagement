@@ -131,7 +131,7 @@ const useStyles = makeStyles(theme => ({
       setBookMod(false);
     }
 
-     const navBar = width === "xs" || width === "sm" || width === "md" ? (
+     const navBar = width === "xs" ? (
        <>
         <AppBar elevation={0} className={classes.overlay} style={navColor}>
           <ButtonBase style={{ width: "100%" }}>

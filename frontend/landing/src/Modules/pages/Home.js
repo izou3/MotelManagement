@@ -93,12 +93,12 @@ const useStyles = makeStyles(theme => ({
     height: '100%',
   },
   reviewContainer: {
-    [theme.breakpoints.down('xs')]: {
+    [theme.breakpoints.up('xs')]: {
       height: '300px',
       margin: theme.spacing(2,0,2),
     },
-    [theme.breakpoints.up('sm')]: {
-      height: '390px',
+    [theme.breakpoints.up('lg')]: {
+      height: '430px',
       margin: theme.spacing(3,0,2),
     },
     [theme.breakpoints.up('xl')]: {
@@ -219,7 +219,7 @@ function Home(props) {
           alignItems="center"
           className={classes.reviewContainer}
         >
-          <Grid item xs={12} sm={4} className={classes.review}>
+          <Grid item xs={12} md={4} className={classes.review}>
               <Typography variant="h6">
               We really loved the place. The owners were very kind and asked us daily if there was anything we needed. The location is perfect, just a few miles from Rapid City. We will book there again next time we go
               </Typography>
@@ -228,7 +228,7 @@ function Home(props) {
                 Kimberley | Google
               </Typography>
           </Grid>
-          <Grid item xs={12} sm={4} className={classes.review}>
+          <Grid item xs={12} md={4} className={classes.review}>
               <Typography variant="h6">
               Very friendly and help full staff. Amazing view of Rapid City. I wanted to take the mattress home with . It was so comfortable. Great pressure on the shower. I didn't bring a blower dryer to doy hair and had one I borrowed. I will be back!
               </Typography>
@@ -237,7 +237,7 @@ function Home(props) {
                 Pamela | TripAdvisor
               </Typography>
           </Grid>
-          <Grid item xs={12} sm={4} className={classes.review}>
+          <Grid item xs={12} md={4} className={classes.review}>
               <Typography variant="h6">
                 It was a clean, cute place. Staff was friendly. There were plenty of linens and the bed was comfortable.
               </Typography>

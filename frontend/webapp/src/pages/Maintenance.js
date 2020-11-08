@@ -61,6 +61,9 @@ const useRowStyles = makeStyles((theme) => ({
     '& > *': {
       borderBottom: 'unset',
     },
+    "&:hover": {
+      backgroundColor: 'rgba(63,80,181, 0.2)'
+    }
   },
 }));
 
@@ -103,7 +106,6 @@ function Row(props) {
   const { field } = props;
   const { maintenanceName } = props;
   const [open, setOpen] = React.useState(false);
-  const [selectedRow, setSelectedRow] = React.useState(null);
   const classes = useRowStyles();
 
   const column = [
@@ -162,10 +164,6 @@ function Row(props) {
                   headerStyle: {
                     fontWeight: 'bold',
                   },
-                  rowStyle: (rowData) => ({
-                    backgroundColor:
-                      selectedRow === rowData.tableData.id ? '#EEE' : '#FFF',
-                  }),
                 }}
                 components={{
                   Container: (containerProps) => (

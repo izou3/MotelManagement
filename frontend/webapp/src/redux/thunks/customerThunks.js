@@ -11,9 +11,25 @@ import { loadSearchResultSuccess } from '../actions/searchActions';
 
 import { loadFormFail } from '../actions/formActions';
 
+import { logoutUser } from '../actions/authActions';
+
 export const updateCustomer = (updatedCust) => async (dispatch, getState) => {
+  // Check auth state of cookies or from tokenExpiration Middleware and don't execute
+  // remainder of auth if not authenticated
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
   return axios
@@ -38,7 +54,6 @@ export const updateCustomer = (updatedCust) => async (dispatch, getState) => {
     .catch(() => {
       dispatch(
         batchActions([
-          loadFormFail(),
           hideLoading(),
           snackBarFail('Failed to Update'),
         ])
@@ -50,10 +65,21 @@ export const updateBlackListCust = (updatedCust) => async (
   dispatch,
   getState
 ) => {
-  dispatch(showLoading());
   const state = getState();
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
-  if (!state.authState.isAuthenticated) return null;
+  dispatch(showLoading());
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
 
   return axios
     .put(`/api/blacklist`, updatedCust)
@@ -86,7 +112,19 @@ export const addBlackListCust = (newCust) => async (dispatch, getState) => {
   dispatch(showLoading());
   const state = getState();
 
-  if (!state.authState.isAuthenticated) return null;
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   return axios
     .post(`/api/blacklist`, newCust)
@@ -112,7 +150,19 @@ export const addBlackListCust = (newCust) => async (dispatch, getState) => {
 
 export const removeBlackListCust = (id) => async (dispatch, getState) => {
   const state = getState();
-  if (!state.authState.isAuthenticated) return null;
+  axios.get('/validAccess')
+    .catch(() => {
+      return dispatch(
+        batchActions([
+          logoutUser(),
+          snackBarSuccess('UnAuthorized Access')
+        ])
+      );
+    });
+
+  if (!state.authState.isAuthenticated) {
+    return null;
+  }
 
   dispatch(showLoading());
   return axios
@@ -139,7 +189,6 @@ export const removeBlackListCust = (id) => async (dispatch, getState) => {
     .catch(() => {
       dispatch(
         batchActions([
-          loadFormFail(),
           hideLoading(),
           snackBarFail('Failed to Update'),
         ])

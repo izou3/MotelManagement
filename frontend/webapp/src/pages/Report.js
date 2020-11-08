@@ -15,7 +15,7 @@ import MuiAlert from '@material-ui/lab/Alert';
 // formik and formik-material-ui
 import { Formik, Form, Field } from 'formik';
 
-import MaterialTable, { MTableBodyRow, EditRow } from 'material-table';
+import MaterialTable from 'material-table';
 import { TextField } from 'formik-material-ui';
 import { DatePicker } from 'formik-material-ui-pickers';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
@@ -388,7 +388,7 @@ const Report = ({
                     submitData.tax = validator.isNumeric(`${newData.tax}`)
                       ? newData.tax
                       : '0';
-                    console.log(submitData);
+
                     updateReport(reportDate, submitData);
                     resolve();
                   }, 100);

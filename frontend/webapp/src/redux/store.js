@@ -82,7 +82,7 @@ const persistedReducer = persistReducer(persistConfig, rootReducer);
 const configureStore = () =>
   createStore(
     enableBatching(persistedReducer),
-    composeWithDevTools(applyMiddleware(checkTokenExpirationMiddleware, thunk))
+    applyMiddleware(checkTokenExpirationMiddleware, thunk)
   );
 
 export default configureStore;
