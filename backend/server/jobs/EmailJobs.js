@@ -30,17 +30,17 @@ const smtpTransport = nodemailer.createTransport({
   },
 });
 
-module.exports = (agenda) => {
+module.exports = (agenda, config) => {
   agenda.define('ReservationConfirmation', (job, done) => {
     const mailOptions = {
       from: process.env.GMAIL_HOST_ADRESS,
       to: job.attrs.data.email,
       subject: process.env.GMAIL_EMAIL_SUBJECT_LINE,
       generateTextFromHTML: true,
-      html: pug.renderFile(process.env.GMAIL_TEMPLATE_PATH, {
+      html: pug.renderFile(config.emailTemplatePath, {
         firstName: job.attrs.data.firstName,
         lastName: job.attrs.data.lastName,
-        numGuests: job.attrs.numGuests,
+        numGuests: job.attrs.data.numGuests,
         checkIn: job.attrs.data.checkIn,
         checkOut: job.attrs.data.checkOut,
         pricePaid: job.attrs.data.pricePaid,
