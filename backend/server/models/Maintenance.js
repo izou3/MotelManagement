@@ -10,10 +10,6 @@ const { Schema } = mongoose;
  * Schema for the Maintenance Log Collection
  */
 const mainteanceLogEntries = new Schema({
-  // id: {
-  //   type: Number,
-  //   required: true,
-  // },
   completed: {
     type: Boolean,
     required: true,

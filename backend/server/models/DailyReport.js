@@ -154,6 +154,10 @@ const DailyReportSchema = new Schema({
     required: true,
     index: true,
   },
+  created_at: {
+    type: Date,
+    default: Date.now,
+  },
   Stays: StaySchema,
   Refund: RefundSchema,
 });
