@@ -79,10 +79,24 @@ const rootReducer = (state, action) => {
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-const configureStore = () =>
-  createStore(
-    enableBatching(persistedReducer),
-    applyMiddleware(checkTokenExpirationMiddleware, thunk)
-  );
+const configureStore = () => {
+  if (process.env.NODE_ENV !== 'production') {
+    return createStore(
+      enableBatching(persistedReducer),
+      composeWithDevTools(applyMiddleware(checkTokenExpirationMiddleware, thunk))
+    );
+  } else {
+    return createStore(
+      enableBatching(persistedReducer),
+      applyMiddleware(checkTokenExpirationMiddleware, thunk)
+    );
+  }
+}
+
+// const configureStore = () =>
+// createStore(
+//   enableBatching(persistedReducer),
+//   applyMiddleware(checkTokenExpirationMiddleware, thunk)
+// );
 
 export default configureStore;
