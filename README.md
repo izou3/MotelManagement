@@ -109,7 +109,7 @@ Note that you must run one or the either of the landing or management system fro
 ## Infrastructure
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/55326650/98072782-d542f580-1e34-11eb-8b44-d4179580d7ed.JPG"  width="80%" height="80%">
+<img src="https://user-images.githubusercontent.com/55326650/98457410-f406fc00-2154-11eb-839a-ce459b4b4577.JPG"  width="80%" height="80%">
 </div>
 
 Above is the infrastructure of the entire application based on a microservice architecture. There are currently 4 microservices which the potential and ease to add new services to the application. 
