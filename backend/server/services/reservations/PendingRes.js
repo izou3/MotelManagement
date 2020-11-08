@@ -99,6 +99,7 @@ class PendingReservation {
         // Send Reservation Confirmation Email
         if (req.body.email.trim().length !== 0) {
           debug('sending Confirmation Email');
+          debug(req.body.numGuests);
           agenda.now('ReservationConfirmation', {
             email: req.body.email,
             firstName: req.body.firstName,

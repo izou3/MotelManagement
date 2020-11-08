@@ -71,7 +71,7 @@ class CurrentReservation {
    *
    * @param {Object} req
    */
-  static async addNewCurrReservation(req, roomType) {
+  static async addNewCurrReservation(req, roomType, agenda) {
     const today = moment().format('YYYY-MM-DD');
     // Guest has not checked in yet so is not in the DailyReport
     if (req.body.Checked === 2) {
@@ -83,6 +83,20 @@ class CurrentReservation {
             reject(new Error('Connection with the Server'));
           }
           debug(result);
+
+          // Send Confirmation Email if email is defined
+          if (req.body.email.trim().length !== 0) {
+            debug('sending Confirmation Email');
+            agenda.now('ReservationConfirmation', {
+              email: req.body.email,
+              firstName: req.body.firstName,
+              lastName: req.body.lastName,
+              numGuests: req.body.numGuests,
+              checkIn: moment(req.body.checkIn).format('dddd, MMMM Do YYYY'),
+              checkOut: moment(req.body.checkOut).format('dddd, MMMM Do YYYY'),
+              pricePaid: req.body.pricePaid,
+            });
+          }
           resolve(result);
         });
       });
