@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
         - name: landing
-          image: izou3/landing:1.1
+          image: izou3/landing:2.0
           ports:
             - containerPort: 3000 # containers in deployment listen on PORT: 80
 

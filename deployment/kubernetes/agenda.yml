@@ -32,10 +32,12 @@ spec:
     spec:
       containers:
         - name: agenda
-          image: izou3/agenda:1.0
+          image: izou3/agenda:2.4
           env:
           - name: NODE_ENV
             value: "production"
+          - name: TZ
+            value: America/Denver
           envFrom:
             - secretRef:
                 name: backend-secrets

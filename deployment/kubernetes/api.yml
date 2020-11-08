@@ -33,10 +33,12 @@ spec:
     spec:
       containers:
         - name: api
-          image: izou3/api:1.0
+          image: izou3/api:2.2
           env:
           - name: NODE_ENV
             value: "production"
+          - name: TZ
+            value: America/Denver
           envFrom:
             - secretRef:
                 name: backend-secrets

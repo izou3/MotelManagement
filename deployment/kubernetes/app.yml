@@ -32,9 +32,10 @@ spec:
     spec:
       containers:
         - name: webapp
-          # imagePullPolicy: IfNotPresent
-          image: izou3/webapp:1.0 # Local Docker Image
-          # image: tutum/hello-world
+          image: izou3/webapp:2.5
+          env:
+          - name: TZ
+            value: America/Denver
           lifecycle:
             preStop:
               exec:
