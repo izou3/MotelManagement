@@ -96,6 +96,12 @@ class TaxReport {
     ];
   }
 
+  /**
+   * Use json2csv module to parse an array of objects into a csv object
+   *
+   * @param data array of objects to be parsed into csv
+   * @return CVS object to be downloaed in the user's browser
+   */
   downloadTaxReport(data) {
     const Field = this.fields;
     const json2csv = new Parser({ Field });
@@ -103,6 +109,12 @@ class TaxReport {
     return csv;
   }
 
+  /**
+   * Use mongo aggregation framework to generate a TaxReport from the
+   * DailyReport documents of specified month and year
+   *
+   * @return an array of objects representing the Tax Report
+   */
   generateTaxReport() {
     return new Promise((resolve, reject) => {
       DailyReportSch.aggregate(
