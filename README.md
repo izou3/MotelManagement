@@ -122,7 +122,7 @@ The main application logic is deployed to DigitalOcean Kubernetes for a resilent
 
 The kubernetes cluster is exposed with a public IP address using the NGINX Ingress Controller, which acts as a reverse-proxy to send users to the appropriate service. 
 
-The public IP address of the NGINX Controller is mapped to two DNS A records `www.bigskylodge.com admin.bigskylodge.com` with HTTPS protocol.
+The public IP address of the NGINX Controller is mapped to two DNS A records `www.bigskylodge.com admins.bigskylodge.com` with HTTPS protocol.
 
 Static contents such as images, fonts, and javascript files are served from DigitalOcean Spaces CDN for fast delivery.
 
@@ -1230,9 +1230,9 @@ The pods of each deployment are exposed through kubernetes' default service Clus
 
 In front of the kubernetes cluster is an NGINX Ingress Controller which exposes the kubernetes cluster on a public IP address. The address is then mapped to two DNS A records: 
   - `bigskylodge.com` routes to hotel website
-  - `admin.bigskylodge.com/staff` routes to management system 
-  - `admin.bigskylodge.com/api` routes to Express API server
-  - `admin.bigskylodge.com/dash` routes to background-processing dashboard 
+  - `admins.bigskylodge.com/staff` routes to management system 
+  - `admins.bigskylodge.com/api` routes to Express API server
+  - `admins.bigskylodge.com/dash` routes to background-processing dashboard 
 
 The MySQL database is hosted on DigitalOcean Managed Database and MongoDB is hosted on MongoAtlas. Both database whitelists the public IP address of the kubernetes nodes.
 
