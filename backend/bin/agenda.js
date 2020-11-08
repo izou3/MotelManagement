@@ -13,8 +13,6 @@ const Agendash = require('agendash');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
-const moment = require('moment');
-const debug = require('debug')('motel:jobs');
 require('regenerator-runtime/runtime'); // For Bundling async/await syntax
 
 /**
@@ -39,8 +37,8 @@ const app = express();
     // Instantiate an Agenda Instance that will Process the Job Processor
     // Every Minute locking only 2 Job at a Time to Run
     const agenda = new Agenda()
-      .processEvery('1 minute')
-      .lockLimit(2)
+      .processEvery('10 minutes')
+      .lockLimit(1)
       .mongo(connection.db, 'AgendaJobs');
 
     /**
@@ -48,7 +46,7 @@ const app = express();
      */
     require('../server/jobs/DailyReport')(agenda, config);
     require('../server/jobs/Reservation')(agenda);
-    require('../server/jobs/EmailJobs')(agenda);
+    require('../server/jobs/EmailJobs')(agenda, config);
 
     // Using Helmet Doesn't Render Agendash Properly
     // app.use(helmet());
@@ -80,25 +78,24 @@ const app = express();
       }
     });
 
-    // app.use(loginRequired);
     app.use('/dash', loginRequired, Agendash(agenda));
 
     await agenda.start();
 
     // Send Repeating Jobs Into The Job Processor
     await agenda.every(
-      '* 4 * * *',
+      '10 00 * * *',
       'GenerateDailyReport',
-      `Generates New Daily Report for ${moment().format('MMMM Do YYYY')}`,
+      `Generates New Daily Report`,
       {
         timezone: 'America/Denver',
       }
     );
 
     await agenda.every(
-      '* 4 * * *',
+      '30 00 * * *',
       'UpdateCurrent',
-      `Moved Incoming Reservations for ${moment().format('MMMM Do YYYY')}`,
+      `Moved Incoming Reservations`,
       {
         timezone: 'America/Denver',
       }
