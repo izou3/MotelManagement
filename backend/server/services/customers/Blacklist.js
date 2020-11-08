@@ -18,7 +18,7 @@ class Blacklist {
    */
   getBlacklistCustomerByID(id) {
     const sql =
-      'SELECT IndCustomer.BookingID, Customer.first_name AS firstName, Customer.last_name AS lastName, BlackList.comments FROM BlackList JOIN IndCustomer ON IndCustomer.BookingID = BlackList.BookingID JOIN Customer ON IndCustomer.customerid = Customer.id WHERE indcustomer.BookingID=?;';
+      'SELECT IndCustomer.BookingID, Customer.first_name AS firstName, Customer.last_name AS lastName, BlackList.comments FROM BlackList JOIN IndCustomer ON IndCustomer.BookingID = BlackList.BookingID JOIN Customer ON IndCustomer.CustomerID = Customer.id WHERE IndCustomer.BookingID=?;';
 
     return this.queryDB(sql, [id])
       .then((res) => {
@@ -40,7 +40,7 @@ class Blacklist {
    */
   getBlacklistCustomerByName(last) {
     const sql =
-      'SELECT IndCustomer.BookingID, Customer.first_name AS firstName, Customer.last_name AS lastName, BlackList.comments FROM BlackList JOIN IndCustomer ON IndCustomer.BookingID = BlackList.BookingID JOIN Customer ON IndCustomer.customerid = Customer.id WHERE customer.first_name=?;';
+      'SELECT IndCustomer.BookingID, Customer.first_name AS firstName, Customer.last_name AS lastName, BlackList.comments FROM BlackList JOIN IndCustomer ON IndCustomer.BookingID = BlackList.BookingID JOIN Customer ON IndCustomer.CustomerID = Customer.id WHERE Customer.first_name=?;';
 
     return this.queryDB(sql, [last])
       .then((res) => {
