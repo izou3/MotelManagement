@@ -1,14 +1,13 @@
 /**
  * Reservation jobs
  * 1.  Move qualified reservations from Pending to Current
- * 2.  Move qualified reservations from Pending to Overdue
  */
 
 /**
  * Module Dependencies
  */
 const debug = require('debug')('motel:agenda');
-const Moment = require('moment');
+const moment = require('moment');
 
 // Pending Reservation Controller
 const Pending = require('../services/reservations/PendingRes');
@@ -26,8 +25,8 @@ module.exports = (agenda) => {
    * from Pending Reservation to Current Reservation
    */
   agenda.define('UpdateCurrent', async (job, done) => {
-    const start = Moment(new Date()).startOf('day').toDate();
-    const end = Moment(new Date()).startOf('day').add(2, 'days').toDate();
+    const start = moment().format('YYYY-MM-DD');
+    const end = moment(moment().add(3, 'days')).format('YYYY-MM-DD');
 
     try {
       await Pending.moveToCurrRes(start, end);
@@ -36,10 +35,5 @@ module.exports = (agenda) => {
       job.fail(err);
       await job.save();
     }
-  });
-
-  agenda.define('hello', async (job, done) => {
-    console.log('hello');
-    done();
   });
 };
