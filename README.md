@@ -14,7 +14,7 @@ It is built as a full-stack javascript application and deployed to Digital Ocean
   - **Backend-Jobs**: Repeating Jobs and an Email Messaging Queue using AgendaJS and Agendash
   - **Database** MySQL DB on DigitalOcean Managed DB and MongoDB on MongoAtlas
 
-<div align="center">
+<div align \="center">
 <img src="/uploads/278ec5c966fb98df11afdc5da8fea7da/MotelManagementDemo.gif"  width="80%" height="80%">
 <img src="/uploads/e58747274b4b5e3274a5f3e6109ec9cb/MotelManagementLanding.JPG">
 
