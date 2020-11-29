@@ -3,6 +3,7 @@
  */
 const http = require('http');
 const cluster = require('cluster');
+const Agenda = require('agenda');
 const debug = require('debug')('motel:http');
 require('regenerator-runtime/runtime'); // to allow aysnc/await syntax during webpack bundle
 
@@ -41,7 +42,11 @@ const sqlPromise = async () => SQLPool.connectSQL(config.database.sql);
 
 Promise.all([mongoPromise(), sqlPromise()])
   .then((values) => {
-    const app = require('../server/index')({ config, values });
+    // Establish an Agenda Connection to Mongo for pushing Jobs
+    // to the Queue
+    const agenda = new Agenda().mongo(values[0].db, 'AgendaJobs');
+
+    const app = require('../server/index')({ config, values, agenda });
     /**
      * Get port from environment and store in Express.
      */
