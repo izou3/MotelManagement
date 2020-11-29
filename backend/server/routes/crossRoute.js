@@ -65,7 +65,6 @@ module.exports = (param) => {
         infoArr,
         indCustomerArr,
         date,
-        roomid,
         roomType
       );
       return res.send(result);

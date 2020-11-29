@@ -3,6 +3,7 @@
  */
 const express = require('express');
 const debug = require('debug')('motel:http');
+const moment = require('moment');
 
 const router = express.Router();
 
@@ -11,17 +12,23 @@ const CustomerController = require('../services/customers/Customer');
 
 module.exports = (param) => {
   const { sqlPool } = param;
-  const customerController = new CustomerController(sqlPool);
+  const customer = new CustomerController(sqlPool);
 
   /**
    * @route Create and Update Customers in MYSQL DD
    */
   router
-    .route('/:BookingID')
+    .route('/')
     /**
      * @post Create New Customer and Delete Reservation from Current and DailyReport
      */
-    .post((req, res) => {
+    .post(async (req, res) => {
+      // eslint-disable-next-line no-restricted-globals
+      if (!req.body.BookingID || isNaN(req.body.BookingID)) {
+        return res.status(400).json({ message: 'Undefined BookingID' });
+      }
+      const date = moment().format('YYYY-MM-DD');
+      const { roomType } = req.query;
       const infoArr = [];
       const indCustomerArr = [];
       const id = req.body.CustomerID;
@@ -58,15 +65,32 @@ module.exports = (param) => {
         roomid,
         comments
       );
-      return customerController
-        .addNewCustomer(infoArr, indCustomerArr)
-        .then(() => res.json({ message: 'Successfully Created Customer' }))
-        .catch((err) => res.status(400).json({ message: err.message }));
+
+      try {
+        // Executed the search query on CurrentReservation beacuse in case RoomID was changed on checkout
+        // so need original RoomID to properly update the state on frontend
+        // const result = await CurrentReservation.getCurrReservationByID(bookingid);
+        const result = await customer.addNewCustomer(
+          infoArr,
+          indCustomerArr,
+          date,
+          roomid,
+          roomType
+        );
+        return res.send(result);
+      } catch (err) {
+        debug(err);
+        return res.status(400).json({ message: 'Failed to Check Out Guest' });
+      }
     })
     /**
      * @put Update a Customer Given Data
      */
     .put((req, res) => {
+      // eslint-disable-next-line no-restricted-globals
+      if (!req.body.BookingID || isNaN(req.body.BookingID)) {
+        return res.status(400).json({ message: 'Undefined BookingID' });
+      }
       const infoArr = [];
       const indCustomerArr = [];
       const { CustomerID } = req.body;
@@ -99,7 +123,7 @@ module.exports = (param) => {
         roomid,
         comments
       );
-      return customerController
+      return customer
         .updateCustomer(infoArr, indCustomerArr, BookingID, CustomerID)
         .then((data) => {
           debug(data);

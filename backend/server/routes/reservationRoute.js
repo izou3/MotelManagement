@@ -24,9 +24,9 @@ module.exports = (param) => {
      * @post Add new Reservation to Pending Collection give req Object
      */
     .post((req, res) => {
-      return Pending.addNewReservation(req, agenda)
+      return Pending.addNewReservation(req.body, agenda)
         .then(() =>
-          res.json({ messgae: 'Successfully Added New Reservation!' })
+          res.json({ message: 'Successfully Added New Reservation!' })
         )
         .catch((err) => res.status(400).json({ message: err.message }));
     })
@@ -34,21 +34,22 @@ module.exports = (param) => {
      * @put Update Reservation in Pending Collection given BookingID and req Object
      */
     .put(async (req, res) => {
-      const { bookingid } = req.query;
+      const { BookingID } = req.query;
       const { dateChange } = req.query;
-      if (!bookingid) {
+      // eslint-disable-next-line no-restricted-globals
+      if (!BookingID || isNaN(BookingID)) {
         res.status(400).json({ message: 'Undefined BookingID' });
       } else if (dateChange === 'true') {
         // CheckIn date changed beyond 48 hour threshold so move reservation from Pending to Current
         try {
           await Pending.updateToCurr(req.body);
-          res.json({ message: 'Updated Successfully!' });
+          res.json({ message: 'Succesfully Updated Reservation' });
         } catch (err) {
           res.status(400).json({ message: err.message });
         }
       } else {
         // Regular Update without CheckIn date change
-        return Pending.updateReservationByID(bookingid, req)
+        return Pending.updateReservationByID(req.body)
           .then(() => res.json({ message: 'Succesfully Updated Reservation' }))
           .catch((err) => res.status(400).json({ message: err.message }));
       }
@@ -59,13 +60,14 @@ module.exports = (param) => {
      */
     .delete(async (req, res) => {
       // Move Reservation from Pending Collection to Delete Collection
-      const bookingid = req.query.BookingID;
+      const { BookingID } = req.query;
 
-      if (!bookingid) {
+      // eslint-disable-next-line no-restricted-globals
+      if (!BookingID || isNaN(BookingID)) {
         res.status(400).json({ message: 'Undefined BookingID' });
       } else {
         try {
-          await Pending.deleteReservationByID(bookingid);
+          await Pending.deleteReservationByID(BookingID);
           res.send({ message: 'Successfully Removed Reservation' });
         } catch (err) {
           res.status(400).json({ message: 'Failed to Remove Reservation' });
@@ -108,26 +110,28 @@ module.exports = (param) => {
      * @put Update new Reservation to Current Collection
      */
     .put(async (req, res) => {
-      const { bookingid } = req.query;
+      const { BookingID } = req.query;
       const { dateChange } = req.query;
       const { checkIn } = req.query;
       const { moveToArr } = req.query;
       const { roomType } = req.query;
-      if (!bookingid) {
+
+      // eslint-disable-next-line no-restricted-globals
+      if (!BookingID || isNaN(BookingID)) {
         res.status(400).json({ message: 'Undefined BookingID' });
       } else if (dateChange === 'true') {
         // If checkIn date changed so that it needed to be moved to Pending
         // IMPORTANT that key Checked===2
         try {
-          await Current.updateToPend(req.body);
-          res.send('Successfully Moved Reservation to Pending');
+          const result = await Current.updateToPend(req.body);
+          res.send(result);
         } catch (err) {
           debug(err);
           res.status(400).json({ message: 'Failed to Move Reservation' });
         }
       } else if (checkIn === 'true') {
         // Update key Checked from 2 to 1
-        return Current.checkInRes(bookingid, req, roomType)
+        return Current.checkInRes(BookingID, req.body, roomType)
           .then((updatedResult) => {
             res.send(updatedResult);
           })
@@ -137,16 +141,16 @@ module.exports = (param) => {
           });
       } else if (moveToArr === 'true') {
         // Update key Checked from 1 to 2
-        return Current.moveToArrivals(bookingid, req, roomType)
+        return Current.moveToArrivals(BookingID, req.body, roomType)
           .then((updatedResult) => {
-            res.send(updatedResult.Stays);
+            res.send(updatedResult);
           })
           .catch((err) => {
             res.status(400).json({ message: err.message });
           });
       } else {
         // Regular update for the reservation
-        return Current.updateReservationByID(bookingid, req)
+        return Current.updateReservationByID(BookingID, req.body)
           .then((updatedResult) => {
             res.send(updatedResult);
           })
@@ -160,11 +164,12 @@ module.exports = (param) => {
      * @delete Move reservation in Current to Delete Collection
      */
     .delete((req, res) => {
-      const { bookingid } = req.query;
-      if (!bookingid) {
+      const { BookingID } = req.query;
+      // eslint-disable-next-line no-restricted-globals
+      if (!BookingID || isNaN(BookingID)) {
         res.status(400).json({ message: 'Undefined BookingID' });
       } else {
-        return Current.deleteReservationByID(bookingid)
+        return Current.deleteReservationByID(BookingID)
           .then(() => res.send('successs'))
           .catch((err) => res.status(400).json({ message: err.message }));
       }
@@ -181,7 +186,8 @@ module.exports = (param) => {
      */
     .put(async (req, res) => {
       try {
-        await Delete.updateReservation(req.body);
+        const result = await Delete.updateReservation(req.body);
+        if (!result) throw new Error('Reservation Does Not Exist');
         res.json({ message: 'Updated Successfully' });
       } catch (err) {
         res.status(400).json({ message: err.message });
@@ -193,7 +199,8 @@ module.exports = (param) => {
     .delete(async (req, res) => {
       const ID = req.query.BookingID;
       try {
-        await Delete.deleteReservationByID(ID);
+        const result = await Delete.deleteReservationByID(ID);
+        if (!result) throw new Error('Reservation Does Not Exist');
         res.send({ message: 'Deleted Successfully' });
       } catch (err) {
         res.status(400).json({ message: err.message });

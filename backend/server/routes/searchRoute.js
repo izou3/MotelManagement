@@ -28,7 +28,7 @@ module.exports = (param) => {
       const pendData = await Pending.getReservationByName(name);
       const currData = await Current.getCurrReservationByName(name);
       if (pendData.length === 0 && currData.length === 0) {
-        throw new Error('Failed to Find Match');
+        throw new Error('Failed to Find a Match');
       }
       res.send(pendData.concat(currData));
     } catch (err) {
@@ -43,7 +43,7 @@ module.exports = (param) => {
       const pendData = await Pending.getReservationByID(id);
       const currData = await Current.getCurrReservationByID(id);
       if (!pendData && !currData) {
-        throw new Error('Failed to Find Match');
+        throw new Error('Failed to Find a Match');
       }
       if (pendData) {
         res.send(pendData);
@@ -94,7 +94,7 @@ module.exports = (param) => {
     const name = req.query.firstName;
     try {
       const deleteData = await Delete.getReservationByName(name);
-      if (deleteData.length === 0) throw new Error('Failed to Find Match');
+      if (deleteData.length === 0) throw new Error('Failed to Find a Match');
       res.send(deleteData);
     } catch (err) {
       res.status(400).json({ message: err.message });
@@ -107,7 +107,7 @@ module.exports = (param) => {
     try {
       const deleteData = await Delete.getReservationByID(id);
       if (!deleteData) {
-        throw new Error('Failed to Find Match');
+        throw new Error('Failed to Find a Match');
       }
       res.send(deleteData);
     } catch (err) {
@@ -122,7 +122,7 @@ module.exports = (param) => {
     try {
       const result = await Delete.getReservationByCheckIn(start, end);
       if (result.length === 0) {
-        throw new Error('Failed to Find Match');
+        throw new Error('Failed to Find a Match');
       }
       res.send(result);
     } catch (err) {
@@ -137,7 +137,7 @@ module.exports = (param) => {
     try {
       const result = await Delete.getReservationByCheckOut(start, end);
       if (result.length === 0) {
-        throw new Error('Failed to Find Match');
+        throw new Error('Failed to Find a Match');
       }
       res.send(result);
     } catch (err) {

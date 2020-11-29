@@ -17,29 +17,30 @@ module.exports = () => {
     .route('/')
     .get(async (req, res) => {
       const { name } = req.query;
-      const { id } = req.query;
       try {
         let result;
         if (name) {
           result = await Maintenance.getMaintenanceLogByName(name);
           debug(result);
-          res.send(result);
-        } else if (id) {
-          result = await Maintenance.getMaintenanceLogByID(id);
-          res.send(result);
-        } else {
-          result = await Maintenance.getMaintenanceLogNames();
-          res.send(result);
+          return res.send(result);
         }
+        result = await Maintenance.getMaintenanceLogNames();
+        return res.send(result);
       } catch (err) {
         debug(err);
-        res.status(400).json({ message: err.message });
+        return res.status(400).json({ message: err.message });
       }
     })
     .post((req, res) => {
       const { name } = req.query;
+      if (!name) {
+        return res
+          .status(400)
+          .json({ message: 'Cannot Create Log with No Name' });
+      }
+
       debug(name);
-      Maintenance.generateNewMaintenanceLog(name)
+      return Maintenance.generateNewMaintenanceLog(name)
         .then((data) => {
           debug(data);
           res.send(data);
@@ -51,7 +52,12 @@ module.exports = () => {
     })
     .delete((req, res) => {
       const { name } = req.query;
-      Maintenance.deleteMaintenanceLog(name)
+      if (!name) {
+        return res
+          .status(400)
+          .json({ message: 'Cannot Delete Sheet with No Name' });
+      }
+      return Maintenance.deleteMaintenanceLog(name)
         .then((data) => {
           debug(data);
           res.send(data);
@@ -71,8 +77,14 @@ module.exports = () => {
       const newEntry = req.body;
       const { name } = req.query;
       const { field } = req.query;
+
+      if (!name || !field) {
+        return res
+          .status(400)
+          .json({ message: 'Cannot Create Log with Undefined Name' });
+      }
       debug(newEntry);
-      Maintenance.addIndividualLogEntry(name, field, newEntry)
+      return Maintenance.addIndividualLogEntry(name, field, newEntry)
         .then((data) => {
           debug(data);
           res.send(data);
@@ -87,7 +99,12 @@ module.exports = () => {
       const { name } = req.query;
       const { field } = req.query;
 
-      Maintenance.updateIndividualLogEntry(name, field, updatedEntry)
+      if (!name || !field) {
+        return res
+          .status(400)
+          .json({ message: 'Cannot Update Log with Undefined Name' });
+      }
+      return Maintenance.updateIndividualLogEntry(name, field, updatedEntry)
         .then((data) => {
           debug(data);
           res.send(data);
@@ -102,7 +119,13 @@ module.exports = () => {
       const { name } = req.query;
       const { field } = req.query;
 
-      Maintenance.deleteIndividualLogEntry(name, field, entryID)
+      if (!name || !field) {
+        return res
+          .status(400)
+          .json({ message: 'Cannot Delete Log with Undefined Name' });
+      }
+
+      return Maintenance.deleteIndividualLogEntry(name, field, entryID)
         .then((data) => {
           debug(data);
           res.send(data);

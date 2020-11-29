@@ -2,7 +2,6 @@
  * Module Dependencies
  */
 const express = require('express');
-const bodyParser = require('body-parser');
 const debug = require('debug')('motel:http');
 
 const router = express();
@@ -12,9 +11,6 @@ const { loginRequired, login, register, logout } = require('../services/Staff');
 const { getAllStaff, updateStaff, deleteStaff } = require('../services/Staff');
 
 module.exports = () => {
-  router.use(bodyParser.urlencoded({ extended: true }));
-  router.use(bodyParser.json());
-
   // Login route
   router.route('/login').post(login);
 
@@ -42,6 +38,7 @@ module.exports = () => {
       try {
         const result = await register(req.body);
         debug(result);
+        if (!result) throw new Error('Failed to Create New Staff');
         return res.send(result);
       } catch (err) {
         return res.status(400).send({

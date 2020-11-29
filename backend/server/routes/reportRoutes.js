@@ -33,10 +33,8 @@ module.exports = () => {
       }
       try {
         const ReportResult = await Report.getReport(dateQuery);
+        if (!ReportResult) throw new Error('Report Does Not Exist');
         debug(ReportResult.Stays);
-        if (ReportResult.length === 0) {
-          throw new Error('No Report with Entered Dates');
-        }
         return res.send(ReportResult);
       } catch (err) {
         return res.status(400).json({ message: err.message });
@@ -50,13 +48,12 @@ module.exports = () => {
       const dateValidation = moment(dateQuery, 'YYYY-MM-DD');
 
       if (!dateValidation.isValid()) {
-        throw new Error('Undefined Date');
-      } else {
-        return report
-          .updateGuestRecord(req.body, dateQuery)
-          .then((updatedReservation) => res.send(updatedReservation))
-          .catch((err) => res.status(400).json({ message: err.message }));
+        return res.status(400).json({ message: 'Undefined Date' });
       }
+      return report
+        .updateGuestRecord(req.body, dateQuery)
+        .then((updatedReservation) => res.send(updatedReservation))
+        .catch((err) => res.status(400).json({ message: err.message }));
     })
     /**
      * ROUTE IS CURRENTLY NOT IN USE
@@ -68,12 +65,11 @@ module.exports = () => {
       const roomID = req.query.room;
 
       if (!dateValidation.isValid()) {
-        throw new Error('Undefined Date');
-      } else {
-        return Report.deleteGuestRecord(dateQuery, roomID)
-          .then(() => res.json({ message: 'Successfully Deleted Guest' }))
-          .catch((err) => res.status(400).json({ message: err.message }));
+        return res.status(400).json({ message: 'Undefined Date' });
       }
+      return Report.deleteGuestRecord(dateQuery, roomID)
+        .then(() => res.json({ message: 'Successfully Deleted Guest' }))
+        .catch((err) => res.status(400).json({ message: err.message }));
     });
 
   /**
@@ -85,7 +81,15 @@ module.exports = () => {
       const { date } = req.body;
       const { amount } = req.body;
       const { notes } = req.body;
+      const dateValidation = moment(date, 'YYYY-MM-DD');
+
+      if (!dateValidation.isValid()) {
+        throw new Error('Undefined Date');
+      } else if (!amount || !notes) {
+        throw new Error('Cannot Update with Invalid Data');
+      }
       const result = await Report.updateRefund(date, amount, notes);
+      if (!result) throw new Error('Report is Not Defined');
       debug(result);
       return res.json({ message: 'Successful' });
     } catch (err) {
@@ -99,11 +103,16 @@ module.exports = () => {
   router.route('/housekeeping').put(async (req, res) => {
     const { date } = req.query;
     const updatedRecord = req.body;
+    const dateValidation = moment(date, 'YYYY-MM-DD');
     try {
+      if (!dateValidation.isValid()) {
+        throw new Error('Undefined Date');
+      }
       const result = await houseKeeping.updateHouseKeepingRecord(
         updatedRecord,
         date
       );
+      if (!result) throw new Error('HouseKeeping Record Does Not Exist');
       return res.send(result);
     } catch (err) {
       debug(err);

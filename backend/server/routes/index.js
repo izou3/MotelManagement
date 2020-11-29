@@ -2,8 +2,6 @@
  * Module Dependencies
  */
 const express = require('express');
-const bodyParser = require('body-parser');
-const debug = require('debug')('motel:http');
 
 const router = express();
 
@@ -20,9 +18,6 @@ const searchRoute = require('./searchRoute');
 
 module.exports = (param) => {
   const { mongo, sqlPool, agenda } = param;
-
-  router.use(bodyParser.urlencoded({ extended: true }));
-  router.use(bodyParser.json());
 
   // Customer Query Operations against MySQL
   router.use('/customer', customerRoutes({ sqlPool }));
