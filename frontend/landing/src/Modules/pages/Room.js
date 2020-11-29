@@ -20,91 +20,6 @@ import { makeStyles } from "@material-ui/core/styles";
 import NavBar from '../common/NavBar';
 import Footer from '../common/Footer';
 
-const roomInfo = [
-    {
-        flow: 'row',
-        id: 'amenities',
-        picture: Amenities,
-        title: 'Amenities',
-        content: [
-            'Non-Smoking Rooms',
-            'Pet Friendly Park and Garden',
-            'Scenic Viewing and Picnic Area',
-            'Parking at your Door. All One Level',
-            'Wireless Internet Access and Dish TV',
-            'Breakfast (Grab & Go) and Outdoor Hot Tub (Unavailable this Season)',
-        ]
-    },
-    {
-        flow: 'row-reverse',
-        id: 'single',
-        picture: Single,
-        title: 'Single Queen',
-        content: [
-            'One Single Queen Bed',
-            'Garden View',
-            'In-Room Coffee and Fresh Linens',
-            'Microwave/Mini-Fridge',
-            'Alarm Clock/Hair Dryer/Iron',
-            'Closet/Storage Area'
-        ]
-    },
-    {
-        flow: 'row',
-        id: 'double',
-        picture: Double,
-        title: 'Sceneric Double',
-        content: [
-            'Two Double/Full Sized Beds',
-            'City and Mountain View',
-            'In-Room Coffee and Fresh Linens',
-            'Microwave/Mini-Fridge',
-            'Alarm Clock/Hair Dryer/Iron',
-            'Closet/Storage Area'
-        ]
-    },
-    {
-        flow: 'row-reverse',
-        id: 'skyline',
-        picture: DoubleQueen,
-        title: 'Skyline Queens',
-        content: [
-            '2-4 Queens Beds',
-            'City and Garden Patio View',
-            'In-room Sofa Viewing Area',
-            'In-Room Coffee and Fresh Linens',
-            'Microwave/Mini-Fridge',
-            'Closet/Storage Area and Alarm Clock/Hair Dryer'
-        ]
-    },
-    {
-        flow:'row',
-        id: 'skylinetriple',
-        picture: Triple,
-        title: 'Skyline Triple',
-        content: [
-            '3 Double/Fill Sized Beds in 2 Bedrooms',
-            'City and Mountain View',
-            'In-Room Coffee, 2 TVs and Storage Area',
-            'Microwave/Mini-Fridge',
-            'Alarm Clock/Hair Dryer/Iron',
-        ]
-    },
-    {
-        flow:'row-reverse',
-        id: 'skylinesuite',
-        picture: Skyline,
-        title: 'Skyline Suite',
-        content: [
-            'Two BedRoom Suite with Kitchen and Living Area',
-            'One Queen, One King, and Sofa',
-            'Stovetop Kitchen with Fridge and Dishwasher',
-            '3 Tvs and Closet/Storage Area',
-            'In-Room Coffee and Fresh Linens',
-        ]
-    }
-]
-
 const useStyles = makeStyles(theme => ({
   mainDisplay: {
     backgroundColor: theme.palette.background.paper,
@@ -159,6 +74,17 @@ const useStyles = makeStyles(theme => ({
     },
     [theme.breakpoints.up('lg')]: {
       padding: theme.spacing(5,7,5),
+    },
+  },
+  amenities: {
+    [theme.breakpoints.down('xs')]: {
+      padding: theme.spacing(0,1,1),
+    },
+    [theme.breakpoints.up('sm')]: {
+      padding: theme.spacing(0,5,3),
+    },
+    [theme.breakpoints.up('lg')]: {
+      padding: theme.spacing(0,7,5),
     },
   },
   divider: {
@@ -222,6 +148,84 @@ function Room (props) {
               Please inquiry about our adjoining for larger accomodations!
             </Typography>
             <Divider className={classes.divider}/>
+          </Grid>
+          <Grid
+            container
+            direction="row"
+            justify="space-around"
+            alignItems="center"
+            className={classes.amenities}
+          >
+            <Grid item xs={12} sm={2}>
+              <Typography variant="h4">
+                Amenities
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <Card>
+                <CardHeader
+                  title="Hot Tub and Grill"
+                />
+                <CardMedia
+                  component="img"
+                  alt="Single Queen"
+                  image={Single}
+                  title="Single Queen"
+                  className={classes.image}
+                />
+                <CardContent>
+                  <Typography variant="body2" component="p">
+                    Hot tub and grill
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} sm={3}>
+              <Card>
+                <CardHeader
+                  title="Hot Tub and Grill"
+                />
+                <CardMedia
+                  component="img"
+                  alt="Single Queen"
+                  image={Single}
+                  title="Single Queen"
+                  className={classes.image}
+                />
+                <CardContent>
+                  <Typography variant="body2" component="p">
+                    Hot Tub and Grill
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} sm={3}>
+              <Card>
+                <CardHeader
+                  title="Hot Tub and Grill"
+                />
+                <CardMedia
+                  component="img"
+                  alt="Single Queen"
+                  image={Single}
+                  title="Single Queen"
+                  className={classes.image}
+                />
+                <CardContent>
+                  <Typography variant="body2" component="p">
+                    Hot tub and grill
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+          <Grid item xs={12} className={classes.RoomDes}>
+            <Divider className={classes.divider}/>
+            <Typography variant="h4">
+              Rooms
+            </Typography>
           </Grid>
           <Grid item xs={12} sm={5}>
             <Card className={classes.accomodations}>
