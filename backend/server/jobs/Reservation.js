@@ -25,8 +25,10 @@ module.exports = (agenda) => {
    * from Pending Reservation to Current Reservation
    */
   agenda.define('UpdateCurrent', async (job, done) => {
-    const start = moment().format('YYYY-MM-DD');
-    const end = moment(moment().add(3, 'days')).format('YYYY-MM-DD');
+    const start = moment().format('YYYY-MM-DDT00:00:00[Z]');
+    const end = moment(moment().add(3, 'days')).format(
+      'YYYY-MM-DDT00:00:00[Z]'
+    );
 
     try {
       await Pending.moveToCurrRes(start, end);
