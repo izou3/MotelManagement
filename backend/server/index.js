@@ -4,8 +4,8 @@
 const path = require('path');
 const express = require('express');
 const helmet = require('helmet');
-const Agenda = require('agenda');
 const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
 const RateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 const debug = require('debug')('motel:http');
@@ -20,13 +20,10 @@ const { loginRequired, loginCheck } = require('./services/Staff');
  */
 module.exports = (param) => {
   const { values } = param;
+  const { agenda } = param;
   const mongo = values[0];
   const sqlPool = values[1];
   const app = express();
-
-  // Establish an Agenda Connection to Mongo for psuhign Jobs
-  // to the Queue
-  const agenda = new Agenda().mongo(mongo.db, 'AgendaJobs');
 
   // Pug Setup
   app.set('view engine', 'pug');
@@ -37,6 +34,9 @@ module.exports = (param) => {
 
   // Cookie Setup for Auth
   app.use(cookieParser());
+
+  app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(bodyParser.json());
 
   // Http Request Logger
   app.use(require('morgan')('dev', { stream: logger.stream }));
