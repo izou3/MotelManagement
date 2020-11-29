@@ -11,5 +11,7 @@ module.exports = {
     'global-require': 'off',
     'no-plusplus': 'off',
     'dot-notation': 'off',
+    'no-underscore-dangle': 'off',
+    'max-classes-per-file': 'off',
   },
 };
