@@ -10,7 +10,7 @@ spec:
   - protocol: TCP
     port: 80
     targetPort: 3001
-  # type: NodePort
+  type: ClusterIP
 
 ---
 apiVersion: apps/v1

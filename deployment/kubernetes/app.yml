@@ -12,7 +12,7 @@ spec:
       # Port to forward to inside the pod.
       # Port that containers in pods are listening on
       targetPort: 80
-  # type: NodePort
+  type: ClusterIP
 
 
 ---
@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
         - name: webapp
-          image: izou3/webapp:2.5
+          image: izou3/webapp:2.6
           env:
           - name: TZ
             value: America/Denver
