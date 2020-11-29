@@ -42,12 +42,12 @@ class Maintenance {
    */
   static async getMaintenanceLogNames() {
     const result = await MaintenanceLog.find({}).select('Name').lean();
-    if (!result) throw new Error('Maintenance Log Does Not Exist');
+    if (!result.length) throw new Error('Maintenance Log Does Not Exist');
     return result;
   }
 
   /**
-   * Generates a new Maintenace Log
+   * Generates a new Maintenance Log
    * @param {String} name The Name of the new Maintenance Log
    */
   static async generateNewMaintenanceLog(name) {
@@ -83,14 +83,22 @@ class Maintenance {
     };
     const newMaintenanceLog = new MaintenanceLog(blankMaintenanceLog);
     const result = await newMaintenanceLog.save();
+    if (!result) throw new Error('Failed to Create Maintenance Log');
     return result;
   }
 
   /**
    * Deletes a Maintenance Log
+   * If the sheet to be deleted is the last one, than the deletion
+   * cannot happen
+   *
    * @param {String} name The Name of the Maintenance Log to Delete
    */
   static async deleteMaintenanceLog(name) {
+    const sheets = await MaintenanceLog.find({});
+    if (sheets.length === 1) {
+      throw new Error('Cannot Delete Only Maintenance Log Left');
+    }
     const result = await MaintenanceLog.findOneAndDelete({ Name: name })
       .select('-_id -__v')
       .lean();
@@ -116,7 +124,7 @@ class Maintenance {
       { new: true }
     ).select('-__v -_id -Name');
     if (!maintenanceLog) {
-      throw new Error('Failed to Find Match');
+      throw new Error('Failed to Find Matching Maintenance Sheet');
     }
     return maintenanceLog;
   }
@@ -155,7 +163,8 @@ class Maintenance {
   /**
    * Updates an Individual Log Entry From Matching Maintenance Log
    *
-   * Deficencies: Error is Not Thrown if Nested Fields Failt to Match
+   * Deficencies: Error is NOT Thrown if Nested Fields Fail to Match
+   * Or are undefined like if field = undefined
    *
    * @param {String} name The Name of the Maintenance Log to Update
    * @param {String} field The field of the Maintenance Log
@@ -169,8 +178,7 @@ class Maintenance {
 
     const updateEntry = { $set: {} };
     updateEntry.$set[`${field}.$`] = entry;
-    debug(identifier);
-    debug(updateEntry);
+
     const result = await MaintenanceLog.findOneAndUpdate(
       identifier,
       updateEntry,

@@ -41,9 +41,10 @@ module.exports = {
    * Register New User
    */
   register: async (newStaff) => {
+    debug('Creating new Staff');
     const result = await Staff.findOne({
       $or: [{ email: newStaff.email }, { username: newStaff.username }],
-    }).lean();
+    });
 
     if (result) {
       throw new Error(
@@ -54,13 +55,11 @@ module.exports = {
     const newUser = new Staff(newStaff);
     newUser.hashPassword = bcrypt.hashSync(newStaff.password, 10);
     return new Promise((resolve, reject) => {
-      newUser.save('- _id -__v -hashPassword -created_date', (err, user) => {
-        if (err) {
-          reject(new Error('Failed to Create New Staff'));
-        } else if (!user) {
-          reject(new Error('Failed to Create New Staff'));
+      newUser.save('-_id -__v -hashPassword -created_date', (err, user) => {
+        if (err || !user) {
+          return reject(new Error('Failed to Create New Staff'));
         }
-        resolve({
+        return resolve({
           ...newStaff,
           password: undefined,
         });

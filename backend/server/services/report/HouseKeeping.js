@@ -39,6 +39,11 @@ class HouseKeepingReport {
    * @param {*} date
    */
   async updateHouseKeepingRecord(updatedRecord, date) {
+    // Backend Error Validation
+    if (!updatedRecord.RoomID || !updatedRecord || !updatedRecord.type) {
+      throw new Error('Cannot Update with Undefined Data');
+    }
+
     const updatedRec = { $set: {} };
     updatedRec.$set[
       `Stays.${updatedRecord.RoomID}.${this.HouseKeepingReport}`
@@ -51,8 +56,6 @@ class HouseKeepingReport {
     )
       .select('-_id -__v')
       .lean();
-
-    if (!result) throw new Error('HouseKeeping Record Does Not Exist');
     return result;
   }
 }

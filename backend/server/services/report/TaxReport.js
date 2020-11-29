@@ -113,7 +113,15 @@ class TaxReport {
    * Use mongo aggregation framework to generate a TaxReport from the
    * DailyReport documents of specified month and year
    *
-   * @return an array of objects representing the Tax Report
+   * Limitations:
+   * 1) Type Field MUST be one of 'N', 'S/O', 'WK1-3', 'NO', or ''. If the string is anything else,
+   *    that record will not be counted in the occupied field for that day but the rate and tax of the
+   *    field's payment will be accounted for.
+   *
+   * 2) If a Tax Field is specified for Tyle Field 'NO', then that field's Rate Field will still be accounted
+   *    for in GrossNoTaxCard/Cash field and the tax will counted towards the total tax for that day
+   *
+   * @return an array of objects representing the Tax Report that to parsed into CSV
    */
   generateTaxReport() {
     return new Promise((resolve, reject) => {
@@ -420,7 +428,7 @@ class TaxReport {
                 $add: ['$StayOver', '$Weekly', '$NoTaxStay'],
               },
               NetTotal: {
-                $add: ['$NetCash', '$NetCard'],
+                $add: ['$NetCard', '$NetCash'],
               },
               TaxTotal: {
                 $add: ['$TaxCash', '$TaxCard'],

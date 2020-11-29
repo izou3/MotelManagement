@@ -104,7 +104,6 @@ class DeleteReservation {
     )
       .select('-__v -_id')
       .lean();
-    if (!query) throw new Error('Reservation Does Not Exist');
     return query;
   }
 
@@ -121,8 +120,7 @@ class DeleteReservation {
    * @param {*} BookingID The bookingID of the Reservation
    */
   static deleteReservationByID(BookingID) {
-    const query = DeleteResSch.deleteOne({ BookingID }).lean();
-    if (!query) throw new Error('Reservation Does Not Exist');
+    const query = DeleteResSch.findOneAndDelete({ BookingID }).lean();
     return query;
   }
 }

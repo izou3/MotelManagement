@@ -35,16 +35,15 @@ class Blacklist {
   /**
    * Search for Blacklist customer by Name
    * @param {String} first first name of customer
-   * @param {String} last last name of customer
    * @return The Resulting BlackList Customer Record
    */
-  getBlacklistCustomerByName(last) {
+  getBlacklistCustomerByName(first) {
     const sql =
       'SELECT IndCustomer.BookingID, Customer.first_name AS firstName, Customer.last_name AS lastName, BlackList.comments FROM BlackList JOIN IndCustomer ON IndCustomer.BookingID = BlackList.BookingID JOIN Customer ON IndCustomer.CustomerID = Customer.id WHERE Customer.first_name=?;';
 
-    return this.queryDB(sql, [last])
+    return this.queryDB(sql, [first])
       .then((res) => {
-        if (res.length === 0) {
+        if (res[0].length === 0) {
           throw new Error('Failed to Find Match');
         }
         return res[0];
@@ -64,13 +63,16 @@ class Blacklist {
 
     return this.queryDB(sql, [newCust.BookingID, newCust.comments])
       .then((res) => {
-        if (res[0].length === 0) {
-          throw new Error();
+        if (res[0].affectedRows === 0) {
+          throw new Error('Failed to Add Customer');
         }
         return res[0];
       })
-      .catch(() => {
-        throw Error('Customer ALready in BlackList');
+      .catch((err) => {
+        if (err.message.substring(0, 9) === 'Duplicate') {
+          return Promise.reject(new Error('Customer Already In BlackList'));
+        }
+        return Promise.reject(err);
       });
   }
 
@@ -86,6 +88,9 @@ class Blacklist {
       updatedCustomer.BookingID,
     ])
       .then((res) => {
+        if (res[0].affectedRows === 0) {
+          throw new Error('Customer Does Not Exist in BlackList');
+        }
         return res;
       })
       .catch((err) => {
@@ -101,7 +106,12 @@ class Blacklist {
     const sql = 'DELETE FROM BlackList WHERE BookingID = ?';
 
     return this.queryDB(sql, [ID])
-      .then((res) => res)
+      .then((res) => {
+        if (res[0].affectedRows === 0) {
+          throw new Error('Customer Does Not Exist in BlackList');
+        }
+        return res;
+      })
       .catch((err) => Promise.reject(err));
   }
 

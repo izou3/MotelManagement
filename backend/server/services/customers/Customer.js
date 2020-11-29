@@ -96,7 +96,7 @@ class Customer {
       'IndCustomer.price_paid AS pricePaid, IndCustomer.tax, IndCustomer.check_in AS checkIn, IndCustomer.check_out AS checkOut, IndCustomer.Num_Guests AS numGuests, '
     );
     sql = sql.concat(
-      'IndCustomer.roomid AS RoomID, IndCustomer.reservationid AS ReservationID, IndCustomer.paymentid AS PaymentID, IndCustomer.comments AS Comments '
+      'IndCustomer.roomid AS RoomID, IndCustomer.reservationid AS ReservationID, IndCustomer.paymentid AS PaymentID, IndCustomer.comments AS comments '
     );
     sql = sql.concat(
       'FROM Customer INNER JOIN IndCustomer ON IndCustomer.CustomerID=Customer.ID WHERE IndCustomer.BookingID = ?;'
@@ -171,7 +171,6 @@ class Customer {
     const bookingid = info2[0];
 
     const connection = await this.pool.getConnection();
-    let UpdatedResult;
     try {
       await connection.beginTransaction();
 
@@ -197,21 +196,19 @@ class Customer {
       }
 
       // As guest has checked out so Remove Reservation from Current and DailyReport Collection
-      UpdatedResult = await CurrReservation.deleteReservationPerm(
+      const UpdatedReport = await CurrReservation.deleteReservationPerm(
         bookingid,
-        prevRoom,
         date,
         roomType
       );
-
       await connection.commit();
+      return UpdatedReport;
     } catch (err) {
       await connection.rollback();
       throw err;
     } finally {
       await connection.release();
     }
-    return UpdatedResult;
   }
 
   /**

@@ -84,33 +84,34 @@ class PendingReservation {
   /**
    * Add new Reservation to Pending Collection
    *
-   * @param {Object} req Request Object of HTTP Request Header
+   * @param {Object} newRes Request Object of HTTP Request Header
    */
-  static addNewReservation(req, agenda) {
-    const newReservation = new ReservationSch(req.body);
+  static addNewReservation(newRes, agenda) {
+    const newReservation = new ReservationSch(newRes);
     return new Promise((resolve, reject) => {
       newReservation.save((err, data) => {
         if (err) {
           reject(new Error(err.message));
         } else if (!data) {
           reject(new Error('Failed to Save'));
-        }
+        } else {
+          // Send Reservation Confirmation Email
+          if (newRes.email.trim().length !== 0) {
+            debug('sending Confirmation Email');
+            debug(newRes.numGuests);
 
-        // Send Reservation Confirmation Email
-        if (req.body.email.trim().length !== 0) {
-          debug('sending Confirmation Email');
-          debug(req.body.numGuests);
-          agenda.now('ReservationConfirmation', {
-            email: req.body.email,
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
-            numGuests: req.body.numGuests,
-            checkIn: moment(req.body.checkIn).format('dddd, MMMM Do YYYY'),
-            checkOut: moment(req.body.checkOut).format('dddd, MMMM Do YYYY'),
-            pricePaid: req.body.pricePaid,
-          });
+            agenda.now('ReservationConfirmation', {
+              email: newRes.email,
+              firstName: newRes.firstName,
+              lastName: newRes.lastName,
+              numGuests: newRes.numGuests,
+              checkIn: moment(newRes.checkIn).format('dddd, MMMM Do YYYY'),
+              checkOut: moment(newRes.checkOut).format('dddd, MMMM Do YYYY'),
+              pricePaid: newRes.pricePaid,
+            });
+          }
+          resolve('Successfully Created New Reservation');
         }
-        resolve('Successfully Created New Reservation');
       });
     });
   }
@@ -118,14 +119,13 @@ class PendingReservation {
   /**
    * Update a Reservation Document with new Data
    *
-   * @param {Number} BookingID BookingID of soon-to-be Reservation
-   * @param {Object} req Request Object of HTTP Request Header
+   * @param {Object} data Updated Data of the Reservation
    */
-  static updateReservationByID(BookingID, req) {
+  static updateReservationByID(data) {
     return new Promise((resolve, reject) => {
       ReservationSch.findOneAndUpdate(
-        { BookingID },
-        req.body,
+        { BookingID: data.BookingID },
+        data,
         (err, response) => {
           if (err) {
             reject(new Error('Failed Connection with Server'));
@@ -198,7 +198,7 @@ class PendingReservation {
         BookingID: data.BookingID,
       }).session(session);
 
-      if (!result) throw new Error('Reservation Does Not Exist');
+      if (!result) throw new Error('Reservation is Not Defined');
 
       await CurrResSch.create([{ ...data, Checked: 2 }], { session });
       await session.commitTransaction();
@@ -263,19 +263,20 @@ class PendingReservation {
 
       if (result.length === 0) {
         // No Reservations Exist within the check-in time period
+        // Returned Empty Array as to not let Job Fail
         await session.abortTransaction();
         return [];
       }
 
       await CurrResSch.insertMany(result, { session });
 
-      const movedRes = await ReservationSch.deleteMany(
+      await ReservationSch.deleteMany(
         { checkIn: { $gte: start, $lt: end } },
         { session }
       );
 
       await session.commitTransaction();
-      return movedRes;
+      return result;
     } catch (err) {
       await session.abortTransaction();
       throw err;

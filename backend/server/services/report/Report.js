@@ -38,8 +38,9 @@ class DailyReport {
    * @param {Date} date The date of the matching report
    */
   static getReport(date) {
-    const result = DailyReportSch.findOne({ Date: date }).select('-_id').lean();
-    if (!result) throw new Error('Report Does Not Exist');
+    const result = DailyReportSch.findOne({ Date: date })
+      .select('-_id -__v')
+      .lean();
     return result;
   }
 
@@ -63,8 +64,6 @@ class DailyReport {
    * @param {Date} date      the date of the report to be updated
    */
   async updateGuestRecord(updatedGuest, date) {
-    debug(updatedGuest);
-
     const updatedRec = { $set: {} };
     updatedRec.$set[
       `Stays.${updatedGuest.RoomID}.${this.ReservationReport}`
@@ -101,6 +100,7 @@ class DailyReport {
           parseFloat(originalRes.pricePaid) + parseFloat(updatedGuest.rate);
         originalRes.tax =
           parseFloat(originalRes.tax) + parseFloat(updatedGuest.tax);
+        // checkIn Does Not Change
         originalRes.checkOut = moment(
           moment(updatedGuest.endDate).add(1, 'days')
         ).format('YYYY-MM-DDT12:00:00[Z]');
@@ -118,6 +118,12 @@ class DailyReport {
           moment(updatedGuest.endDate).add(1, 'days')
         ).format('YYYY-MM-DDT12:00:00[Z]');
       }
+
+      originalRes.pricePaid =
+        Math.round((originalRes.pricePaid + Number.EPSILON) * 100) / 100;
+
+      originalRes.tax =
+        Math.round((originalRes.tax + Number.EPSILON) * 100) / 100;
 
       await CurrResSch.findOneAndUpdate(
         { BookingID: updatedGuest.BookingID },
@@ -143,19 +149,14 @@ class DailyReport {
    * @param {*} notes Any Additional Comments Regarding the Refund Amount for the Document
    */
   static async updateRefund(date, num, notes) {
-    debug(date);
-    debug(num);
-    debug(notes);
     const updatedRefund = { $set: {} };
-    updatedRefund.$set['Refund.Amount'] = num;
-    updatedRefund.$set['Refund.Notes'] = notes;
+    updatedRefund.$set['Refund.Amount'] = num || 0;
+    updatedRefund.$set['Refund.Notes'] = notes || '';
 
     const newReport = await DailyReportSch.findOneAndUpdate(
       { Date: date },
       updatedRefund
     ).lean();
-
-    if (!newReport) throw new Error('Report is Not Defined');
     return newReport;
   }
 
@@ -164,7 +165,7 @@ class DailyReport {
    *
    * @param {Date} endDate: the previous date of the report
    * @param {Date} newDate: the date of the report
-   * @param {Object} stays: the previous day's stays
+   * @param {Object} stays: the previous day's Stays Object
    *
    * @return A DailyReport Object
    */
@@ -188,11 +189,12 @@ class DailyReport {
             'day'
           )
         ) {
+          // Guest is Due
           newReport = {
             BookingID: stays[`${i}`][this.ReservationReport].BookingID,
             type: stays[`${i}`][this.ReservationReport].type,
             payment: '',
-            startDate: newDate,
+            startDate: moment(newDate).format('YYYY-MM-DDT12:00:00[Z]'),
             endDate: '',
             paid: false,
             rate: 0,
@@ -200,12 +202,19 @@ class DailyReport {
             initial: '',
           };
           houseKeeperReport = {
-            status: stays[`${i}`][this.HouseKeepingReport].status,
-            type: stays[`${i}`][this.HouseKeepingReport].type,
+            status: stays[`${i}`]
+              ? stays[`${i}`][this.HouseKeepingReport].status
+              : 'O',
+            type: stays[`${i}`]
+              ? stays[`${i}`][this.HouseKeepingReport].type
+              : 'S',
             houseKeeper: '',
-            notes: stays[`${i}`][this.HouseKeepingReport].notes,
+            notes: stays[`${i}`]
+              ? stays[`${i}`][this.HouseKeepingReport].notes
+              : '',
           };
         } else {
+          // Guest is Not Yet Due
           newReport = {
             BookingID: stays[`${i}`][this.ReservationReport].BookingID,
             type: stays[`${i}`][this.ReservationReport].type,
@@ -218,10 +227,16 @@ class DailyReport {
             initial: '',
           };
           houseKeeperReport = {
-            status: 'O',
-            type: stays[`${i}`][this.HouseKeepingReport].type,
+            status: stays[`${i}`]
+              ? stays[`${i}`][this.HouseKeepingReport].status
+              : 'O',
+            type: stays[`${i}`]
+              ? stays[`${i}`][this.HouseKeepingReport].type
+              : 'S',
             houseKeeper: '',
-            notes: stays[`${i}`][this.HouseKeepingReport].notes,
+            notes: stays[`${i}`]
+              ? stays[`${i}`][this.HouseKeepingReport].notes
+              : '',
           };
         }
       } else {
