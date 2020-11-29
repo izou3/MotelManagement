@@ -16,7 +16,7 @@ const ReservationSchema = new Schema({
   // Options are N, S/O, WK1-3, NO
   type: {
     type: String,
-    require: true,
+    require: false,
     trim: true,
   },
   // Options are C, CC
@@ -63,12 +63,12 @@ const ReservationSchema = new Schema({
 const HouseKeepingSchema = new Schema({
   status: {
     type: String,
-    required: false,
+    required: true,
     trim: true,
   },
   type: {
     type: String,
-    required: false,
+    required: true,
     trim: true,
   },
   houseKeeper: {
