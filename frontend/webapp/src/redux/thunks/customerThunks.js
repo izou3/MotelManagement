@@ -33,7 +33,7 @@ export const updateCustomer = (updatedCust) => async (dispatch, getState) => {
 
   dispatch(showLoading());
   return axios
-    .put(`/api/customer/${updatedCust.BookingID}`, updatedCust)
+    .put(`/api/customer/`, updatedCust)
     .then(() => {
       const searchResult = state.searchResultState.results;
       for (let i = 0; i < searchResult.length; i++) {

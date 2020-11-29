@@ -45,13 +45,12 @@ export const createNewRes = (resData) => (dispatch, getState) => {
   dispatch(showLoading());
 
   const currThreshold = moment(moment(moment().add(3, 'days')).format('YYYY-MM-DD'));
-  console.log(currThreshold);
 
   const currentTime = moment().format('hhmmssSS');
-  const randDig1 = Math.floor(Math.random() * 9);
-  const randDig2 = Math.floor(Math.random() * 9);
-  const yearid = moment().month() + 1;
-  const monthid = moment().year();
+  const randDig1 = Math.floor(Math.random() * 9) + 1;
+  const randDig2 = Math.floor(Math.random() * 9) + 1;
+  const monthid = moment().month() + 1;
+  const yearid = moment().year();
   // generate BookingID
   const bookingid = `${randDig2}${currentTime}${randDig1}`;
 
@@ -115,7 +114,6 @@ export const createNewRes = (resData) => (dispatch, getState) => {
             dispatch(updateCheckIn(checkIn));
             dispatch(loadPendResSuccess(pending));
           } else {
-            console.log(result.data);
             // Make Appropriate changes to the state
             current[insertObj.RoomID - 101] = insertObj;
             dailyReport[insertObj.RoomID - 101] = {
@@ -147,6 +145,7 @@ export const createNewRes = (resData) => (dispatch, getState) => {
           );
         })
         .catch((err) => {
+          console.log(err);
           reject(err);
         });
     } else {
@@ -227,7 +226,7 @@ export const updateCurrRes = (updatedRes, prevRoom = 0) => async (
       // UNLESS reservation is already checked in
       axios
         .put(
-          `/api/reservation/CurrReservation?bookingid=${updatedRes.BookingID}&dateChange=true&roomType=${roomType}`,
+          `/api/reservation/CurrReservation?BookingID=${updatedRes.BookingID}&dateChange=true&roomType=${roomType}`,
           updatedRes
         )
         .then(() => {
@@ -262,7 +261,7 @@ export const updateCurrRes = (updatedRes, prevRoom = 0) => async (
       // Keep reservation in Current Collection as checkIn date is soon
       axios
         .put(
-          `/api/reservation/CurrReservation?bookingid=${updatedRes.BookingID}&dateChange=false&roomType=${roomType}`,
+          `/api/reservation/CurrReservation?BookingID=${updatedRes.BookingID}&dateChange=false&roomType=${roomType}`,
           updatedRes
         )
         .then((result) => {
@@ -383,7 +382,7 @@ export const moveCurrRes = (
     if (destination === 'arrival' && origin === 'current') {
       axios
         .put(
-          `/api/reservation/CurrReservation?bookingid=${updatedRes.BookingID}&moveToArr=true&roomType=${roomType}`,
+          `/api/reservation/CurrReservation?BookingID=${updatedRes.BookingID}&moveToArr=true&roomType=${roomType}`,
           updatedRes
         )
         .then((result) => {
@@ -394,7 +393,7 @@ export const moveCurrRes = (
             RoomID: prevRoom,
           };
           houseKeepingReport[prevRoom - 101] = {
-            ...result.data[`${prevRoom}`].HouseKeeping,
+            ...result.data.Stays[`${prevRoom}`].HouseKeeping,
             RoomID: prevRoom,
           };
           pendRes.push(updatedRes);
@@ -423,7 +422,7 @@ export const moveCurrRes = (
       // No require changes in Report so just update the reservation and dispatch the changes to the state
       axios
         .put(
-          `/api/reservation/CurrReservation?bookingid=${updatedRes.BookingID}&dateChange=false&roomType=${roomType}`,
+          `/api/reservation/CurrReservation?BookingID=${updatedRes.BookingID}&dateChange=false&roomType=${roomType}`,
           updatedRes
         )
         .then(() => {
@@ -501,7 +500,7 @@ export const deleteCurrRes = (BookingID) => async (dispatch, getState) => {
   dispatch(showLoading());
   return new Promise((resolve, reject) => {
     axios
-      .delete(`/api/reservation/CurrReservation?bookingid=${BookingID}`)
+      .delete(`/api/reservation/CurrReservation?BookingID=${BookingID}`)
       .then(() => {
         for (let i = 0; i < overRes.length; i++) {
           if (overRes[i].BookingID === BookingID) {
@@ -566,7 +565,7 @@ export const checkInRes = (resObj) => async (dispatch, getState) => {
     } else {
       axios
         .put(
-          `/api/reservation/CurrReservation?bookingid=${resObj.BookingID}&checkIn=true&roomType=${roomType}`,
+          `/api/reservation/CurrReservation?BookingID=${resObj.BookingID}&checkIn=true&roomType=${roomType}`,
           {
             ...resObj,
             Checked: 1,
@@ -652,9 +651,9 @@ export const checkOutRes = (resObj) => async (dispatch, getState) => {
     const roomType = houseKeepingReport[resObj.RoomID - 101].type;
 
     return axios
-      .post(`/api/resCustomer/checkOutReservation?roomType=${roomType}`, resObj)
+      .post(`/api/customer?roomType=${roomType}`, resObj)
       .then((response) => {
-        const prevRoom = response.data.Room.RoomID;
+        const prevRoom = response.data.PrevRoomID.RoomID;
         current[prevRoom - 101] = {
           RoomID: prevRoom,
         };
@@ -731,7 +730,7 @@ export const updateReservation = (updatedRes) => async (dispatch, getState) => {
     // check-in date is within threshold so update into Current
     return axios
       .put(
-        `/api/reservation/PendingReservation?bookingid=${updatedRes.BookingID}&dateChange=true`,
+        `/api/reservation/PendingReservation?BookingID=${updatedRes.BookingID}&dateChange=true`,
         updatedRes
       )
       .then(() => {
@@ -769,7 +768,7 @@ export const updateReservation = (updatedRes) => async (dispatch, getState) => {
   // check-in date is beyond threshold so keep in Pending
   return axios
     .put(
-      `/api/reservation/PendingReservation?bookingid=${updatedRes.BookingID}&dateChange=false`,
+      `/api/reservation/PendingReservation?BookingID=${updatedRes.BookingID}&dateChange=false`,
       updatedRes
     )
     .then(() => {
