@@ -59,7 +59,7 @@ When the reservations are checked out, all customers are stored under same SQL t
   * Data-Access Layer: OO Model with classes for CRUD operations in each table/collection
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/55326650/101309870-608c1e00-381b-11eb-8303-6c6032fb1faf.JPG"  width="80%" height="80%">
+<img src="https://user-images.githubusercontent.com/55326650/101309870-608c1e00-381b-11eb-8303-6c6032fb1faf.JPG" width="50%" height="60%">
 </div>
 
 ## Data-Access Layer ##
