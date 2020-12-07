@@ -91,8 +91,9 @@ export const houseKeepingState = (state = initialHouseKeepingState, action) => {
       };
     }
     case LOAD_HOUSEKEEPING_REPORT_FAIL: {
+      const { date } = payload;
       return {
-        date: moment().format('YYYY-MM-DD'),
+        date,
         houseKeepingReport: [],
       };
     }
@@ -106,7 +107,7 @@ const initialMaintenanceState = {
   logName: 'General',
   logSearchNames: [],
   MaintenanceLog: {},
-}
+};
 
 export const maintenanceState = (state = initialMaintenanceState, action) => {
   const { type, payload } = action;

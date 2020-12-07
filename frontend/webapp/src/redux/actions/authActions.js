@@ -3,10 +3,12 @@
  */
 
 export const LOGIN_USER = 'LOGIN_USER';
-export const loginUser = (userInfo) => ({
+export const loginUser = (userInfo, motelInfo, motelRoom) => ({
   type: LOGIN_USER,
   payload: {
     userInfo,
+    motelInfo,
+    motelRoom,
   },
 });
 

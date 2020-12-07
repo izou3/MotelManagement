@@ -82,6 +82,7 @@ function Alert(props) {
  */
 const Report = ({
   auth,
+  motelRoomList,
   loading,
   snackBar,
   report,
@@ -103,9 +104,10 @@ const Report = ({
   const columns = [
     {
       title: 'Room',
-      field: 'RoomID',
       type: 'string',
       editable: 'never',
+      // ID generated from Material-Table starting at 0
+      render: (rowData) => motelRoomList[rowData.tableData.id],
     },
     {
       title: 'T',
@@ -191,7 +193,7 @@ const Report = ({
   return (
     <div className={classes.root}>
       <CssBaseline />
-      <NavBar logout={logout} userInfo={auth.user} />
+      <NavBar logout={logout} userInfo={auth.user} motelInfo={auth.motel} />
       <main className={classes.content}>
         <div className={classes.toolbar} />
         <>
@@ -300,13 +302,11 @@ const Report = ({
                     /**
                      * Error Validation
                      */
-                    if (newData.paid) {
-                      if (newData.endDate.length === 0) {
-                        reject();
-                        // eslint-disable-next-line no-undef
-                        alert('Must Specify End Date');
-                        return;
-                      }
+                    if (newData.endDate.length === 0) {
+                      reject();
+                      // eslint-disable-next-line no-undef
+                      alert('Must Specify End Date');
+                      return;
                     }
 
                     if (moment(newData.endDate).isBefore(newData.startDate)) {
@@ -334,6 +334,7 @@ const Report = ({
                     }
 
                     if (newData.initial) {
+                      // eslint-disable-next-line no-param-reassign
                       newData.initial = newData.initial.trim();
                       if (newData.initial.trim().length > 2) {
                         reject();
@@ -344,13 +345,15 @@ const Report = ({
                     }
 
                     if (newData.type) {
+                      // eslint-disable-next-line no-param-reassign
                       newData.type = newData.type.trim();
                       if (newData.type.length > 4) {
                         reject();
                         // eslint-disable-next-line no-undef
                         alert('Not A Proper Type');
                         return;
-                      } else if (
+                      }
+                      if (
                         newData.type !== 'N' &&
                         newData.type !== 'S/O' &&
                         newData.type !== 'WK1' &&
@@ -366,13 +369,15 @@ const Report = ({
                     }
 
                     if (newData.payment) {
+                      // eslint-disable-next-line no-param-reassign
                       newData.payment = newData.payment.trim();
                       if (newData.payment.length > 2) {
                         reject();
                         // eslint-disable-next-line no-undef
                         alert('Not A Proper Payment. Either C or CC');
                         return;
-                      } else if (newData.payment !== 'C' && newData.payment !== 'CC') {
+                      }
+                      if (newData.payment !== 'C' && newData.payment !== 'CC') {
                         reject();
                         // eslint-disable-next-line no-undef
                         alert('Not A Proper Payment. Either C or CC');
@@ -400,8 +405,8 @@ const Report = ({
               <Formik
                 enableReinitialize
                 initialValues={{
-                  refundAmount: refundSum ? refundSum : 0,
-                  comments: refundNotes ? refundNotes: '',
+                  refundAmount: refundSum || 0,
+                  comments: refundNotes || '',
                 }}
                 onSubmit={(values, { setSubmitting }) => {
                   setSubmitting(true);
@@ -463,6 +468,7 @@ const Report = ({
 
 const mapStateToProps = (state) => ({
   auth: state.authState,
+  motelRoomList: state.authState.motelRooms,
   reportDate: state.reportState.date,
   report: state.reportState.report,
   refundSum: state.reportState.refundAmount,

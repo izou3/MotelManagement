@@ -61,8 +61,11 @@ export const updateHouseKeepingReport = (updatedReport) => ({
 });
 
 export const LOAD_HOUSEKEEPING_REPORT_FAIL = 'LOAD_HOUSEKEEPING_REPORT_FAIL';
-export const loadHouseKeepingReportFail = () => ({
+export const loadHouseKeepingReportFail = (date) => ({
   type: LOAD_HOUSEKEEPING_REPORT_FAIL,
+  payload: {
+    date,
+  },
 });
 
 /** **************************************************************
@@ -74,7 +77,7 @@ export const initialLoadMaintenanceLog = (logSearchName, maintenanceLog) => ({
   payload: {
     logSearchName,
     maintenanceLog,
-  }
+  },
 });
 
 export const LOAD_MAINTENANCE_FAIL = 'LOAD_MAINTENANCE_FAIL';
@@ -88,17 +91,21 @@ export const loadMaintenanceLogOnSearch = (searchName, maintenanceLog) => ({
   payload: {
     searchName,
     maintenanceLog,
-  }
+  },
 });
 
 export const ADD_NEW_MAINTENANCE_LOG = 'ADD_NEW_MAINTENANCE_LOG';
-export const addNewMaintenanceLog = (name, logSearchName, newMaintenanceLog) => ({
+export const addNewMaintenanceLog = (
+  name,
+  logSearchName,
+  newMaintenanceLog
+) => ({
   type: ADD_NEW_MAINTENANCE_LOG,
   payload: {
     name,
     logSearchName,
     newMaintenanceLog,
-  }
+  },
 });
 
 // Action for Individual Query Operations on Log Entries of a Maintenance Log
@@ -106,6 +113,6 @@ export const LOAD_MAINTENANCE_LOG = 'LOAD_MAINTENANCE_LOG';
 export const loadMaintenanceLog = (maintenanceLog) => ({
   type: LOAD_MAINTENANCE_LOG,
   payload: {
-    maintenanceLog
-  }
+    maintenanceLog,
+  },
 });

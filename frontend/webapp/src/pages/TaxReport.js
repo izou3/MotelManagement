@@ -22,9 +22,7 @@ import { connect } from 'react-redux';
 import { logoutStaff } from '../redux/thunks/authThunks';
 import { generateTaxReport } from '../redux/thunks/reportThunks';
 
-import {
-  snackBarClose,
-} from '../redux/actions/actions';
+import { snackBarClose } from '../redux/actions/actions';
 
 // Components
 import NavBar from '../components/NavBar';
@@ -79,7 +77,7 @@ const TaxReport = ({
   return (
     <div className={classes.root}>
       <CssBaseline />
-      <NavBar logout={logout} userInfo={auth.user} />
+      <NavBar logout={logout} userInfo={auth.user} motelInfo={auth.motel} />
       <main className={classes.content}>
         <div className={classes.toolbar} />
         <>
@@ -182,7 +180,8 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   logout: (redirect) => dispatch(logoutStaff(redirect)),
-  generateTaxReportOnAction: (MonthID, YearID) => dispatch(generateTaxReport(MonthID, YearID)),
+  generateTaxReportOnAction: (MonthID, YearID) =>
+    dispatch(generateTaxReport(MonthID, YearID)),
   closeSnackBar: () => dispatch(snackBarClose()),
 });
 

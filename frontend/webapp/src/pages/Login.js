@@ -99,9 +99,6 @@ const Login = ({
 
   login,
   closeSnackBar,
-  snackBarSucceed,
-  load,
-  hideLoad,
 }) => {
   const classes = useStyles();
   const history = useHistory();

@@ -75,6 +75,7 @@ function Alert(props) {
  */
 const Report = ({
   auth,
+  motelRoomList,
   loading,
   snackBar,
   houseKeepingDate,
@@ -87,14 +88,13 @@ const Report = ({
 }) => {
   const classes = useStyles();
 
-  const [selectedRow, setSelectedRow] = React.useState(null);
-
   const columns = [
     {
       title: 'Room',
-      field: 'RoomID',
       type: 'string',
       editable: 'never',
+      // ID generated from Material-Table starting at 0
+      render: (rowData) => motelRoomList[rowData.tableData.id],
     },
     {
       title: 'Type',
@@ -113,7 +113,7 @@ const Report = ({
   return (
     <div className={classes.root}>
       <CssBaseline />
-      <NavBar logout={logout} userInfo={auth.user} />
+      <NavBar logout={logout} userInfo={auth.user} motelInfo={auth.motel} />
       <main className={classes.content}>
         <div className={classes.toolbar} />
         <>
@@ -277,6 +277,7 @@ const Report = ({
 
 const mapStateToProps = (state) => ({
   auth: state.authState,
+  motelRoomList: state.authState.motelRooms,
   houseKeepingDate: state.houseKeepingState.date,
   houseKeepingReport: state.houseKeepingState.houseKeepingReport,
   snackBar: state.snackBarState,

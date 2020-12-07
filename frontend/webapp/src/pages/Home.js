@@ -102,8 +102,8 @@ const useStyles = makeStyles((theme) => ({
     position: 'absolute',
   },
   divider: {
-    margin: theme.spacing(4,0,0),
-  }
+    margin: theme.spacing(4, 0, 0),
+  },
 }));
 
 /**
@@ -123,6 +123,7 @@ const Home = ({
   currRes,
   pendRes,
   overRes,
+  motelRoomList,
   logout,
   createNewCurrentReservation,
   updateCurrentRes,
@@ -225,7 +226,7 @@ const Home = ({
   return (
     <div className={classes.root}>
       <CssBaseline />
-      <NavBar logout={logout} userInfo={auth.user} />
+      <NavBar logout={logout} userInfo={auth.user} motelInfo={auth.motel} />
       <main className={classes.content}>
         <div className={classes.toolbar} />
         <>
@@ -241,6 +242,7 @@ const Home = ({
             open={formOpen}
             data={formData}
             type={formType}
+            roomList={motelRoomList}
             handleClose={closeForm2}
             action1={formAction1}
             action2={formAction2}
@@ -248,7 +250,11 @@ const Home = ({
           />
           <Grid container>
             <Grid item xs={6} className={classes.tableMargin}>
-              <RegTable resList={currRes} handleOpen={loadFormOnAction} />
+              <RegTable
+                roomList={motelRoomList}
+                resList={currRes}
+                handleOpen={loadFormOnAction}
+              />
             </Grid>
             <Grid item xs={5}>
               <Box display="flex" flexWrap="nowrap">
@@ -286,13 +292,17 @@ const Home = ({
                 <Calendar className={classes.calendar} />
               </Paper>
               <Divider className={classes.divider} />
-                <Typography variant="h6" align="center">48 HOUR ARRIVALS</Typography>
+              <Typography variant="h6" align="center">
+                48 HOUR ARRIVALS
+              </Typography>
               <Divider />
               <Paper>
                 <PageTable resList={pendRes} handleOpen={loadFormOnAction} />
               </Paper>
               <Divider className={classes.divider} />
-                <Typography variant="h6" align="center">OVERDUE RESERVATIONS</Typography>
+              <Typography variant="h6" align="center">
+                OVERDUE RESERVATIONS
+              </Typography>
               <Divider />
               <Paper>
                 <PageTable resList={overRes} handleOpen={loadFormOnAction} />
@@ -307,6 +317,7 @@ const Home = ({
 
 const mapStateToProps = (state) => ({
   auth: state.authState,
+  motelRoomList: state.authState.motelRooms,
   info: state.info,
   currRes: getCurrRes(state),
   pendRes: getPendRes(state),

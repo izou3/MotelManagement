@@ -28,7 +28,12 @@ import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import { connect } from 'react-redux';
 
 import { logoutStaff } from '../redux/thunks/authThunks';
-import { getAllStaff, updateStaff, deleteStaff, createNewStaff } from '../redux/thunks/staffThunks';
+import {
+  getAllStaff,
+  updateStaff,
+  deleteStaff,
+  createNewStaff,
+} from '../redux/thunks/staffThunks';
 
 import {
   snackBarFail,
@@ -43,7 +48,10 @@ import {
 } from '../redux/actions/formActions';
 
 // Components
-import { StyledTableCell, StyledTableRow } from '../components/tables/StyledTable';
+import {
+  StyledTableCell,
+  StyledTableRow,
+} from '../components/tables/StyledTable';
 import FullPageLoader from '../components/FullPageLoader';
 import NavBar from '../components/NavBar';
 import MyForm from '../components/Form';
@@ -116,12 +124,12 @@ function Staff({
   const classes = useStyles();
 
   React.useEffect(() => {
-    initialStaffLoad()
+    initialStaffLoad();
   }, [initialStaffLoad]);
 
   const hideFormOnAction = () => closeForm();
   const loadFormOnAction = (data) => loadForm(data);
-  const createNewStaff = () => loadFormNewStaff();
+  const CreateNewStaff = () => loadFormNewStaff();
 
   const addStaffOnAction = (newStaff) => addEmployee(newStaff);
   const updateStaffOnAction = (updatedStaff) => updateEmployee(updatedStaff);
@@ -131,7 +139,7 @@ function Staff({
     <>
       <div className={classes.root}>
         <CssBaseline />
-        <NavBar logout={logout} userInfo={auth.user} />
+        <NavBar logout={logout} userInfo={auth.user} motelInfo={auth.motel} />
         <main className={classes.content}>
           <div className={classes.toolbar} />
           <Snackbar
@@ -164,7 +172,7 @@ function Staff({
                   variant="contained"
                   color="primary"
                   startIcon={<AddIcon />}
-                  onClick={() => createNewStaff()}
+                  onClick={() => CreateNewStaff()}
                 >
                   New Staff
                 </Button>
@@ -173,35 +181,46 @@ function Staff({
             <TableContainer component={Paper} className={classes.table}>
               <Table>
                 <TableBody>
-                  {
-                    staff.map((staffMember) => {
-                      let position = 'Manager';
-                      switch(staffMember.position) {
-                        case 0: position = 'Owner'; break;
-                        case 1: position = 'Manager'; break;
-                        case 2: position = 'Housekeeper'; break;
-                        default: position = 'Manager'
-                      }
-                      return (
-                        <StyledTableRow key={staffMember.username}>
-                          <StyledTableCell>
-                            <IconButton
-                              onClick={() => loadFormOnAction(staffMember)}
-                            >
-                              <Avatar className={classes.avatar}>
-                                <AccountCircleIcon />
-                              </Avatar>
-                            </IconButton>
-                          </StyledTableCell>
-                          <StyledTableCell>{staffMember.firstName}</StyledTableCell>
-                          <StyledTableCell>{staffMember.lastName}</StyledTableCell>
-                          <StyledTableCell>{position}</StyledTableCell>
-                          <StyledTableCell>{staffMember.email}</StyledTableCell>
-                          <StyledTableCell>{staffMember.username}</StyledTableCell>
-                        </StyledTableRow>
-                      )
-                    })
-                  }
+                  {staff.map((staffMember) => {
+                    let position = 'Manager';
+                    switch (staffMember.position) {
+                      case 0:
+                        position = 'Owner';
+                        break;
+                      case 1:
+                        position = 'Manager';
+                        break;
+                      case 2:
+                        position = 'Housekeeper';
+                        break;
+                      default:
+                        position = 'Manager';
+                    }
+                    return (
+                      <StyledTableRow key={staffMember.username}>
+                        <StyledTableCell>
+                          <IconButton
+                            onClick={() => loadFormOnAction(staffMember)}
+                          >
+                            <Avatar className={classes.avatar}>
+                              <AccountCircleIcon />
+                            </Avatar>
+                          </IconButton>
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          {staffMember.firstName}
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          {staffMember.lastName}
+                        </StyledTableCell>
+                        <StyledTableCell>{position}</StyledTableCell>
+                        <StyledTableCell>{staffMember.email}</StyledTableCell>
+                        <StyledTableCell>
+                          {staffMember.username}
+                        </StyledTableCell>
+                      </StyledTableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </TableContainer>

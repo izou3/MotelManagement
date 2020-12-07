@@ -1,14 +1,11 @@
-import {
-  LOAD_ALL_STAFF,
-  LOAD_STAFF_FAIL,
-} from '../actions/staffActions';
+import { LOAD_ALL_STAFF, LOAD_STAFF_FAIL } from '../actions/staffActions';
 
 const initialState = {
-  staff: []
+  staff: [],
 };
 const staffState = (state = initialState, action) => {
   const { type, payload } = action;
-  switch(type) {
+  switch (type) {
     case LOAD_ALL_STAFF: {
       const { staffArray } = payload;
       return {
@@ -18,7 +15,7 @@ const staffState = (state = initialState, action) => {
 
     case LOAD_STAFF_FAIL: {
       return {
-        ...state
+        ...state,
       };
     }
 

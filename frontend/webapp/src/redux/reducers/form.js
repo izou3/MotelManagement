@@ -140,8 +140,8 @@ const formState = (state = initialFormState, action) => {
         ...state,
         open: true,
         list: 9,
-        data: {}
-      }
+        data: {},
+      };
     }
     default: {
       return state;

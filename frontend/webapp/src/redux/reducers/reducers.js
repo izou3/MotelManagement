@@ -12,6 +12,8 @@ const initialAuthState = {
   isAuthenticated: false,
   expire: 0,
   user: {},
+  motel: {},
+  motelRooms: [],
 };
 
 export const authState = (state = initialAuthState, action) => {
@@ -19,12 +21,14 @@ export const authState = (state = initialAuthState, action) => {
 
   switch (type) {
     case LOGIN_USER: {
-      const { userInfo } = payload;
+      const { userInfo, motelInfo, motelRoom } = payload;
       return {
         ...state,
         isAuthenticated: true,
         expire: userInfo.exp,
         user: userInfo,
+        motel: motelInfo,
+        motelRooms: motelRoom,
       };
     }
     case LOGOUT_USER: {
@@ -33,6 +37,8 @@ export const authState = (state = initialAuthState, action) => {
         isAuthenticated: false,
         expire: 0,
         user: {},
+        motel: {},
+        motelRooms: [],
       };
     }
     default: {

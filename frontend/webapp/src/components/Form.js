@@ -159,6 +159,7 @@ const ResForm = (props) => {
   const { data } = props;
   const { type } = props;
   const { open } = props;
+  const { roomList } = props;
 
   const handleClose = () => {
     props.handleClose();
@@ -446,10 +447,11 @@ const ResForm = (props) => {
                 initialValues={{
                   firstName: data.firstName ? data.firstName : '',
                   lastName: data.lastName ? data.lastName : '',
-                  ReservationID: data.ReservationID ? data.ReservationID : '0',
-                  PaymentID: data.PaymentID ? data.PaymentID : '0',
+                  ReservationID: data.ReservationID ? data.ReservationID : 0,
+                  PaymentID: data.PaymentID ? data.PaymentID : 0,
                   RoomID: data.RoomID ? data.RoomID : '',
                   StateID: data.StateID ? data.StateID : '',
+                  StyleID: data.StyleID ? data.StyleID : 0,
                   pricePaid: data.pricePaid ? data.pricePaid : '',
                   tax: data.tax ? data.tax : '',
                   checkIn: data.checkIn
@@ -544,6 +546,7 @@ const ResForm = (props) => {
                 }}
                 onSubmit={(values, { setSubmitting }) => {
                   setSubmitting(true);
+
                   if (actionType === 'action1') {
                     props.action1(
                       {
@@ -656,7 +659,7 @@ const ResForm = (props) => {
                           />
                         </Grid>
 
-                        <Grid item xs={5} className={classes.textField}>
+                        <Grid item xs={3} className={classes.textField}>
                           <Field
                             component={TextField}
                             select
@@ -670,6 +673,22 @@ const ResForm = (props) => {
                             <MenuItem value={2}>Phone Call</MenuItem>
                             <MenuItem value={3}>Walk-In</MenuItem>
                             <MenuItem value={4}>Others</MenuItem>
+                          </Field>
+                        </Grid>
+
+                        <Grid item xs={2} className={classes.textField}>
+                          <Field
+                            component={TextField}
+                            select
+                            fullWidth
+                            label="Payment"
+                            name="PaymentID"
+                            variant="outlined"
+                          >
+                            <MenuItem value={0}>Card</MenuItem>
+                            <MenuItem value={1}>Cash</MenuItem>
+                            <MenuItem value={2}>Check</MenuItem>
+                            <MenuItem value={3}>Other</MenuItem>
                           </Field>
                         </Grid>
 
@@ -695,31 +714,38 @@ const ResForm = (props) => {
                           />
                         </Grid>
 
+                        <Grid item xs={2} className={classes.textField2}>
+                          <Field
+                            component={TextField}
+                            select
+                            fullWidth
+                            label="Room"
+                            name="RoomID"
+                            variant="outlined"
+                          >
+                          {
+                            roomList.map((room, index) => (
+                              <MenuItem key={room} value={index+101}>{room}</MenuItem>
+                            ))
+                          }
+                          </Field>
+                        </Grid>
+
                         <Grid item xs={3} className={classes.textField2}>
                           <Field
                             component={TextField}
                             select
                             fullWidth
-                            label="Payment"
-                            name="PaymentID"
+                            label="Room Style"
+                            name="StyleID"
                             variant="outlined"
                           >
-                            <MenuItem value={0}>Card</MenuItem>
-                            <MenuItem value={1}>Cash</MenuItem>
-                            <MenuItem value={2}>Check</MenuItem>
-                            <MenuItem value={3}>Other</MenuItem>
+                            <MenuItem value={0}>Single Queen</MenuItem>
+                            <MenuItem value={1}>Single King</MenuItem>
+                            <MenuItem value={2}>Double Queen</MenuItem>
+                            <MenuItem value={3}>Kitchnette</MenuItem>
+                            <MenuItem value={4}>Triple Queen</MenuItem>
                           </Field>
-                        </Grid>
-
-                        <Grid item xs={2} className={classes.textField}>
-                          <Field
-                            fullWidth
-                            component={TextField}
-                            name="RoomID"
-                            label="Room"
-                            variant="outlined"
-                            margin="normal"
-                          />
                         </Grid>
 
                         <Grid item xs={12} className={classes.textField}>

@@ -136,6 +136,7 @@ function Alert(props) {
  */
 const Query = ({
   auth,
+  motelRoomList,
   searchResult,
   searchType,
   formOpen,
@@ -194,12 +195,13 @@ const Query = ({
   const classes = useStyles();
   const mountedRef = React.useRef(true);
 
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       mountedRef.current = false;
       searchResultClose();
-    };
-  }, [searchResultClose]);
+    },
+    [searchResultClose]
+  );
 
   const closeForm2 = () => closeForm();
 
@@ -269,7 +271,7 @@ const Query = ({
   return (
     <div className={classes.root}>
       <CssBaseline />
-      <NavBar logout={logout} userInfo={auth.user} />
+      <NavBar logout={logout} userInfo={auth.user} motelInfo={auth.motel} />
       <main className={classes.content}>
         <div className={classes.toolbar} />
         <>
@@ -285,6 +287,7 @@ const Query = ({
             open={formOpen}
             data={formData}
             type={formType}
+            roomList={motelRoomList}
             handleClose={closeForm2}
             action1={formAction1}
             action2={formAction2}
@@ -339,13 +342,10 @@ const Query = ({
                     }}
                     onSubmit={(values, { setSubmitting }) => {
                       const { textQuery } = values;
-                      const start = moment(values.firstDate, 'LLLL').format(
-                        'YYYY-MM-DD'
-                      );
-                      const end = moment(values.secondDate, 'LLLL').format(
-                        'YYYY-MM-DD'
-                      );
-                      // formType = values.searchType;
+
+                      const start = values.firstDate;
+                      const end = values.secondDate;
+
                       if (values.searchType === 'customer') {
                         searchTypeCustomer();
                         if (values.searchBy === 'BookingID') {
@@ -516,6 +516,7 @@ const Query = ({
 
 const mapStateToProps = (state) => ({
   auth: state.authState,
+  motelRoomList: state.authState.motelRooms,
   searchResult: state.searchResultState.results,
   searchType: state.searchResultState.searchType,
   formOpen: state.formState.open,

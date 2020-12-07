@@ -152,14 +152,6 @@ const NavBarLink = (props) => {
                 <ListItemText primary="Search" />
               </ListItem>
             </Link>
-            <Link to="/dash" className={classes.linkLabels}>
-              <ListItem button>
-                <ListItemIcon>
-                  <MailOutlineIcon />
-                </ListItemIcon>
-                <ListItemText primary="Email" />
-              </ListItem>
-            </Link>
             <Link to="/staff/report" className={classes.linkLabels}>
               <ListItem button>
                 <ListItemIcon>
@@ -198,6 +190,14 @@ const NavBarLink = (props) => {
               <ListItemText primary="Tax Report" />
             </ListItem>
           </Link>
+          <Link to="/dash" className={classes.linkLabels}>
+              <ListItem button>
+                <ListItemIcon>
+                  <MailOutlineIcon />
+                </ListItemIcon>
+                <ListItemText primary="Email" />
+              </ListItem>
+            </Link>
           <Link to="/staff/housekeeping" className={classes.linkLabels}>
             <ListItem button>
               <ListItemIcon>
@@ -227,7 +227,7 @@ const NavBarLink = (props) => {
 const Navbar = (props) => {
   const classes = useStyles();
   const history = useHistory();
-  const { userInfo } = props;
+  const { userInfo, motelInfo } = props;
 
   const [open, setOpen] = React.useState(false);
 
@@ -269,7 +269,7 @@ const Navbar = (props) => {
                 <MenuIcon />
               </IconButton>
               <Typography variant="h6" noWrap>
-                Lazy U Motel Management
+                {motelInfo.MotelName + ' Management'}
               </Typography>
               <IconButton
                 color="inherit"

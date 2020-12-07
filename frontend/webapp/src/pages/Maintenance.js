@@ -2,7 +2,6 @@
  * Module Dependencies
  */
 import React from 'react';
-import moment from 'moment';
 
 // MaterialUI Components
 import { makeStyles } from '@material-ui/core/styles';
@@ -56,14 +55,14 @@ import {
 import FullPageLoader from '../components/FullPageLoader';
 import NavBar from '../components/NavBar';
 
-const useRowStyles = makeStyles((theme) => ({
+const useRowStyles = makeStyles(() => ({
   root: {
     '& > *': {
       borderBottom: 'unset',
     },
-    "&:hover": {
-      backgroundColor: 'rgba(63,80,181, 0.2)'
-    }
+    '&:hover': {
+      backgroundColor: 'rgba(63,80,181, 0.2)',
+    },
   },
 }));
 
@@ -101,15 +100,12 @@ function Alert(props) {
 }
 
 function Row(props) {
-  const { row } = props;
-  const { data } = props;
-  const { field } = props;
-  const { maintenanceName } = props;
+  const { row, rowIndex, data, field, roomList, maintenanceName } = props;
   const [open, setOpen] = React.useState(false);
   const classes = useRowStyles();
 
   const column = [
-    { title: 'Date', field: 'date', type: 'date', initialValue: new Date() },
+    { title: 'Date', field: 'date', type: 'date', initialValue: undefined },
     {
       title: 'Completed',
       field: 'completed',
@@ -117,7 +113,7 @@ function Row(props) {
       initialValue: false,
     },
     { title: 'Notes', field: 'description', type: 'string', initialValue: '' },
-    { title: 'Cost', field: 'cost', type: 'numeric', initialValue: '0' },
+    { title: 'Cost', field: 'cost', type: 'numeric', initialValue: 0 },
   ];
 
   const updateEntry = (updatedData) => {
@@ -145,7 +141,7 @@ function Row(props) {
           </IconButton>
         </TableCell>
         <TableCell component="th" scope="row">
-          {row.room}
+          {row.room === 'Facilities' ? 'Facilities' : roomList[rowIndex]}
         </TableCell>
         <TableCell align="right">{row.entries}</TableCell>
         <TableCell align="right">{row.uncompleted}</TableCell>
@@ -205,14 +201,9 @@ function Row(props) {
                         }
 
                         // Setting Initial Values
-                        const submitData = newData;
-                        if (!newData.date) {
-                          submitData.date = moment().format('YYYY-MM-DD');
-                        }
-                        if (!newData.completed) submitData.completed = false;
-                        if (!newData.cost) submitData.cost = 0;
+                        // Initial Values set in Columns Fails to work
 
-                        addEntry(submitData);
+                        addEntry(newData);
                         resolve();
                       }, 100);
                     }),
@@ -235,6 +226,7 @@ function Row(props) {
 
 function Maintenance({
   auth,
+  motelRoomList,
   maintenanceName,
   maintenanceChoices,
   maintenanceLog,
@@ -264,7 +256,7 @@ function Maintenance({
     <>
       <div className={classes.root}>
         <CssBaseline />
-        <NavBar logout={logout} userInfo={auth.user} />
+        <NavBar logout={logout} userInfo={auth.user} motelInfo={auth.motel} />
         <main className={classes.content}>
           <div className={classes.toolbar} />
           <Snackbar
@@ -298,30 +290,34 @@ function Maintenance({
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {Object.entries(maintenanceLog).map(([key, value]) => {
-                      let notCompleted = 0;
-                      if (value) {
-                        value.forEach((log) => {
-                          if (!log.completed) notCompleted++;
-                        });
+                    {Object.entries(maintenanceLog).map(
+                      ([key, value], index) => {
+                        let notCompleted = 0;
+                        if (value) {
+                          value.forEach((log) => {
+                            if (!log.completed) notCompleted++;
+                          });
+                        }
+                        return (
+                          <Row
+                            key={key}
+                            rowIndex={index}
+                            field={key}
+                            roomList={motelRoomList}
+                            maintenanceName={maintenanceName}
+                            add={addLog}
+                            update={updateLog}
+                            delete={deleteLog}
+                            data={value}
+                            row={{
+                              room: key,
+                              entries: value ? value.length : 0,
+                              uncompleted: notCompleted,
+                            }}
+                          />
+                        );
                       }
-                      return (
-                        <Row
-                          key={key}
-                          field={key}
-                          maintenanceName={maintenanceName}
-                          add={addLog}
-                          update={updateLog}
-                          delete={deleteLog}
-                          data={value}
-                          row={{
-                            room: key,
-                            entries: value ? value.length : 0,
-                            uncompleted: notCompleted,
-                          }}
-                        />
-                      );
-                    })}
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -336,7 +332,7 @@ function Maintenance({
                   initialValues={{
                     maintenanceSearch:
                       maintenanceChoices.length !== 0
-                        ? maintenanceChoices[0]._id
+                        ? maintenanceChoices[0].Name
                         : 0,
                     createMaintenance: '',
                   }}
@@ -355,8 +351,15 @@ function Maintenance({
                     setSubmitting(true);
 
                     if (actionType === 'add') {
-                      // Add New Maintenance Log
-                      createNewMaintenanceLog(values.createMaintenance);
+                      /**
+                       * @TODO Validate Only when certain actionType is triggered
+                       */
+                      if (values.createMaintenance.trim().length === 0) {
+                        alert('Cannot Create No Name Maintenance Sheet');
+                      } else {
+                        // Add New Maintenance Log
+                        createNewMaintenanceLog(values.createMaintenance);
+                      }
                     } else if (actionType === 'search') {
                       // Search Maintenance Log
                       searchForMaintenanceLog(values.maintenanceSearch);
@@ -380,7 +383,7 @@ function Maintenance({
                             name="maintenanceSearch"
                           >
                             {maintenanceChoices.map((choice) => (
-                              <MenuItem key={choice._id} value={choice._id}>
+                              <MenuItem key={choice._id} value={choice.Name}>
                                 {choice.Name}
                               </MenuItem>
                             ))}
@@ -431,6 +434,7 @@ function Maintenance({
 
 const mapStateToProps = (state) => ({
   auth: state.authState,
+  motelRoomList: state.authState.motelRooms,
   snackBar: state.snackBarState,
   loading: state.loadingState.isLoading,
   maintenanceName: state.maintenanceState.logName,

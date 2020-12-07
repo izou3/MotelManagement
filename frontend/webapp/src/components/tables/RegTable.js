@@ -46,7 +46,7 @@ const useStyles = makeStyles((theme) => ({
 export default function RegTable(props) {
   const classes = useStyles();
 
-  const { resList } = props;
+  const { resList, roomList } = props;
 
   const handleOpen = (room, checked, BookingID) =>
     props.handleOpen(room, checked, BookingID);
@@ -65,7 +65,7 @@ export default function RegTable(props) {
           </StyledTableRow>
         </TableHead>
         <TableBody>
-          {resList.map((res) => (
+          {resList.map((res, index) => (
             <StyledTableRow key={res.RoomID}>
               <StyledTableCell>
                 <IconButton
@@ -76,7 +76,7 @@ export default function RegTable(props) {
                   <PageviewIcon />
                 </IconButton>
               </StyledTableCell>
-              <StyledTableCell>{res.RoomID}</StyledTableCell>
+              <StyledTableCell>{ roomList ? roomList[index] : null }</StyledTableCell>
               <StyledTableCell>
                 {res.checkIn ? (
                   <Moment
