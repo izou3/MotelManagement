@@ -23,7 +23,7 @@ describe('Blacklist Routes', function() {
   before('Require Dependencies', function() {
     decache('../../../server/index');
 
-    auth = require('../../../server/services/Staff');
+    auth = require('../../../server/middlewares/AuthMiddlewares');
     sinon.stub(auth, 'loginRequired').callsFake(function(req, res, next) {
       return next();
     });
@@ -45,7 +45,7 @@ describe('Blacklist Routes', function() {
   context('POST: /api/blacklist', function() {
     it('Add to BlackList Successfully', function(done) {
       chai.request(app)
-        .post('/api/blacklist')
+        .post('/api/blacklist?HotelID=58566')
         .type('form')
         .send(BlackListCustomer)
         .end(function(err, res) {
@@ -57,7 +57,7 @@ describe('Blacklist Routes', function() {
 
     it('Add Duplicate to BlackList', function(done) {
       chai.request(app)
-        .post('/api/blacklist')
+        .post('/api/blacklist?HotelID=58566')
         .type('form')
         .send(BlackListCustomer)
         .end(function(err, res) {
@@ -69,7 +69,7 @@ describe('Blacklist Routes', function() {
 
     it('Add with Invalid Data Fields', function(done) {
       chai.request(app)
-        .post('/api/blacklist')
+        .post('/api/blacklist?HotelID=58566')
         .type('form')
         .send({ exists: true })
         .end(function(err, res) {
@@ -82,7 +82,7 @@ describe('Blacklist Routes', function() {
   context('PUT: /api/blacklist', function() {
     it('Update in BlackList Successfully', function(done) {
       chai.request(app)
-        .put('/api/blacklist')
+        .put('/api/blacklist?HotelID=58566')
         .type('form')
         .send(BlackListCustomer)
         .end(function(err, res) {
@@ -94,7 +94,7 @@ describe('Blacklist Routes', function() {
 
     it('Update in BlackList with Non-existent BookingID', function(done) {
       chai.request(app)
-        .put('/api/blacklist')
+        .put('/api/blacklist?HotelID=58566')
         .type('form')
         .send({
           BookingID: 20,
@@ -109,7 +109,7 @@ describe('Blacklist Routes', function() {
 
     it('Update In BlackList with Invalid Fields', function(done) {
       chai.request(app)
-        .put('/api/blacklist')
+        .put('/api/blacklist?HotelID=58566')
         .type('form')
         .send({ exists: true })
         .end(function(err, res) {
@@ -122,7 +122,7 @@ describe('Blacklist Routes', function() {
   context('DELETE: /api/blacklist', function() {
     it('Delete in BlackList with Non-existent BookingID', function(done) {
       chai.request(app)
-        .delete('/api/blacklist?BookingID=20')
+        .delete('/api/blacklist?HotelID=58566&BookingID=20')
         .end(function(err, res) {
           expect(res).to.have.status(400);
           expect(res.body.message).to.equal('Customer Does Not Exist in BlackList');
@@ -132,7 +132,7 @@ describe('Blacklist Routes', function() {
 
     it('Delete in BlackList with Invalid Fields', function(done) {
       chai.request(app)
-        .delete('/api/blacklist?BookingID=string')
+        .delete('/api/blacklist?HotelID=58566&BookingID=string')
         .end(function(err, res) {
           expect(res).to.have.status(400);
           done();
@@ -141,7 +141,7 @@ describe('Blacklist Routes', function() {
 
     it('Delete in BlackList Successfully', function(done) {
       chai.request(app)
-        .delete('/api/blacklist?BookingID=2020112189')
+        .delete('/api/blacklist?HotelID=58566&BookingID=2020112189')
         .end(function(err, res) {
           expect(res).to.have.status(200);
           expect(res.body.message).to.equal('Success');

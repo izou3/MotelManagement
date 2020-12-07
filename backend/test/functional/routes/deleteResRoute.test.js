@@ -43,6 +43,8 @@ describe('Delete Reservation Routes', function() {
     checkOut: '2020-10-20T12:00:00.000+00:00',
     numGuests: 2,
     Checked: 2,
+    HotelID: 58566,
+    StyleID: 0,
   };
 
   before('Establish Mongo Connection', function() {
@@ -55,7 +57,7 @@ describe('Delete Reservation Routes', function() {
 
   describe('PUT and Delete for DeleteReservation Collection', function() {
     before('Establish Dependencies', function() {
-      auth = require('../../../server/services/Staff');
+      auth = require('../../../server/middlewares/AuthMiddlewares');
       sinon.stub(auth, 'loginRequired').callsFake(function(req, res, next) {
         return next();
       });
@@ -86,7 +88,7 @@ describe('Delete Reservation Routes', function() {
     context('PUT: /api/reservation/delreservations', function() {
       it('Successfully Update Reservation', function(done) {
         chai.request(app)
-          .put('/api/reservation/delreservations')
+          .put('/api/reservation/delreservations?HotelID=58566')
           .type('form')
           .send({
             ...ReservationObj,
@@ -111,7 +113,7 @@ describe('Delete Reservation Routes', function() {
 
       it('Fail to Update with Nonexistent BookingID', function(done) {
         chai.request(app)
-          .put('/api/reservation/delreservations')
+          .put('/api/reservation/delreservations?HotelID=58566')
           .type('application/json')
           .send({
             ...ReservationObj,
@@ -136,7 +138,7 @@ describe('Delete Reservation Routes', function() {
 
       it('Fail to Update with Missing Fields', function(done) {
         chai.request(app)
-          .put('/api/reservation/delreservations')
+          .put('/api/reservation/delreservations?HotelID=58566')
           .type('form')
           .send({
             exists: true
@@ -158,7 +160,7 @@ describe('Delete Reservation Routes', function() {
 
       it('Fail to Update with Invalid Fields', function(done) {
         chai.request(app)
-          .put('/api/reservation/delreservations')
+          .put('/api/reservation/delreservations?HotelID=58566')
           .type('form')
           .send({
             ...ReservationObj,
@@ -186,7 +188,7 @@ describe('Delete Reservation Routes', function() {
     context('DELETE: /api/reservation/delreservations?BookingID=', function() {
       it('Fail to Delete with Nonexistent BookingID', function(done) {
         chai.request(app)
-          .delete('/api/reservation/delreservations?BookingID=20')
+          .delete('/api/reservation/delreservations?HotelID=58566&BookingID=20')
           .then(function(res) {
             expect(res).to.have.status(400);
             expect(res.body.message).to.equal('Reservation Does Not Exist');
@@ -205,7 +207,7 @@ describe('Delete Reservation Routes', function() {
 
       it('Fail to Delete with Invalid BookingID', function(done) {
         chai.request(app)
-          .delete('/api/reservation/delreservations?BookingID=string')
+          .delete('/api/reservation/delreservations?HotelID=58566&BookingID=string')
           .then(function(res) {
             expect(res).to.have.status(400);
 
@@ -223,7 +225,7 @@ describe('Delete Reservation Routes', function() {
 
       it('Successfully Delete Reservation', function(done) {
         chai.request(app)
-          .delete('/api/reservation/delreservations?BookingID=2020')
+          .delete('/api/reservation/delreservations?HotelID=58566&BookingID=2020')
           .then(function(res) {
             expect(res).to.have.status(200);
             expect(res.body.message).to.equal('Deleted Successfully');

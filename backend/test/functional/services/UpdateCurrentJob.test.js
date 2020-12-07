@@ -19,7 +19,7 @@ const CurrentTestModel = mongoose.model(
   'CurrentReservation',
 );
 
-const Pending = require('../../../server/services/reservations/PendingRes');
+const { UpdateToCurrentReservationsCommand } = require('../../../server/services/JobCommands/index');
 
 describe('Test UpdateCurrent Job', function() {
   // Open and Close Mongo Connections
@@ -55,6 +55,8 @@ describe('Test UpdateCurrent Job', function() {
           checkOut: '2020-10-20T12:00:00.000+00:00',
           numGuests: 2,
           Checked: 2,
+          HotelID: 58566,
+          StyleID: 0
         },
         {
           email: 'ivanz@gamil.com',
@@ -76,6 +78,8 @@ describe('Test UpdateCurrent Job', function() {
           checkOut: '2020-10-20T12:00:00.000+00:00',
           numGuests: 2,
           Checked: 2,
+          HotelID: 58566,
+          StyleID: 0
         },
         {
           email: 'ivanz@gamil.com',
@@ -97,6 +101,8 @@ describe('Test UpdateCurrent Job', function() {
           checkOut: '2020-10-20T12:00:00.000+00:00',
           numGuests: 2,
           Checked: 2,
+          HotelID: 58566,
+          StyleID: 0
         },
         {
           email: 'ivanz@gamil.com',
@@ -118,6 +124,8 @@ describe('Test UpdateCurrent Job', function() {
           checkOut: '2020-10-21T12:00:00.000+00:00',
           numGuests: 2,
           Checked: 2,
+          HotelID: 58566,
+          StyleID: 0
         }
       ];
       return PendTestModel.insertMany(reservations);
@@ -130,7 +138,12 @@ describe('Test UpdateCurrent Job', function() {
     });
 
     it('2 Reservations Should be Moved to Current', function(done) {
-      Pending.moveToCurrRes('2020-10-17T00:00:00.000+00:00', '2020-10-19T00:00:00.000+00:00')
+      const UpdateCurrent = new UpdateToCurrentReservationsCommand(
+        '58566',
+        '2020-10-17T00:00:00.000+00:00',
+        '2020-10-19T00:00:00.000+00:00'
+      );
+      UpdateCurrent.execute()
         .then((res) => {
           expect(res.length).to.equal(2);
           res.sort((a, b) => (a.BookingID > b.BookingID) ? 1 : -1);
@@ -147,7 +160,12 @@ describe('Test UpdateCurrent Job', function() {
     });
 
     it('No Reservations Should be moved to Current (1)', function(done) {
-      Pending.moveToCurrRes('2020-10-15T00:00:00.000+00:00', '2020-10-17T00:00:00.000+00:00')
+      const UpdateCurrent = new UpdateToCurrentReservationsCommand(
+        '58566',
+        '2020-10-15T00:00:00.000+00:00',
+        '2020-10-17T00:00:00.000+00:00'
+      );
+      UpdateCurrent.execute()
         .then((res) => {
           expect(res).to.be.an('array').that.is.empty;
 
@@ -161,7 +179,12 @@ describe('Test UpdateCurrent Job', function() {
     });
 
     it('All Reservations Should be moved to Current', function(done) {
-      Pending.moveToCurrRes('2020-10-17T00:00:00.000+00:00', '2020-10-21T00:00:00.000+00:00')
+      const UpdateCurrent = new UpdateToCurrentReservationsCommand(
+        '58566',
+        '2020-10-17T00:00:00.000+00:00',
+        '2020-10-21T00:00:00.000+00:00'
+      );
+      UpdateCurrent.execute()
         .then((res) => {
           expect(res.length).to.equal(4);
 
@@ -180,7 +203,12 @@ describe('Test UpdateCurrent Job', function() {
     });
 
     it('No Reservations Should Be Moved to Current (2)', function(done) {
-      Pending.moveToCurrRes('2020-10-21T00:00:00.000+00:00', '2020-10-25T00:00:00.000+00:00')
+      const UpdateCurrent = new UpdateToCurrentReservationsCommand(
+        '58566',
+        '2020-10-21T00:00:00.000+00:00',
+        '2020-10-25T00:00:00.000+00:00'
+      );
+      UpdateCurrent.execute()
         .then((res) => {
           expect(res).to.be.an('array').that.is.empty;
 
@@ -194,7 +222,12 @@ describe('Test UpdateCurrent Job', function() {
 
     // To test this as a transaction throw an error in moveToCurr Method
     // it.only('All Reservations Should Be Moved to Current (test)', function(done) {
-    //   Pending.moveToCurrRes('2020-10-17T00:00:00.000+00:00', '2020-10-21T00:00:00.000+00:00')
+    //   const UpdateCurrent = new UpdateToCurrentReservationsCommand(
+    //     '58566',
+    //     '2020-10-17T00:00:00.000+00:00',
+    //     '2020-10-21T00:00:00.000+00:00'
+    //   );
+    //   UpdateCurrent.execute()
     //     .then((res) => {
     //       done(new Error('failed'));
     //     })

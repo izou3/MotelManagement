@@ -48,6 +48,8 @@ describe('Report Routes', function() {
       checkOut: '2020-10-19T12:00:00.000Z',
       numGuests: 2,
       Checked: 1,
+      HotelID: 58566,
+      StyleID: 0
     }, {
       email: 'ivanz@gamil.com',
       phone: 5058934500,
@@ -68,6 +70,8 @@ describe('Report Routes', function() {
       checkOut: '2020-10-29T12:00:00.000Z',
       numGuests: 2,
       Checked: 1,
+      HotelID: 58566,
+      StyleID: 0
     }
   ];
 
@@ -142,7 +146,7 @@ describe('Report Routes', function() {
 
   describe('CRUD Operations/Refund/Housekeeping on DailyReport Obj', function() {
     before('Establish Dependencies', function() {
-      auth = require('../../../server/services/Staff');
+      auth = require('../../../server/middlewares/AuthMiddlewares');
       sinon.stub(auth, 'loginRequired').callsFake(function(req, res, next) {
         return next();
       });
@@ -167,7 +171,7 @@ describe('Report Routes', function() {
     });
 
     after('Remove Dependenices', function() {
-      sinon.restore();
+      auth.loginRequired.restore();
       const promise1 = CurrentTestModel.deleteMany({}).exec();
       const promise2 = ReportTest.deleteMany({}).exec();
       return Promise.all([promise1, promise2]);
@@ -177,7 +181,7 @@ describe('Report Routes', function() {
       describe('GET: /api/dailyreport', function() {
         it('Fail to Get Daily Report from Undefined Date', function(done) {
           chai.request(app)
-            .get('/api/dailyreport')
+            .get('/api/dailyreport?HotelID=58566')
             .then((res) => {
               expect(res).to.have.status(400);
               expect(res.body.message).to.equal('Undefined Date');
@@ -188,7 +192,7 @@ describe('Report Routes', function() {
 
         it('Fail to Get Daily Report from Invalid Date', function(done) {
           chai.request(app)
-            .get('/api/dailyreport?date=10090')
+            .get('/api/dailyreport?HotelID=58566&date=10090')
             .then((res) => {
               expect(res).to.have.status(400);
               expect(res.body.message).to.equal('Undefined Date');
@@ -199,7 +203,7 @@ describe('Report Routes', function() {
 
         it('Fail to Get Daily Report from Nonexistent Date', function(done) {
           chai.request(app)
-            .get('/api/dailyreport?date=2023-10-30')
+            .get('/api/dailyreport?HotelID=58566&date=2023-10-30')
             .then((res) => {
               expect(res).to.have.status(400);
               expect(res.body.message).to.equal('Report Does Not Exist');
@@ -211,7 +215,7 @@ describe('Report Routes', function() {
         it('Successfully to Get Daily Report', function(done) {
           const date = moment().format('YYYY-MM-DD');
           chai.request(app)
-            .get(`/api/dailyreport?date=${date}`)
+            .get(`/api/dailyreport?HotelID=58566&date=${date}`)
             .then((res) => {
               expect(res).to.have.status(200);
               expect(res.body.Stays['101'].Room.BookingID).to.equal(1);
@@ -227,7 +231,7 @@ describe('Report Routes', function() {
       describe('PUT: /api/dailyreport', function() {
         it('Fail to Update Daily Report from Undefined Date', function(done) {
           chai.request(app)
-            .put('/api/dailyreport')
+            .put('/api/dailyreport?HotelID=58566')
             .type('application/json')
             .send(ReservationObjs[0])
             .then((res) => {
@@ -240,7 +244,7 @@ describe('Report Routes', function() {
 
         it('Fail to Update Daily Report from Invalid Date', function(done) {
           chai.request(app)
-            .put('/api/dailyreport?date=10090')
+            .put('/api/dailyreport?HotelID=58566&date=10090')
             .type('application/json')
             .send(ReservationObjs[0])
             .then((res) => {
@@ -253,7 +257,7 @@ describe('Report Routes', function() {
 
         it('Fail to Get Daily Report from Nonexistent Date', function(done) {
           chai.request(app)
-            .put('/api/dailyreport?date=2023-10-30')
+            .put('/api/dailyreport?HotelID=58566&date=2023-10-30')
             .type('application/json')
             .send(ReservationObjs[0])
             .then((res) => {
@@ -266,7 +270,7 @@ describe('Report Routes', function() {
 
         it('Fail to Get Daily Report from Nonexistent BookingID', function(done) {
           chai.request(app)
-            .put('/api/dailyreport?date=2023-10-30')
+            .put('/api/dailyreport?HotelID=58566&date=2023-10-30')
             .type('application/json')
             .send({
               ...ReservationObjs[0],
@@ -283,7 +287,7 @@ describe('Report Routes', function() {
         it('Fail to Update with Invalid Data', function(done) {
           const today = moment().format('YYYY-MM-DD');
           chai.request(app)
-            .put(`/api/dailyreport?date=${today}`)
+            .put(`/api/dailyreport?HotelID=58566&date=${today}`)
             .type('application/json')
             .send({
               BookingID: 2,
@@ -323,7 +327,7 @@ describe('Report Routes', function() {
         it('Successfully Update Current Guest', function(done) {
           const today = moment().format('YYYY-MM-DD');
           chai.request(app)
-            .put(`/api/dailyreport?date=${today}`)
+            .put(`/api/dailyreport?HotelID=58566&date=${today}`)
             .type('application/json')
             .send({
               BookingID: 2,
@@ -355,7 +359,7 @@ describe('Report Routes', function() {
         it('Successfully Update Stayover Guest', function(done) {
           const today = moment().format('YYYY-MM-DD');
           chai.request(app)
-            .put(`/api/dailyreport?date=${today}`)
+            .put(`/api/dailyreport?HotelID=58566&date=${today}`)
             .type('application/json')
             .send({
               BookingID: 1,
@@ -390,7 +394,7 @@ describe('Report Routes', function() {
       describe('PUT: /api/dailyreport/refund', function() {
         it('Fail to Update Refund from Undefined Date', function(done) {
           chai.request(app)
-            .put('/api/dailyreport/refund')
+            .put('/api/dailyreport/refund?HotelID=58566')
             .type('application/json')
             .send({
               exists: true
@@ -405,7 +409,7 @@ describe('Report Routes', function() {
 
         it('Fail to Update Refund from Nonexistent Date', function(done) {
           chai.request(app)
-            .put('/api/dailyreport/refund')
+            .put('/api/dailyreport/refund?HotelID=58566')
             .type('application/json')
             .send({
               exists: true,
@@ -424,7 +428,7 @@ describe('Report Routes', function() {
         it('Fail to Update Refund with Missing Data', function(done) {
           const today = moment().format('YYYY-MM-DD');
           chai.request(app)
-            .put(`/api/dailyreport/refund`)
+            .put(`/api/dailyreport/refund?HotelID=58566`)
             .type('application/json')
             .send({
               date: today,
@@ -440,7 +444,7 @@ describe('Report Routes', function() {
         it('Fail to Update Refund with Invalid Data', function(done) {
           const today = moment().format('YYYY-MM-DD');
           chai.request(app)
-            .put(`/api/dailyreport/refund`)
+            .put(`/api/dailyreport/refund?HotelID=58566`)
             .type('application/json')
             .send({
               date: today,
@@ -465,7 +469,7 @@ describe('Report Routes', function() {
         it('Successfully Update Refund', function(done) {
           const today = moment().format('YYYY-MM-DD');
           chai.request(app)
-            .put(`/api/dailyreport/refund`)
+            .put(`/api/dailyreport/refund?HotelID=58566`)
             .type('application/json')
             .send({
               date: today,
@@ -492,7 +496,7 @@ describe('Report Routes', function() {
       describe('PUT: /api/dailyreport/housekeeping', function() {
         it('Fail to Update Housekeeping from Undefined Date', function(done) {
           chai.request(app)
-            .put('/api/dailyreport/housekeeping')
+            .put('/api/dailyreport/housekeeping?HotelID=58566')
             .type('application/json')
             .send({
               status: "O",
@@ -510,7 +514,7 @@ describe('Report Routes', function() {
 
         it('Fail to Update Housekeeping from Nonexistent Date', function(done) {
           chai.request(app)
-            .put('/api/dailyreport/housekeeping?date=2023-12-23')
+            .put('/api/dailyreport/housekeeping?HotelID=58566&date=2023-12-23')
             .type('application/json')
             .send({
               RoomID: 124,
@@ -530,7 +534,7 @@ describe('Report Routes', function() {
         it('Fail to Update Housekeeping with Missing Data', function(done) {
           const today = moment().format('YYYY-MM-DD');
           chai.request(app)
-            .put(`/api/dailyreport/housekeeping?date=${today}`)
+            .put(`/api/dailyreport/housekeeping?HotelID=58566&date=${today}`)
             .type('application/json')
             .send({
               exists: true
@@ -567,7 +571,7 @@ describe('Report Routes', function() {
         it('Successfully Update Housekeeping', function(done) {
           const today = moment().format('YYYY-MM-DD');
           chai.request(app)
-            .put(`/api/dailyreport/housekeeping?date=${today}`)
+            .put(`/api/dailyreport/housekeeping?HotelID=58566&date=${today}`)
             .type('application/json')
             .send({
               RoomID: 101,

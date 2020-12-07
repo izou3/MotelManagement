@@ -49,6 +49,8 @@ describe('Customer Routes', function() {
       checkOut: '2020-09-19T12:00:00.000Z',
       numGuests: 2,
       Checked: 1,
+      HotelID: 58566,
+      StyleID: 0,
     }, {
       email: 'ivanz@gamil.com',
       phone: 5058934500,
@@ -69,6 +71,8 @@ describe('Customer Routes', function() {
       checkOut: '2020-09-25T12:00:00.000Z',
       numGuests: 2,
       Checked: 1,
+      HotelID: 58566,
+      StyleID: 0,
     }
   ];
 
@@ -141,7 +145,7 @@ describe('Customer Routes', function() {
    */
   describe('Checked Out and Update Customers', function() {
     before('Require Dependencies', function() {
-      auth = require('../../../server/services/Staff');
+      auth = require('../../../server/middlewares/AuthMiddlewares');
       sinon.stub(auth, 'loginRequired').callsFake(function(req, res, next) {
         return next();
       });
@@ -163,7 +167,7 @@ describe('Customer Routes', function() {
       sinon.restore();
     });
 
-    context('POST: /api/customer/', function() {
+    context('POST: /api/customer?HotelID=58566', function() {
       before('Insert Reservations', function(){
         const promise1 = CurrentTestModel.insertMany(ReservationObjs);
         const promise2 = ReportTest.insertMany(reportObj);
@@ -178,7 +182,7 @@ describe('Customer Routes', function() {
 
       it('Fail to CheckOut with Undefined BookingID', function(done) {
         chai.request(app)
-          .post('/api/customer?roomType=S')
+          .post('/api/customer?HotelID=58566&roomType=S')
           .type('application/json')
           .send({
             ...ReservationObjs[0],
@@ -195,7 +199,7 @@ describe('Customer Routes', function() {
 
       it('Fail to CheckOut with NaN BookingID', function(done) {
         chai.request(app)
-          .post('/api/customer?roomType=S')
+          .post('/api/customer?HotelID=58566&roomType=S')
           .type('application/json')
           .send({
             ...ReservationObjs[0],
@@ -211,7 +215,7 @@ describe('Customer Routes', function() {
 
       it('Fail to CheckOut with Nonexistent BookingID', function(done) {
         chai.request(app)
-          .post('/api/customer?roomType=S')
+          .post('/api/customer?HotelID=58566&roomType=S')
           .type('application/json')
           .send({
             ...ReservationObjs[0],
@@ -226,7 +230,7 @@ describe('Customer Routes', function() {
 
       it('Fail to CheckOut with Missing Fields', function(done) {
         chai.request(app)
-          .post('/api/customer?roomType=S')
+          .post('/api/customer?HotelID=58566&roomType=S')
           .type('application/json')
           .send({
             exists: true,
@@ -244,7 +248,7 @@ describe('Customer Routes', function() {
 
       it('Successfully CheckOut with No Previous Records', function(done) {
         chai.request(app)
-          .post('/api/customer?roomType=S')
+          .post('/api/customer?HotelID=58566&roomType=S')
           .type('application/json')
           .send(ReservationObjs[0])
           .then((res) => {
@@ -270,7 +274,7 @@ describe('Customer Routes', function() {
 
       it('Successfully CheckOut with Previous Records', function(done) {
         chai.request(app)
-          .post('/api/customer')
+          .post('/api/customer?HotelID=58566')
           .type('application/json')
           .send({
             ...ReservationObjs[1],
@@ -302,7 +306,7 @@ describe('Customer Routes', function() {
       // ReservationObjs[0,1] are both in SQL DB
       it('Fail to Update with Undefined BookingID', function(done) {
         chai.request(app)
-          .put('/api/customer')
+          .put('/api/customer?HotelID=58566')
           .type('application/json')
           .send({
             ...ReservationObjs[0],
@@ -319,7 +323,7 @@ describe('Customer Routes', function() {
 
       it('Fail to Update with NaN BookingID', function(done) {
         chai.request(app)
-          .put('/api/customer')
+          .put('/api/customer?HotelID=58566')
           .type('application/json')
           .send({
             ...ReservationObjs[0],
@@ -335,7 +339,7 @@ describe('Customer Routes', function() {
 
       it('Fail to Update with Nonexistent BookingID', function(done) {
         chai.request(app)
-          .put('/api/customer')
+          .put('/api/customer?HotelID=58566')
           .type('application/json')
           .send({
             ...ReservationObjs[0],
@@ -350,7 +354,7 @@ describe('Customer Routes', function() {
 
       it('Fail to Update with Missing Fields', function(done) {
         chai.request(app)
-          .post('/api/customer?roomType=S')
+          .post('/api/customer?HotelID=58566&roomType=S')
           .type('application/json')
           .send({
             exists: true,
@@ -365,7 +369,7 @@ describe('Customer Routes', function() {
 
       it('Succesfully Update (1)', function(done) {
         chai.request(app)
-          .put('/api/customer')
+          .put('/api/customer?HotelID=58566')
           .type('application/json')
           .send({
             ...ReservationObjs[0],
@@ -376,8 +380,8 @@ describe('Customer Routes', function() {
           .then((res) => {
             expect(res).to.have.status(200);
             expect(res.body).to.have.keys('BookingID', 'CustomerID', 'firstName', 'lastName', 'ReservationID', 'RoomID',
-            'PaymentID', 'StateID', 'pricePaid', 'tax', 'checkIn', 'checkOut', 'numGuests', 'email', 'phone', 'comments'
-            );
+            'PaymentID', 'StateID', 'pricePaid', 'tax', 'checkIn', 'checkOut', 'numGuests', 'email', 'phone', 'comments',
+            'HotelID', 'StyleID', 'YearID', 'MonthID');
             expect(res.body.firstName).to.equal('Tylerr');
             expect(res.body.pricePaid).to.equal(200);
             done();
@@ -387,7 +391,7 @@ describe('Customer Routes', function() {
 
       it('Succesfully Update (2)', function(done) {
         chai.request(app)
-          .put('/api/customer')
+          .put('/api/customer?HotelID=58566')
           .type('application/json')
           .send({
             ...ReservationObjs[1],
@@ -398,8 +402,8 @@ describe('Customer Routes', function() {
           .then((res) => {
             expect(res).to.have.status(200);
             expect(res.body).to.have.keys('BookingID', 'CustomerID', 'firstName', 'lastName', 'ReservationID', 'RoomID',
-            'PaymentID', 'StateID', 'pricePaid', 'tax', 'checkIn', 'checkOut', 'numGuests', 'email', 'phone', 'comments'
-            );
+            'PaymentID', 'StateID', 'pricePaid', 'tax', 'checkIn', 'checkOut', 'numGuests', 'email', 'phone', 'comments',
+            'HotelID', 'StyleID', 'YearID', 'MonthID');
             expect(res.body.firstName).to.equal('Tyl');
             expect(res.body.pricePaid).to.equal(1000);
             done();

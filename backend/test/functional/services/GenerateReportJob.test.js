@@ -1,7 +1,8 @@
 const chai = require('chai');
 const { expect } = chai;
 
-const DailyReportService = require('../../../server/services/report/Report.js');
+const DailyReportClass = require('../../../server/lib/ReportClass/DailyReport.js');
+
 const PrevDailyReport = {
   YearID: 2020,
   MonthID: 10,
@@ -85,7 +86,7 @@ const PrevDailyReport = {
 };
 
 describe('generateDailyReport() method used for generateDailyReport Jobs', function() {
-  const DailyReport = new DailyReportService(4);
+  const DailyReport = new DailyReportClass("58566");
 
   // Expect That all Data passed to here has already been validated as they're server
   // generated. Any Error that occurs will be caught and the job will fail.
@@ -135,7 +136,7 @@ describe('generateDailyReport() method used for generateDailyReport Jobs', funct
   });
 
   context('Previous Day\'s DailyReport Obj Does', function() {
-    it('Should Generate New DailyReport from Empty Stay\'s Obj', function() {
+    it('Should Generate New DailyReport from Existing Stay\'s Obj', function() {
       const result = DailyReport.generateDailyReport('2020-10-19T12:00:00.000Z', '2020-10-20T12:00:00.000Z',
         PrevDailyReport.Stays);
 
@@ -188,6 +189,7 @@ describe('generateDailyReport() method used for generateDailyReport Jobs', funct
         houseKeeper: '',
         notes: 'Need To Kick out',
       });
+
       expect(result.Stays['102'].HouseKeeping).to.include({
         status: "C",
         type: "W",

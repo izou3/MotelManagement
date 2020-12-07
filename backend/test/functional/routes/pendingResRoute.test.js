@@ -55,10 +55,12 @@ describe('Pending Reservation Routes', function() {
     checkOut: '2020-10-20T12:00:00.000+00:00',
     numGuests: 2,
     Checked: 2,
+    HotelID: 58566,
+    StyleID: 0,
   };
 
   before('Establish Mongo Connection', function() {
-    auth = require('../../../server/services/Staff');
+    auth = require('../../../server/middlewares/AuthMiddlewares');
     sinon.stub(auth, 'loginRequired').callsFake(function(req, res, next) {
       return next();
     });
@@ -88,7 +90,7 @@ describe('Pending Reservation Routes', function() {
   context('POST: /api/reservation/PendingReservation', function() {
     it('Successfully Add New Reservation to Pending Collection', function(done) {
       chai.request(app)
-        .post('/api/reservation/PendingReservation')
+        .post('/api/reservation/PendingReservation?HotelID=58566')
         .type('application/json')
         .send(ReservationObj)
         .then((res) => {
@@ -107,7 +109,7 @@ describe('Pending Reservation Routes', function() {
 
     it('Fail to Add New Reservation with Missing Fields', function(done) {
       chai.request(app)
-        .post('/api/reservation/PendingReservation')
+        .post('/api/reservation/PendingReservation?HotelID=58566')
         .type('form')
         .send({ exists: true })
         .end(function(err, res) {
@@ -125,7 +127,7 @@ describe('Pending Reservation Routes', function() {
 
     it('Fail to Add New Reservation with Invalid Fields', function(done) {
       chai.request(app)
-        .post('/api/reservation/PendingReservation')
+        .post('/api/reservation/PendingReservation?HotelID=58566')
         .type('form')
         .send({
           ...ReservationObj,
@@ -152,7 +154,7 @@ describe('Pending Reservation Routes', function() {
     describe('PUT: /api/reservation/PendingReservation', function() {
       it('Fail Request with Undefined BookingID', function(done) {
         chai.request(app)
-          .put('/api/reservation/PendingReservation')
+          .put('/api/reservation/PendingReservation?HotelID=58566')
           .type('form')
           .send({ exists: true })
           .end(function(err, res) {
@@ -163,10 +165,10 @@ describe('Pending Reservation Routes', function() {
       });
     });
 
-    describe('PUT: /api/reservation/PendingReservation?BookingID=2020&dateChange=false', function() {
+    describe('PUT: /api/reservation/PendingReservation?HotelID=58566&BookingID=2020&dateChange=false', function() {
       it('Update Reservation Successfully', function(done) {
         chai.request(app)
-          .put('/api/reservation/PendingReservation?BookingID=2020&dateChange=false')
+          .put('/api/reservation/PendingReservation?HotelID=58566&BookingID=2020&dateChange=false')
           .type('form')
           .send({
             ...ReservationObj,
@@ -180,6 +182,7 @@ describe('Pending Reservation Routes', function() {
             return PendingTestModel
               .find({})
               .then((res) => {
+                console.log(res);
                 expect(res[0].BookingID).to.equal(2020);
                 expect(res[0].numGuests).to.equal(3);
                 expect(res[0].firstName).to.equal('James');
@@ -191,7 +194,7 @@ describe('Pending Reservation Routes', function() {
 
       it('Fail to Update with Nonexistent BookingID', function(done) {
         chai.request(app)
-          .put('/api/reservation/PendingReservation?BookingID=200&dateChange=false')
+          .put('/api/reservation/PendingReservation?HotelID=58566&BookingID=200&dateChange=false')
           .type('form')
           .send({
             ...ReservationObj,
@@ -213,7 +216,7 @@ describe('Pending Reservation Routes', function() {
 
       it('Fail to Update with Missing Fields', function(done) {
         chai.request(app)
-        .put('/api/reservation/PendingReservation?BookingID=2020&dateChange=false')
+        .put('/api/reservation/PendingReservation?HotelID=58566?BookingID=2020&dateChange=false')
         .type('form')
         .send({
           exists: true
@@ -226,7 +229,7 @@ describe('Pending Reservation Routes', function() {
 
       it('Fail to Update with Invalid Fields', function(done) {
         chai.request(app)
-          .put('/api/reservation/PendingReservation?BookingID=2020&dateChange=false')
+          .put('/api/reservation/PendingReservation?HotelID=58566&BookingID=2020&dateChange=false')
           .type('form')
           .send({
             ...ReservationObj,
@@ -245,7 +248,7 @@ describe('Pending Reservation Routes', function() {
     describe('PUT: /api/reservation/PendingReservation?BookingID=2020&dateChange=true', function() {
       it('Fail to Update with Nonexistent BookingID', function(done) {
         chai.request(app)
-          .put('/api/reservation/PendingReservation?BookingID=200&dateChange=true')
+          .put('/api/reservation/PendingReservation?HotelID=58566&BookingID=200&dateChange=true')
           .type('form')
           .send({
             ...ReservationObj,
@@ -264,7 +267,7 @@ describe('Pending Reservation Routes', function() {
 
       it('Fail to Update with Missing Fields', function(done) {
         chai.request(app)
-          .put('/api/reservation/PendingReservation?BookingID=2020&dateChange=true')
+          .put('/api/reservation/PendingReservation?HotelID=58566&BookingID=2020&dateChange=true')
           .type('form')
           .send({
             exists: true
@@ -281,7 +284,7 @@ describe('Pending Reservation Routes', function() {
 
       it('Fail to Update with Invalid Fields', function(done) {
         chai.request(app)
-          .put('/api/reservation/PendingReservation?BookingID=2020&dateChange=true')
+          .put('/api/reservation/PendingReservation?HotelID=58566&BookingID=2020&dateChange=true')
           .type('form')
           .send({
             ...ReservationObj,
@@ -303,7 +306,7 @@ describe('Pending Reservation Routes', function() {
 
       it('Update Reservation Successfully into Current', function(done) {
         chai.request(app)
-          .put('/api/reservation/PendingReservation?BookingID=2020&dateChange=true')
+          .put('/api/reservation/PendingReservation?HotelID=58566&BookingID=2020&dateChange=true')
           .type('form')
           .send({
             ...ReservationObj,
@@ -343,7 +346,7 @@ describe('Pending Reservation Routes', function() {
 
     it('Fail to Delete with Undefined BookingID', function(done) {
       chai.request(app)
-        .delete('/api/reservation/PendingReservation')
+        .delete('/api/reservation/PendingReservation?HotelID=58566')
         .then(function(res) {
           expect(res).to.have.status(400);
           expect(res.body.message).to.equal('Undefined BookingID');
@@ -354,10 +357,10 @@ describe('Pending Reservation Routes', function() {
 
     it('Fail to Delete with Non-existent BookingID', function(done) {
       chai.request(app)
-        .delete('/api/reservation/PendingReservation?BookingID=200')
+        .delete('/api/reservation/PendingReservation?HotelID=58566&BookingID=200')
         .end(function(err, res) {
           expect(res).to.have.status(400);
-          expect(res.body.message).to.equal('Failed to Remove Reservation');
+          expect(res.body.message).to.equal('Reservation is Not Defined');
 
           return PendingTestModel.find({})
           .then((res) => {
@@ -369,7 +372,7 @@ describe('Pending Reservation Routes', function() {
 
     it('Fail to Delete with Invalid BookingID', function(done) {
       chai.request(app)
-        .delete('/api/reservation/PendingReservation?BookingID=string')
+        .delete('/api/reservation/PendingReservation?HotelID=58566&BookingID=string')
         .end(function(err, res) {
           expect(res).to.have.status(400);
           expect(res.body.message).to.equal('Undefined BookingID');
@@ -384,7 +387,7 @@ describe('Pending Reservation Routes', function() {
 
     it('Successfully Delete Reservation from Pending', function(done) {
       chai.request(app)
-        .delete('/api/reservation/PendingReservation?BookingID=2020')
+        .delete('/api/reservation/PendingReservation?HotelID=58566&BookingID=2020')
         .end(function(err, res) {
           expect(res).to.have.status(200);
           expect(res.body.message).to.equal('Successfully Removed Reservation');

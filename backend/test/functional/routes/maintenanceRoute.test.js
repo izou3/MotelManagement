@@ -22,7 +22,7 @@ describe('Maintenance Routes', function() {
   let agendaStub;
 
   before('Establish Mongo Connection', function() {
-    auth = require('../../../server/services/Staff');
+    auth = require('../../../server/middlewares/AuthMiddlewares');
     sinon.stub(auth, 'loginRequired').callsFake(function(req, res, next) {
       return next();
     });
@@ -57,7 +57,7 @@ describe('Maintenance Routes', function() {
   context('POST: /api/maintenance', function() {
     it('Fail to Create Maintenance Sheet from Undefined Name', function(done) {
       chai.request(app)
-        .post('/api/maintenance')
+        .post('/api/maintenance?HotelID=58566')
         .type('application/json')
         .send({
           exists: true
@@ -72,13 +72,14 @@ describe('Maintenance Routes', function() {
 
     it('Create Maintenance Sheet (1)', function(done) {
       chai.request(app)
-        .post('/api/maintenance?name=General')
+        .post('/api/maintenance?HotelID=58566&name=General')
         .then((res) => {
           expect(res).to.have.status(200);
           expect(res.body['Facilities']).to.be.an('array');
           expect(res.body['101']).to.be.an('array');
           expect(res.body['126']).to.be.an('array');
           expect(res.body.Name).to.equal('General');
+          expect(res.body.HotelID).to.equal(58566);
           done();
         })
         .catch(err => done(err));
@@ -86,7 +87,7 @@ describe('Maintenance Routes', function() {
 
     it('Create Maintenance Sheet (2)', function(done) {
       chai.request(app)
-        .post('/api/maintenance?name=AirConditioner')
+        .post('/api/maintenance?HotelID=58566&name=AirConditioner')
         .then((res) => {
           expect(res).to.have.status(200);
           expect(res.body['Facilities']).to.be.an('array');
@@ -102,7 +103,7 @@ describe('Maintenance Routes', function() {
   context('GET: /api/maintenance', function() {
     it('Successfully Get Maintenance Sheet By Name', function(done) {
       chai.request(app)
-        .get('/api/maintenance?name=General')
+        .get('/api/maintenance?HotelID=58566&name=General')
         .then((res) => {
           expect(res).to.have.status(200);
           expect(res.body['Facilities']).to.be.an('array');
@@ -116,7 +117,7 @@ describe('Maintenance Routes', function() {
 
     it('Successfully Get All Maintenance Sheet Names', function(done) {
       chai.request(app)
-        .get('/api/maintenance')
+        .get('/api/maintenance?HotelID=58566')
         .then((res) => {
           expect(res).to.have.status(200);
           expect(res.body).to.be.an('array');
@@ -128,7 +129,7 @@ describe('Maintenance Routes', function() {
 
     it('Fail to Get Maintenance Sheet w/ Nonexistent Name', function(done) {
       chai.request(app)
-        .get('/api/maintenance?name=898')
+        .get('/api/maintenance?HotelID=58566&name=898')
         .then((res) => {
           expect(res).to.have.status(400);
           expect(res.body.message).to.equal('Maintenance Log Does Not Exist');
@@ -141,7 +142,7 @@ describe('Maintenance Routes', function() {
   context('DELETE: /api/maintenance', function() {
     it('Fail to Delete Maintenance Sheet from Undefined Name', function(done) {
       chai.request(app)
-        .delete('/api/maintenance')
+        .delete('/api/maintenance?HotelID=58566')
         .then((res) => {
           expect(res).to.have.status(400);
           expect(res.body.message).to.equal('Cannot Delete Sheet with No Name');
@@ -152,7 +153,7 @@ describe('Maintenance Routes', function() {
 
     it('Fail to Delete Maintenance Sheet from Nonexistent Name', function(done) {
       chai.request(app)
-        .delete('/api/maintenance?name=eidjiedj')
+        .delete('/api/maintenance?HotelID=58566&name=eidjiedj')
         .then((res) => {
           expect(res).to.have.status(400);
           expect(res.body.message).to.equal('Maintenance Log Does Not Exist');
@@ -163,7 +164,7 @@ describe('Maintenance Routes', function() {
 
     it('Successfully to Delete Maintenance Sheet', function(done) {
       chai.request(app)
-        .delete('/api/maintenance?name=AirConditioner')
+        .delete('/api/maintenance?HotelID=58566&name=AirConditioner')
         .then((res) => {
           expect(res).to.have.status(200);
           expect(res.body['Facilities']).to.be.an('array');
@@ -177,10 +178,10 @@ describe('Maintenance Routes', function() {
 
     it('Fail to Delete Maintenance Sheet b/c Last One', function(done) {
       chai.request(app)
-        .delete('/api/maintenance?name=General')
+        .delete('/api/maintenance?HotelID=58566&name=General')
         .then((res) => {
           expect(res).to.have.status(400);
-          expect(res.body.message).to.equal('Cannot Delete Only Maintenance Log Left');
+          expect(res.body.message).to.equal('Cannot Delete General Maintenance Sheet');
           done();
         })
         .catch(err => done(err));
@@ -190,7 +191,7 @@ describe('Maintenance Routes', function() {
   context('POST: /api/maintenance/logEntry', function() {
     it('Fail to Create Maintenance LogEntry from Undefined Name', function(done) {
       chai.request(app)
-        .post('/api/maintenance/logEntry?field=102')
+        .post('/api/maintenance/logEntry?HotelID=58566&field=102')
         .type('application/json')
         .send({
           exists: true
@@ -205,7 +206,7 @@ describe('Maintenance Routes', function() {
 
     it('Fail to Create Maintenance LogEntry from Undefined Field', function(done) {
       chai.request(app)
-        .post('/api/maintenance/logEntry?name=102')
+        .post('/api/maintenance/logEntry?HotelID=58566&name=102')
         .type('application/json')
         .send({
           exists: true
@@ -220,7 +221,7 @@ describe('Maintenance Routes', function() {
 
     it('Fail to Create Maintenance LogEntry from Nonexistent Name', function(done) {
       chai.request(app)
-        .post('/api/maintenance/logEntry?name=string&field=102')
+        .post('/api/maintenance/logEntry?HotelID=58566&name=string&field=102')
         .type('application/json')
         .send({
           completed: true,
@@ -238,7 +239,7 @@ describe('Maintenance Routes', function() {
 
     it('Fail to Create Maintenance LogEntry with Invalid Fields', function(done) {
       chai.request(app)
-        .post('/api/maintenance/logEntry?name=General&field=101')
+        .post('/api/maintenance/logEntry?HotelID=58566&name=General&field=101')
         .type('application/json')
         .send({
           completed: 'string',
@@ -255,7 +256,7 @@ describe('Maintenance Routes', function() {
 
     it('Successfully Create Maintenance LogEntry', function(done) {
       chai.request(app)
-        .post('/api/maintenance/logEntry?name=General&field=101')
+        .post('/api/maintenance/logEntry?HotelID=58566&name=General&field=101')
         .type('application/json')
         .send({
           completed: false,
@@ -281,7 +282,7 @@ describe('Maintenance Routes', function() {
   context('PUT: /api/maintenance/logEntry', function() {
     it('Fail to Create Maintenance LogEntry from Undefined Name', function(done) {
       chai.request(app)
-        .put('/api/maintenance/logEntry?field=102')
+        .put('/api/maintenance/logEntry?HotelID=58566&field=102')
         .type('application/json')
         .send({
           exists: true
@@ -296,7 +297,7 @@ describe('Maintenance Routes', function() {
 
     it('Fail to Create Maintenance LogEntry from Undefined Field', function(done) {
       chai.request(app)
-        .put('/api/maintenance/logEntry?name=102')
+        .put('/api/maintenance/logEntry?HotelID=58566&name=102')
         .type('application/json')
         .send({
           exists: true
@@ -316,7 +317,7 @@ describe('Maintenance Routes', function() {
   context('DELETE: /api/maintenance/logEntry', function() {
     it('Fail to Delete Maintenance LogEntry from Undefined Name', function(done) {
       chai.request(app)
-        .delete('/api/maintenance/logEntry?field=102')
+        .delete('/api/maintenance/logEntry?HotelID=58566&field=102')
         .type('application/json')
         .send({
           exists: true
@@ -331,7 +332,7 @@ describe('Maintenance Routes', function() {
 
     it('Fail to Delete Maintenance LogEntry from Undefined Field', function(done) {
       chai.request(app)
-        .delete('/api/maintenance/logEntry?name=102')
+        .delete('/api/maintenance/logEntry?HotelID=58566&name=102')
         .type('application/json')
         .send({
           exists: true

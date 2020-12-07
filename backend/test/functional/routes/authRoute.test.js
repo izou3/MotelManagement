@@ -58,7 +58,7 @@ describe('Authentication Routes', function() {
   });
 });
 
-describe('Staff and Login Routes', function() {
+describe.only('Staff and Login Routes', function() {
   const user = [
     {
       username: 'ivan',
@@ -66,7 +66,8 @@ describe('Staff and Login Routes', function() {
       email: 'izou3@gatech.edu',
       firstName: 'Ided',
       lastName: 'deded',
-      position: 0
+      position: 0,
+      HotelID: 58566,
     },
     {
       username: 'iv',
@@ -74,7 +75,8 @@ describe('Staff and Login Routes', function() {
       email: 'izou3@',
       firstName: 'Ivan',
       lastName: 'Zou',
-      position: 1
+      position: 1,
+      HotelID: 58566,
     }
   ];
 
@@ -115,7 +117,7 @@ describe('Staff and Login Routes', function() {
     it('Should Login Correctly with Valid Username and Password', function(done) {
       let agent = chai.request.agent(app);
       agent
-        .post('/user/login')
+        .post('/user/login?HotelID=58566')
         .type('form')
         .send({
           username: 'ivan',
@@ -125,7 +127,7 @@ describe('Staff and Login Routes', function() {
           expect(res).to.have.status(200);
           expect(res).to.have.cookie('token');
 
-          return agent.get('/api')
+          return agent.get('/api?HotelID=90')
             .then(function(res) {
               expect(res).to.have.status(404);
               done();
@@ -139,7 +141,7 @@ describe('Staff and Login Routes', function() {
     it('Should Fail to Login with Invalid Username', function(done) {
       let agent = chai.request.agent(app);
       agent
-        .post('/user/login')
+        .post('/user/login?HotelID=58566')
         .type('form')
         .send({
           username: 'iva',
@@ -163,7 +165,7 @@ describe('Staff and Login Routes', function() {
     it('Should Fail to Login with Invalid Password', function(done) {
       let agent = chai.request.agent(app);
       agent
-        .post('/user/login')
+        .post('/user/login?HotelID=58566')
         .type('form')
         .send({
           username: 'ivan',

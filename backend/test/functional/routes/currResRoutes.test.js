@@ -60,6 +60,8 @@ describe('Current Reservation Routes', function() {
       checkOut: '2020-10-19T12:00:00.000Z',
       numGuests: 2,
       Checked: 1,
+      HotelID: 58566,
+      StyleID: 0
     }, {
       email: 'ivanz@gamil.com',
       phone: 5058934500,
@@ -80,6 +82,8 @@ describe('Current Reservation Routes', function() {
       checkOut: '2020-10-29T12:00:00.000Z',
       numGuests: 2,
       Checked: 1,
+      HotelID: 58566,
+      StyleID: 0
     }
   ];
 
@@ -103,6 +107,8 @@ describe('Current Reservation Routes', function() {
     checkOut: '2020-10-20T12:00:00.000Z',
     numGuests: 2,
     Checked: 2,
+    HotelID: 58566,
+    StyleID: 0
   }
 
   const newReservationChecked1 = {
@@ -125,6 +131,8 @@ describe('Current Reservation Routes', function() {
     checkOut: '2020-10-25T12:00:00.000Z',
     numGuests: 2,
     Checked: 1,
+    HotelID: 58566,
+    StyleID: 0
   }
 
   const reportObj = [
@@ -207,7 +215,7 @@ describe('Current Reservation Routes', function() {
 
   describe('CRUD Routes for Current Reservation', function() {
     before('Establish Dependencies', function() {
-      auth = require('../../../server/services/Staff');
+      auth = require('../../../server/middlewares/AuthMiddlewares');
       sinon.stub(auth, 'loginRequired').callsFake(function(req, res, next) {
         return next();
       });
@@ -219,7 +227,7 @@ describe('Current Reservation Routes', function() {
       mongoStub = sinon.stub();
 
       sqlStub = sinon.stub();
-      console.log(agendaStub);
+
       app = require('../../../server/index')({ values: [mongoStub, sqlStub], agenda: agendaStub });
 
       const promise1 = CurrentTestModel.insertMany(ReservationObjs);
@@ -228,7 +236,7 @@ describe('Current Reservation Routes', function() {
     });
 
     after('Remove Dependenices', function() {
-      sinon.restore();
+      auth.loginRequired.restore();
 
       const promise1 = PendingTestModel.deleteMany({}).exec();
       const promise2 = CurrentTestModel.deleteMany({}).exec();
@@ -240,14 +248,14 @@ describe('Current Reservation Routes', function() {
     context('GET /api/reservation/CurrReservation', function() {
       it('Get all Reservations in Current', function(done) {
         chai.request(app)
-          .get('/api/reservation/CurrReservation')
+          .get('/api/reservation/CurrReservation?HotelID=58566')
           .then((res) => {
             expect(res).to.have.status(200);
             expect(res.body).to.be.an('array');
             expect (res.body.length).to.equal(2);
             expect(res.body[0]).to.have.keys('CustomerID', 'BookingID', 'firstName', 'lastName', 'email', 'numGuests',
             'phone', 'pricePaid', 'tax', 'PaymentID', 'ReservationID', 'RoomID', 'StateID', 'checkIn', 'checkOut', 'comments',
-            'Checked', 'YearID', 'MonthID');
+            'Checked', 'YearID', 'MonthID', 'HotelID', 'StyleID');
             done();
           })
           .catch(err => done(err));
@@ -259,7 +267,7 @@ describe('Current Reservation Routes', function() {
         // ERROR
         it('Successfully Create Reservation with Checked=2', function(done) {
           chai.request(app)
-            .post('/api/reservation/CurrReservation?roomType=S')
+            .post('/api/reservation/CurrReservation?HotelID=58566&roomType=S')
             .type('application/json')
             .send(newReservationChecked2)
             .then((res) => {
@@ -272,7 +280,7 @@ describe('Current Reservation Routes', function() {
 
         it('Fail to Create Reservation with Checked=2 with Missing Fields', function(done) {
           chai.request(app)
-            .post('/api/reservation/CurrReservation?roomType=S')
+            .post('/api/reservation/CurrReservation?HotelID=58566&roomType=S')
             .type('application/json')
             .send({ exists: true })
             .then((res) => {
@@ -284,7 +292,7 @@ describe('Current Reservation Routes', function() {
 
         it('Fail to Create Reservation with Checked=2 with Invalid Fields', function(done) {
           chai.request(app)
-            .post('/api/reservation/CurrReservation?roomType=S')
+            .post('/api/reservation/CurrReservation?HotelID=58566&roomType=S')
             .type('application/json')
             .send({
               ...newReservationChecked2,
@@ -304,7 +312,7 @@ describe('Current Reservation Routes', function() {
       describe('Create with Checked=1', function() {
         it('Successfully Create Reservation with Checked=1', function(done) {
           chai.request(app)
-            .post('/api/reservation/CurrReservation?roomType=W')
+            .post('/api/reservation/CurrReservation?HotelID=58566&roomType=W')
             .type('application/json')
             .send(newReservationChecked1)
             .then((res) => {
@@ -339,7 +347,7 @@ describe('Current Reservation Routes', function() {
 
         it('Fail to Create Reservation with Checked=1 with Missing Fields', function(done) {
           chai.request(app)
-            .post('/api/reservation/CurrReservation?roomType=S')
+            .post('/api/reservation/CurrReservation?HotelID=58566&roomType=S')
             .type('application/json')
             .send({ exists: true, Checked: 1 })
             .then((res) => {
@@ -351,7 +359,7 @@ describe('Current Reservation Routes', function() {
 
         it('Fail to Create Reservation with Checked=2 with Invalid Fields', function(done) {
           chai.request(app)
-            .post('/api/reservation/CurrReservation?roomType=S')
+            .post('/api/reservation/CurrReservation?HotelID=58566&roomType=S')
             .type('application/json')
             .send({
               ...newReservationChecked1,
@@ -388,7 +396,7 @@ describe('Current Reservation Routes', function() {
       describe('Fail to Update with Undefined BookingID', function() {
         it('Fail with Undefined BookingID', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?roomType=S')
+            .put('/api/reservation/CurrReservation?HotelID=58566&roomType=S')
             .type('application/json')
             .send({ exists: true })
             .then((res) => {
@@ -401,7 +409,7 @@ describe('Current Reservation Routes', function() {
 
         it('Fail with Invalid BookingID', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=string&roomType=S')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=string&roomType=S')
             .type('application/json')
             .send({ exists: true })
             .then((res) => {
@@ -416,7 +424,7 @@ describe('Current Reservation Routes', function() {
       describe('Update Current Reservation w/ Checked = 2', function() {
         it('Update CurrReservation w/ Checked = 2 Successfully', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=2')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=2')
             .type('application/json')
             .send({
               ...newReservationChecked2,
@@ -438,7 +446,7 @@ describe('Current Reservation Routes', function() {
 
         it('Fail to Update CurrRes w/ Checked = 2 from Non-existent BookingID', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=200')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=200')
             .type('application/json')
             .send({
               ...newReservationChecked2,
@@ -455,7 +463,7 @@ describe('Current Reservation Routes', function() {
 
         it('Fail to Update CurrRes w/ Checked = 2 from Missing All Fields', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=2')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=2')
             .type('application/json')
             .send({
               exists: true,
@@ -469,7 +477,7 @@ describe('Current Reservation Routes', function() {
 
         it('Fail to Update CurrRes w/ Checked = 2 from Invalid Fields', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=2')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=2')
             .type('application/json')
             .send({
               ...newReservationChecked2,
@@ -490,7 +498,7 @@ describe('Current Reservation Routes', function() {
       describe('Update Current Reservation w/ Checked = 1', function() {
         it('Update New CurrReservation w/ Checked = 1 Successfully (Price)', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=3')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=3')
             .type('application/json')
             .send({
               ...newReservationChecked1,
@@ -525,7 +533,7 @@ describe('Current Reservation Routes', function() {
 
         it('Update New CurrReservation w/ Checked = 1 Successfully (Date)', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=3')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=3')
             .type('application/json')
             .send({
               ...newReservationChecked1,
@@ -564,7 +572,7 @@ describe('Current Reservation Routes', function() {
 
         it('Update New CurrReservation w/ Checked = 1 Successfully (RoomID)', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=3')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=3')
             .type('application/json')
             .send({
               ...newReservationChecked1,
@@ -620,7 +628,7 @@ describe('Current Reservation Routes', function() {
 
         it('Update Existing CurrReservation w/ Checked = 1 Successfully (Price)', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=0')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=0')
             .type('application/json')
             .send({
               ...ReservationObjs[0],
@@ -652,7 +660,7 @@ describe('Current Reservation Routes', function() {
 
         it('Update Existing CurrReservation w/ Checked = 1 Successfully (Price)', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=1')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=1')
             .type('application/json')
             .send({
               ...ReservationObjs[1],
@@ -687,7 +695,7 @@ describe('Current Reservation Routes', function() {
 
         it('Update Existing CurrReservation w/ Checked = 1 Successfully (Date) (1)', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=1')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=1')
             .type('application/json')
             .send({
               ...ReservationObjs[1],
@@ -725,7 +733,7 @@ describe('Current Reservation Routes', function() {
 
         it('Update Existing CurrReservation w/ Checked = 1 Successfully (Date) (2)', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=0')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=0')
             .type('application/json')
             .send({
               ...ReservationObjs[0],
@@ -764,7 +772,7 @@ describe('Current Reservation Routes', function() {
 
         it('Update CurrRes w/ Checked = 1 Fail w/ Nonexistent BookingID', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=200')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=200')
             .type('application/json')
             .send({
               ...ReservationObjs[0],
@@ -781,7 +789,7 @@ describe('Current Reservation Routes', function() {
 
         it('Update CurrRes w/ Checked = 1 Fail w/ Invalid Data', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=0')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=0')
             .type('application/json')
             .send({
               ...ReservationObjs[0],
@@ -804,7 +812,7 @@ describe('Current Reservation Routes', function() {
       describe('PUT: /api/reservation/CurrReservation?checkIn=true', function() {
         it('Fail to Check In Reservation with Non-existent BookingID', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=200&checkIn=true')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=200&checkIn=true')
             .type('application/json')
             .send({
               ...newReservationChecked2,
@@ -821,7 +829,7 @@ describe('Current Reservation Routes', function() {
 
         it('Fail to Check In Reservation with Invalid Fields', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=2&checkIn=true')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=2&checkIn=true')
             .type('application/json')
             .send({
               ...newReservationChecked2,
@@ -840,7 +848,7 @@ describe('Current Reservation Routes', function() {
 
         it('Check In Reservation Successfully', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=2&checkIn=true&roomType=W')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=2&checkIn=true&roomType=W')
             .type('application/json')
             .send({
               ...newReservationChecked2,
@@ -884,7 +892,7 @@ describe('Current Reservation Routes', function() {
       describe('PUT: /api/reservation/CurrReservation?moveToArr=true', function() {
         it('Fail to Move Reservation with Non-existent BookingID', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=200&moveToArr=true')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=200&moveToArr=true')
             .type('application/json')
             .send({
               ...newReservationChecked2,
@@ -901,7 +909,7 @@ describe('Current Reservation Routes', function() {
 
         it('Fail to Move Reservation with Invalid Fields', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=3&moveToArr=true')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=3&moveToArr=true')
             .type('application/json')
             .send({
               ...newReservationChecked2,
@@ -920,7 +928,7 @@ describe('Current Reservation Routes', function() {
 
         it('Move Reservation to Pending Successfully', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=3&moveToArr=true&roomType=S')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=3&moveToArr=true&roomType=S')
             .type('application/json')
             .send({
               ...newReservationChecked1,
@@ -957,7 +965,7 @@ describe('Current Reservation Routes', function() {
       describe('PUT: /api/reservation/CurrReservation?dateChange=true', function() {
         it('Fail to Move Reservation with Non-existent BookingID', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=200&dateChange=true')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=200&dateChange=true')
             .type('application/json')
             .send({
               ...newReservationChecked2,
@@ -965,7 +973,7 @@ describe('Current Reservation Routes', function() {
             })
             .then((res) => {
               expect(res).to.have.status(400);
-              expect(res.body.message).to.equal('Failed to Move Reservation');
+              expect(res.body.message).to.equal('Reservation Does Not Exist');
 
               done();
             })
@@ -974,15 +982,13 @@ describe('Current Reservation Routes', function() {
 
         it('Fail to Move Reservation with Missing Fields', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=3&dateChange=true')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=3&dateChange=true')
             .type('application/json')
             .send({
               exists: true,
             })
             .then((res) => {
               expect(res).to.have.status(400);
-              expect(res.body.message).to.equal('Failed to Move Reservation');
-
               done();
             })
             .catch(err => done(err));
@@ -990,7 +996,7 @@ describe('Current Reservation Routes', function() {
 
         it('Fail to Check In Reservation with Invalid Fields', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=3&dateChange=true')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=3&dateChange=true')
             .type('application/json')
             .send({
               ...newReservationChecked2,
@@ -1002,7 +1008,6 @@ describe('Current Reservation Routes', function() {
             })
             .then((res) => {
               expect(res).to.have.status(400);
-              expect(res.body.message).to.equal('Failed to Move Reservation');
 
               done();
             })
@@ -1011,7 +1016,7 @@ describe('Current Reservation Routes', function() {
 
         it('Move to Pending Successfully', function(done) {
           chai.request(app)
-            .put('/api/reservation/CurrReservation?BookingID=3&dateChange=true')
+            .put('/api/reservation/CurrReservation?HotelID=58566&BookingID=3&dateChange=true')
             .type('application/json')
             .send(newReservationChecked1)
             .then((res) => {
@@ -1054,7 +1059,7 @@ describe('Current Reservation Routes', function() {
 
       it('Fail to Delete with Undefined BookingID', function(done) {
         chai.request(app)
-          .delete('/api/reservation/CurrReservation')
+          .delete('/api/reservation/CurrReservation?HotelID=58566')
           .then((res) => {
             expect(res).to.have.status(400);
             expect(res.body.message).to.equal('Undefined BookingID');
@@ -1065,7 +1070,7 @@ describe('Current Reservation Routes', function() {
 
       it('Fail to Delete with NaN BookingID', function(done) {
         chai.request(app)
-          .delete('/api/reservation/CurrReservation?BookingID=string')
+          .delete('/api/reservation/CurrReservation?HotelID=58566&BookingID=string')
           .then((res) => {
             expect(res).to.have.status(400);
             expect(res.body.message).to.equal('Undefined BookingID');
@@ -1076,7 +1081,7 @@ describe('Current Reservation Routes', function() {
 
       it('Fail to Delete with Non-existent BookingID', function(done) {
         chai.request(app)
-          .delete('/api/reservation/CurrReservation?BookingID=2020')
+          .delete('/api/reservation/CurrReservation?HotelID=58566&BookingID=2020')
           .then((res) => {
             expect(res).to.have.status(400);
             expect(res.body.message).to.equal('Reservation Does Not Exist');
@@ -1087,7 +1092,7 @@ describe('Current Reservation Routes', function() {
 
       it('Successfully Delete Reservation w/ Checked = 0/2', function(done) {
         chai.request(app)
-          .delete('/api/reservation/CurrReservation?BookingID=2020112290')
+          .delete('/api/reservation/CurrReservation?HotelID=58566&BookingID=2020112290')
           .then((res1) => {
             expect(res1).to.have.status(200);
 

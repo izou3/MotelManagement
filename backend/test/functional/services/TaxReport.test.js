@@ -10,6 +10,8 @@ const TestReportSchmema = require('../../../server/models/DailyReport.js');
 const ReportTestModel = mongoose.model('DailyReport', TestReportSchmema, 'DailyReport');
 const ReportTestService = require('../../../server/services/report/TaxReport.js');
 
+const TaxReportClass = require('../../../server/lib/ReportClass/TaxReport');
+
 // Daily Reports for Month 10/2020
 const DailyReports = [
   {
@@ -458,7 +460,8 @@ describe('Test Tax Report Service', function() {
     });
 
     it('Test Report Obj Returned from generateTaxReport()', function(done) {
-      const TaxReport = new ReportTestService(2020, 10);
+      const TaxReport = new TaxReportClass('58566', 2020, 10);
+      // const TaxReport = new ReportTestService(2020, 10);
       TaxReport.generateTaxReport()
         .then((res) => {
           // console.log(res[0].FinalReport);

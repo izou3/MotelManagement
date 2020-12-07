@@ -1,6 +1,6 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const proxyquire = require('proxyquire');
+const decache = require('decache');
 const sinon = require('sinon');
 const logger = require('morgan');
 const mongoose = require('mongoose');
@@ -171,7 +171,7 @@ describe('Reservation Search Routes', function() {
     describe('/api/search/reservations/firstName', function() {
       it('Should Return No Reservations Found', function(done) {
         chai.request(app)
-          .get('/api/search/reservations/firstName?firstName=Henry')
+          .get('/api/search/reservations/firstName?HotelID=58566&firstName=Henry')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             expect(res.body.message).to.equal('Failed to Find a Match');
@@ -181,7 +181,7 @@ describe('Reservation Search Routes', function() {
 
       it('Should Return 6 Results Found', function(done) {
         chai.request(app)
-          .get('/api/search/reservations/firstName?firstName=Ivan')
+          .get('/api/search/reservations/firstName?HotelID=58566&firstName=Ivan')
           .end(function(err, res) {
             expect(res).to.have.status(200);
             expect(res.body).to.be.an('array');
@@ -192,7 +192,7 @@ describe('Reservation Search Routes', function() {
 
       it('Should Return 2 Results Found', function(done) {
         chai.request(app)
-          .get('/api/search/reservations/firstName?firstName=James')
+          .get('/api/search/reservations/firstName?HotelID=58566&firstName=James')
           .end(function(err, res) {
             expect(res).to.have.status(200);
             expect(res.body).to.be.an('array');
@@ -203,7 +203,7 @@ describe('Reservation Search Routes', function() {
 
       it('Should Error From Invalid Date', function(done) {
         chai.request(app)
-          .get('/api/search/reservations/firstName?firstName=909352')
+          .get('/api/search/reservations/firstName?HotelID=58566&firstName=909352')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             done();
@@ -214,7 +214,7 @@ describe('Reservation Search Routes', function() {
     describe('/api/search/reservations/BookingID', function(done) {
       it('Should Return Error No Results Found', function(done) {
         chai.request(app)
-          .get('/api/search/reservations/BookingID?BookingID=90')
+          .get('/api/search/reservations/BookingID?HotelID=58566&BookingID=90')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             expect(res.body.message).to.equal('Failed to Find a Match');
@@ -224,7 +224,7 @@ describe('Reservation Search Routes', function() {
 
       it('Should Return 1 Result Found', function(done) {
         chai.request(app)
-          .get('/api/search/reservations/BookingID?BookingID=0')
+          .get('/api/search/reservations/BookingID?HotelID=58566&BookingID=0')
           .end(function(err, res) {
             expect(res).to.have.status(200);
             expect(res.body).to.be.an('Object');
@@ -235,7 +235,7 @@ describe('Reservation Search Routes', function() {
 
       it('Should Error From Invalid Date', function(done) {
         chai.request(app)
-          .get('/api/search/reservations/BookingID?BookingID=string')
+          .get('/api/search/reservations/BookingID?HotelID=58566&BookingID=string')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             done();
@@ -246,7 +246,7 @@ describe('Reservation Search Routes', function() {
     describe('/api/search/reservations/checkIn', function(done) {
       it('Should Return 3 Results Found', function(done) {
         chai.request(app)
-          .get('/api/search/reservations/checkIn?start=2020-10-25&end=2020-10-30')
+          .get('/api/search/reservations/checkIn?HotelID=58566&start=2020-10-25&end=2020-10-30')
           .end(function(err, res) {
             expect(res).to.have.status(200);
             expect(res.body).to.be.an('array');
@@ -257,7 +257,7 @@ describe('Reservation Search Routes', function() {
 
       it('Should Return Error No Results Found', function(done) {
         chai.request(app)
-          .get('/api/search/reservations/checkIn?start=2020-10-31&end=2020-11-01')
+          .get('/api/search/reservations/checkIn?HotelID=58566&start=2020-10-31&end=2020-11-01')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             expect(res.body.message).to.equal('Failed to Find a Match');
@@ -267,7 +267,7 @@ describe('Reservation Search Routes', function() {
 
       it('Should Error From Invalid Date', function(done) {
         chai.request(app)
-          .get('/api/search/reservations/checkIn?start=2020&end=string')
+          .get('/api/search/reservations/checkIn?HotelID=58566&start=2020&end=string')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             done();
@@ -278,7 +278,7 @@ describe('Reservation Search Routes', function() {
     describe('/api/search/reservations/checkOut', function() {
       it('Should Return 2 Results Found', function(done) {
         chai.request(app)
-          .get('/api/search/reservations/checkOut?start=2020-10-28&end=2020-11-01')
+          .get('/api/search/reservations/checkOut?HotelID=58566&start=2020-10-28&end=2020-11-01')
           .end(function(err, res) {
             expect(res).to.have.status(200);
             expect(res.body).to.be.an('array');
@@ -289,7 +289,7 @@ describe('Reservation Search Routes', function() {
 
       it('Should Return Error 0 Results Found', function(done) {
         chai.request(app)
-          .get('/api/search/reservations/checkOut?start=2020-07-10&end=2020-07-25')
+          .get('/api/search/reservations/checkOut?HotelID=58566&start=2020-07-10&end=2020-07-25')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             expect(res.body.message).to.equal('Failed to Find a Match');
@@ -299,7 +299,7 @@ describe('Reservation Search Routes', function() {
 
       it('Should Error from Invalid Date', function(done) {
         chai.request(app)
-        .get('/api/search/reservations/checkOut?start=string&end=909')
+        .get('/api/search/reservations/checkOut?HotelID=58566&start=string&end=909')
         .end(function(err, res) {
           expect(res).to.have.status(400);
           done();
@@ -310,7 +310,7 @@ describe('Reservation Search Routes', function() {
     describe('/api/search/delreservations/firstName', function() {
       it('Should Return 3 Results Found', function(done) {
         chai.request(app)
-          .get('/api/search/delreservations/firstName?firstName=Ivan')
+          .get('/api/search/delreservations/firstName?HotelID=58566&firstName=Ivan')
           .end(function(err, res) {
             expect(res).to.have.status(200);
             expect(res.body).to.be.an('array');
@@ -321,7 +321,7 @@ describe('Reservation Search Routes', function() {
 
       it('Should Return 1 Result Found', function(done) {
         chai.request(app)
-        .get('/api/search/delreservations/firstName?firstName=James')
+        .get('/api/search/delreservations/firstName?HotelID=58566&firstName=James')
         .end(function(err, res) {
           expect(res).to.have.status(200);
           expect(res.body).to.be.an('array');
@@ -332,7 +332,7 @@ describe('Reservation Search Routes', function() {
 
       it ('Should Return Error 0 Results Found', function(done) {
         chai.request(app)
-          .get('/api/search/delreservations/firstName?firstName=Zach')
+          .get('/api/search/delreservations/firstName?HotelID=58566&firstName=Zach')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             expect(res.body.message).to.equal('Failed to Find a Match');
@@ -342,7 +342,7 @@ describe('Reservation Search Routes', function() {
 
       it ('Should Return Error From Invalid Name', function(done) {
         chai.request(app)
-          .get('/api/search/delreservations/firstName?firstName=909323')
+          .get('/api/search/delreservations/firstName?HotelID=58566&firstName=909323')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             done();
@@ -353,7 +353,7 @@ describe('Reservation Search Routes', function() {
     describe('/api/search/delreservations/BookingID', function() {
       it('Should Return 1 Result Found', function(done) {
         chai.request(app)
-          .get('/api/search/delreservations/BookingID?BookingID=0')
+          .get('/api/search/delreservations/BookingID?HotelID=58566&BookingID=0')
           .end(function(err, res) {
             expect(res).to.have.status(200);
             expect(res.body).to.be.an('Object');
@@ -365,7 +365,7 @@ describe('Reservation Search Routes', function() {
 
       it('Should Return 1 Result Found', function(done) {
         chai.request(app)
-        .get('/api/search/delreservations/BookingID?BookingID=1')
+        .get('/api/search/delreservations/BookingID?HotelID=58566&BookingID=1')
         .end(function(err, res) {
           expect(res).to.have.status(200);
           expect(res.body).to.be.an('Object');
@@ -377,7 +377,7 @@ describe('Reservation Search Routes', function() {
 
       it('Should Return Error 0 Results Found', function(done) {
         chai.request(app)
-          .get('/api/search/delreservations/BookingID?BookingID=90')
+          .get('/api/search/delreservations/BookingID?HotelID=58566&BookingID=90')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             expect(res.body.message).to.equal('Failed to Find a Match');
@@ -387,7 +387,7 @@ describe('Reservation Search Routes', function() {
 
       it('Should Return Error From Invalid BookingID', function(done) {
         chai.request(app)
-          .get('/api/search/delreservations/BookingID?BookingID=hello')
+          .get('/api/search/delreservations/BookingID?HotelID=58566&BookingID=hello')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             done();
@@ -398,7 +398,7 @@ describe('Reservation Search Routes', function() {
     describe('/api/search/delreservations/checkIn', function() {
       it('Should Return 2 Result Found', function(done) {
         chai.request(app)
-          .get('/api/search/delreservations/checkIn?start=2020-10-25&end=2020-10-30')
+          .get('/api/search/delreservations/checkIn?HotelID=58566&start=2020-10-25&end=2020-10-30')
           .end(function(err, res) {
             expect(res).to.have.status(200);
             expect(res.body).to.be.an('array');
@@ -409,7 +409,7 @@ describe('Reservation Search Routes', function() {
 
       it('Should Return 1 Result Found', function(done) {
         chai.request(app)
-        .get('/api/search/delreservations/checkIn?start=2020-10-28&end=2020-10-31')
+        .get('/api/search/delreservations/checkIn?HotelID=58566&start=2020-10-28&end=2020-10-31')
         .end(function(err, res) {
           expect(res).to.have.status(200);
           expect(res.body).to.be.an('array');
@@ -420,7 +420,7 @@ describe('Reservation Search Routes', function() {
 
       it('Should Return Error 0 Results Found', function(done) {
         chai.request(app)
-          .get('/api/search/delreservations/checkIn?start=2020-10-01&end=2020-10-25')
+          .get('/api/search/delreservations/checkIn?HotelID=58566&start=2020-10-01&end=2020-10-25')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             expect(res.body.message).to.equal('Failed to Find a Match');
@@ -430,7 +430,7 @@ describe('Reservation Search Routes', function() {
 
       it('Should Return Error From Invalid BookingID', function(done) {
         chai.request(app)
-          .get('/api/search/delreservations/checkIn?start=hello&end=yeu')
+          .get('/api/search/delreservations/checkIn?HotelID=58566&start=hello&end=yeu')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             done();
@@ -441,7 +441,7 @@ describe('Reservation Search Routes', function() {
     describe('/api/search/delreservations/checkOut', function() {
       it('Should Return 2 Result Found', function(done) {
         chai.request(app)
-          .get('/api/search/delreservations/checkOut?start=2020-10-28&end=2020-11-01')
+          .get('/api/search/delreservations/checkOut?HotelID=58566&start=2020-10-28&end=2020-11-01')
           .end(function(err, res) {
             expect(res).to.have.status(200);
             expect(res.body).to.be.an('array');
@@ -452,7 +452,7 @@ describe('Reservation Search Routes', function() {
 
       it('Should Return 1 Result Found', function(done) {
         chai.request(app)
-        .get('/api/search/delreservations/checkOut?start=2020-11-01&end=2020-11-20')
+        .get('/api/search/delreservations/checkOut?HotelID=58566&start=2020-11-01&end=2020-11-20')
         .end(function(err, res) {
           expect(res).to.have.status(200);
           expect(res.body).to.be.an('array');
@@ -463,7 +463,7 @@ describe('Reservation Search Routes', function() {
 
       it('Should Return Error 0 Results Found', function(done) {
         chai.request(app)
-          .get('/api/search/delreservations/checkOut?start=2020-11-02&end=2020-11-12')
+          .get('/api/search/delreservations/checkOut?HotelID=58566&start=2020-11-02&end=2020-11-12')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             expect(res.body.message).to.equal('Failed to Find a Match');
@@ -473,7 +473,7 @@ describe('Reservation Search Routes', function() {
 
       it('Should Return Error From Invalid BookingID', function(done) {
         chai.request(app)
-          .get('/api/search/delreservations/checkOut?start=2020-02-31&end=yeu')
+          .get('/api/search/delreservations/checkOut?HotelID=58566&start=2020-02-31&end=yeu')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             done();
@@ -491,6 +491,7 @@ describe('Customer/BlackList Search Routes', function() {
   let agendaStub;
 
   before('Require Dependencies', function() {
+    decache('../../../server/index');
     auth = require('../../../server/services/Staff');
     sinon.stub(auth, 'loginRequired').callsFake(function(req, res, next) {
       return next();
@@ -518,33 +519,35 @@ describe('Customer/BlackList Search Routes', function() {
     describe('/api/search/customers/firstName', function() {
       it('Return 2 Customer Results Found', function(done) {
         chai.request(app)
-          .get('/api/search/customers/firstName?firstName=Ivan')
+          .get('/api/search/customers/firstName?HotelID=58566&firstName=Ivan')
           .end(function(err, res) {
             expect(res).to.have.status(200);
             expect(res.body).to.be.an('array');
             expect(res.body.length).to.equal(2);
             expect(res.body[0]).to.have.keys('CustomerID', 'BookingID', 'firstName', 'lastName', 'email', 'numGuests',
-            'phone', 'pricePaid', 'tax', 'PaymentID', 'ReservationID', 'RoomID', 'StateID', 'checkIn', 'checkOut', 'Comments');
+            'phone', 'pricePaid', 'tax', 'PaymentID', 'ReservationID', 'RoomID', 'StateID', 'checkIn', 'checkOut', 'comments',
+            'HotelID', 'StyleID');
             done();
           });
       });
 
       it('Return 1 Customer Result Found', function(done) {
         chai.request(app)
-          .get('/api/search/customers/firstName?firstName=Adam')
+          .get('/api/search/customers/firstName?HotelID=58566&firstName=Adam')
           .end(function(err, res) {
             expect(res).to.have.status(200);
             expect(res.body).to.be.an('array');
             expect(res.body.length).to.equal(1);
             expect(res.body[0]).to.have.keys('CustomerID', 'BookingID', 'firstName', 'lastName', 'email', 'numGuests',
-            'phone', 'pricePaid', 'tax', 'PaymentID', 'ReservationID', 'RoomID', 'StateID', 'checkIn', 'checkOut', 'Comments');
+            'phone', 'pricePaid', 'tax', 'PaymentID', 'ReservationID', 'RoomID', 'StateID', 'checkIn', 'checkOut', 'comments',
+            'HotelID', 'StyleID');
             done();
           });
       });
 
       it('Return Error No Result Found', function(done) {
         chai.request(app)
-          .get('/api/search/customers/firstName?firstName=juju')
+          .get('/api/search/customers/firstName?HotelID=58566&firstName=juju')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             expect(res.body.message).to.equal("Failed to Find Match");
@@ -554,7 +557,7 @@ describe('Customer/BlackList Search Routes', function() {
 
       it('Return Error From Invalid Name', function(done) {
         chai.request(app)
-          .get('/api/search/customers/firstName?firstName=0920192')
+          .get('/api/search/customers/firstName?HotelID=58566&firstName=0920192')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             done();
@@ -565,20 +568,21 @@ describe('Customer/BlackList Search Routes', function() {
     describe('/api/search/customers/BookingID', function() {
       it('Should Return 1 Customer Result Found', function(done) {
         chai.request(app)
-          .get('/api/search/customers/BookingID?BookingID=1023303283')
+          .get('/api/search/customers/BookingID?HotelID=58566&BookingID=1023303283')
           .end(function(err, res) {
             expect(res).to.have.status(200);
             expect(res.body).to.be.an('array');
             expect(res.body.length).to.equal(1);
             expect(res.body[0]).to.have.keys('CustomerID', 'BookingID', 'firstName', 'lastName', 'email', 'numGuests',
-            'phone', 'pricePaid', 'tax', 'PaymentID', 'ReservationID', 'RoomID', 'StateID', 'checkIn', 'checkOut', 'comments');
+            'phone', 'pricePaid', 'tax', 'PaymentID', 'ReservationID', 'RoomID', 'StateID', 'checkIn', 'checkOut', 'comments',
+            'HotelID', 'StyleID');
             done();
         });
       });
 
       it('Should Return Error, 0 Customer Result Found', function(done) {
         chai.request(app)
-        .get('/api/search/customers/BookingID?BookingID=90923523')
+        .get('/api/search/customers/BookingID?HotelID=58566&BookingID=90923523')
         .end(function(err, res) {
           expect(res).to.have.status(400);
           expect(res.body.message).to.equal("Failed to Find Match");
@@ -588,7 +592,7 @@ describe('Customer/BlackList Search Routes', function() {
 
       it('Should Return Error From Invalid BookingID', function(done) {
         chai.request(app)
-          .get('/api/search/customers/BookingID?BookingID=string')
+          .get('/api/search/customers/BookingID?HotelID=58566&BookingID=string')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             done();
@@ -599,20 +603,21 @@ describe('Customer/BlackList Search Routes', function() {
     describe('/api/search/customers/checkIn', function() {
       it('Should Return 2 Customer Results Found', function(done) {
         chai.request(app)
-          .get('/api/search/customers/checkIn?start=2020-11-04&end=2020-11-09')
+          .get('/api/search/customers/checkIn?HotelID=58566&start=2020-11-04&end=2020-11-09')
           .end(function(err, res) {
             expect(res).to.have.status(200);
             expect(res.body).to.be.an('array');
             expect(res.body.length).to.equal(2);
             expect(res.body[0]).to.have.keys('CustomerID', 'BookingID', 'firstName', 'lastName', 'email', 'numGuests',
-            'phone', 'pricePaid', 'tax', 'PaymentID', 'ReservationID', 'RoomID', 'StateID', 'checkIn', 'checkOut', 'Comments');
+            'phone', 'pricePaid', 'tax', 'PaymentID', 'ReservationID', 'RoomID', 'StateID', 'checkIn', 'checkOut', 'comments',
+            'HotelID', 'StyleID');
             done();
         });
       });
 
       it('Should Return Error 0 Customer Results Found', function(done) {
         chai.request(app)
-          .get('/api/search/customers/checkIn?start=2020-10-02&end=2020-10-20')
+          .get('/api/search/customers/checkIn?HotelID=58566&start=2020-10-02&end=2020-10-20')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             expect(res.body.message).to.equal("Failed to Find Match");
@@ -622,7 +627,7 @@ describe('Customer/BlackList Search Routes', function() {
 
       it('Should Return Error from Invalid Date', function(done) {
         chai.request(app)
-          .get('/api/search/customers/checkIn?start=string&end=2020')
+          .get('/api/search/customers/checkIn?HotelID=58566&start=string&end=2020')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             done();
@@ -633,20 +638,21 @@ describe('Customer/BlackList Search Routes', function() {
     describe('/api/search/customers/checkOut', function() {
       it('Should Return 1 Customer Results Found', function(done) {
         chai.request(app)
-          .get('/api/search/customers/checkOut?start=2020-11-11&end=2020-11-19')
+          .get('/api/search/customers/checkOut?HotelID=58566&start=2020-11-11&end=2020-11-19')
           .end(function(err, res) {
             expect(res).to.have.status(200);
             expect(res.body).to.be.an('array');
             expect(res.body.length).to.equal(1);
             expect(res.body[0]).to.have.keys('CustomerID', 'BookingID', 'firstName', 'lastName', 'email', 'numGuests',
-            'phone', 'pricePaid', 'tax', 'PaymentID', 'ReservationID', 'RoomID', 'StateID', 'checkIn', 'checkOut', 'Comments');
+            'phone', 'pricePaid', 'tax', 'PaymentID', 'ReservationID', 'RoomID', 'StateID', 'checkIn', 'checkOut', 'comments',
+            'HotelID', 'StyleID');
             done();
         });
       });
 
       it('Should Return Error 0 Customer Results Found', function(done) {
         chai.request(app)
-          .get('/api/search/customers/checkOut?start=2020-10-08&end=2020-10-31')
+          .get('/api/search/customers/checkOut?HotelID=58566&start=2020-10-08&end=2020-10-31')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             expect(res.body.message).to.equal("Failed to Find Match");
@@ -656,7 +662,7 @@ describe('Customer/BlackList Search Routes', function() {
 
       it('Should Return Error from Invalid Date', function(done) {
         chai.request(app)
-          .get('/api/search/customers/checkOut?start=string&end=2020')
+          .get('/api/search/customers/checkOut?HotelID=58566&start=string&end=2020')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             done();
@@ -669,7 +675,7 @@ describe('Customer/BlackList Search Routes', function() {
     describe('/api/search/blacklist/name', function() {
       it('Should Return 1 Result from BlackList', function(done) {
         chai.request(app)
-          .get('/api/search/blacklist/name?firstName=Adam')
+          .get('/api/search/blacklist/name?HotelID=58566&firstName=Adam')
           .end(function(err, res) {
             expect(res).to.have.status(200);
             expect(res.body).to.be.an('array');
@@ -681,7 +687,7 @@ describe('Customer/BlackList Search Routes', function() {
 
       it('Should Return 0 Results from BlackList', function(done) {
         chai.request(app)
-          .get('/api/search/blacklist/name?firstName=Henry')
+          .get('/api/search/blacklist/name?HotelID=58566&firstName=Henry')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             expect(res.body.message).to.equal("Failed to Find Match");
@@ -691,7 +697,7 @@ describe('Customer/BlackList Search Routes', function() {
 
       it('Should Error From Invalid Name', function(done) {
         chai.request(app)
-          .get('/api/search/blacklist/name?firstName=902932')
+          .get('/api/search/blacklist/name?HotelID=58566&firstName=902932')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             done();
@@ -702,7 +708,7 @@ describe('Customer/BlackList Search Routes', function() {
     describe('/api/search/blacklist/id', function(done) {
       it('Should Return 1 Result from BlackList', function(done) {
         chai.request(app)
-          .get('/api/search/blacklist/id?BookingID=2020082721')
+          .get('/api/search/blacklist/id?HotelID=58566&BookingID=2020082721')
           .end(function(err, res) {
             expect(res).to.have.status(200);
             expect(res.body).to.be.an('array');
@@ -714,7 +720,7 @@ describe('Customer/BlackList Search Routes', function() {
 
       it('Should Return 0 Results from BlackList', function(done) {
         chai.request(app)
-          .get('/api/search/blacklist/id?BookingID=20203432')
+          .get('/api/search/blacklist/id?HotelID=58566&BookingID=20203432')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             expect(res.body.message).to.equal("Failed to Find Match");
@@ -724,7 +730,7 @@ describe('Customer/BlackList Search Routes', function() {
 
       it('Should Error from Invalid BookingID', function(done) {
         chai.request(app)
-          .get('/api/search/blacklist/id?BookingID=string')
+          .get('/api/search/blacklist/id?HotelID=58566&BookingID=string')
           .end(function(err, res) {
             expect(res).to.have.status(400);
             done();
