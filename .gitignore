@@ -5,7 +5,7 @@
 node_modules/
 
 # dotenv environment variables file
-.env
+backend/.env
 
 env.list
 
@@ -18,14 +18,7 @@ dist/
 secrets
 
 # Testing with k8s
-deployment/k8s-test
-
-# Deployment with Docker-Compose
-deployment/docker-compose
-
-deployment/ingress_nginx_svc.yml
-
-deployment/prod_issuer.yaml
+deployment/
 
 frontend/landing/src/setup/config
 
