@@ -1,0 +1,22 @@
+b Hello #{firstName}!
+br
+br
+b
+  | Thanks for your reservation at #{MotelName}! We really appreciate you booking with us! As for your reservation, here are the details:
+br
+br
+ul(style='list-style-type:none;')
+  li Name: #{firstName} #{lastName}
+  li Number of Guests: #{numGuests}
+  li Check-In: #{checkIn}
+  li Check-Out: #{checkOut}
+  li Total price (including tax): $#{pricePaid}
+br
+b
+  | If any details stated above are alarming or inaccurate, please don&apos;t hesitate to contact us at our number #{MotelPhone}. Also please note our 48-hour cancellation policy for a full refund. Other than that we hope to see you soon!
+br
+br
+p
+  b #{MotelName} | #{MotelPhone}
+p
+  b #{MotelAddress}
