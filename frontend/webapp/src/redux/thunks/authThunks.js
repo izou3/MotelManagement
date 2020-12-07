@@ -1,6 +1,5 @@
 import axios from 'axios';
 import moment from 'moment';
-import jwtDecode from 'jwt-decode';
 import { batchActions } from 'redux-batched-actions';
 import logger from '../../logger';
 
@@ -25,28 +24,22 @@ export const loginStaff = (userInfo, redirect) => async (dispatch) => {
   return axios
     .post(`/user/login`, userInfo)
     .then((res) => {
-      const token = res.data;
-      const decoded = jwtDecode(token); // Recive Back a Token which has encrypted Data
+      const { user, MotelInfo, MotelRoom } = res.data;
       const today = moment().format('YYYY-MM-DD');
 
       dispatch(
         batchActions([
-          loginUser(decoded),
+          loginUser(user, MotelInfo, MotelRoom),
           snackBarSuccess('Successfully Logged In'),
           initialPageLoad(today),
           initialMaintenanceLog(),
           hideLoading(),
         ])
       );
-      redirect(decoded);
+      redirect(user);
     })
-    .catch((err) => {
-      dispatch(
-        batchActions([
-          snackBarFail('Login Failed'),
-          hideLoading(),
-        ])
-      );
+    .catch(() => {
+      dispatch(batchActions([snackBarFail('Login Failed'), hideLoading()]));
     });
 };
 
@@ -69,7 +62,7 @@ export const logoutStaff = (redirect) => async (dispatch) => {
       logger(err);
       dispatch(
         snackBarFail('Failed to Logout. Seesion Will Expire in 30 minutes.'),
-        dispatch(hideLoading()),
+        dispatch(hideLoading())
       );
     });
 };

@@ -21,26 +21,27 @@ import { logoutUser } from '../actions/authActions';
  * @param {} dispatch
  ************************************************* */
 export const searchResByID = (ID) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-  .catch(() => {
-    return dispatch(
-      batchActions([
-        logoutUser(),
-        snackBarSuccess('UnAuthorized Access')
-      ])
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
     );
-  });
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
 
   dispatch(showLoading());
   dispatch(loadSearchResultInProgress());
   return axios
-    .get(`/api/search/reservations/BookingID?BookingID=${ID}`)
+    .get(
+      `/api/search/reservations/BookingID?HotelID=${HotelID}&BookingID=${ID}`
+    )
     .then((res) => {
       dispatch(
         batchActions([
@@ -61,26 +62,27 @@ export const searchResByID = (ID) => async (dispatch, getState) => {
     });
 };
 export const searchResFirstName = (name) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-  .catch(() => {
-    return dispatch(
-      batchActions([
-        logoutUser(),
-        snackBarSuccess('UnAuthorized Access')
-      ])
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
     );
-  });
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
 
   dispatch(showLoading());
   dispatch(loadSearchResultInProgress());
   return axios
-    .get(`/api/search/reservations/firstName?firstName=${name}`)
+    .get(
+      `/api/search/reservations/firstName?HotelID=${HotelID}&firstName=${name}`
+    )
     .then((res) => {
       dispatch(
         batchActions([
@@ -100,27 +102,31 @@ export const searchResFirstName = (name) => async (dispatch, getState) => {
       );
     });
 };
-export const searchResByCheckIn = (start, end) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-  .catch(() => {
-    return dispatch(
-      batchActions([
-        logoutUser(),
-        snackBarSuccess('UnAuthorized Access')
-      ])
+export const searchResByCheckIn = (start, end) => async (
+  dispatch,
+  getState
+) => {
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
     );
-  });
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
 
   dispatch(showLoading());
   dispatch(loadSearchResultInProgress());
   return axios
-    .get(`/api/search/reservations/checkIn?start=${start}&end=${end}`)
+    .get(
+      `/api/search/reservations/checkIn?HotelID=${HotelID}&start=${start}&end=${end}`
+    )
     .then((res) => {
       dispatch(
         batchActions([
@@ -140,26 +146,31 @@ export const searchResByCheckIn = (start, end) => async (dispatch, getState) => 
       );
     });
 };
-export const searchResByCheckOut = (start, end) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-  .catch(() => {
-    return dispatch(
-      batchActions([
-        logoutUser(),
-        snackBarSuccess('UnAuthorized Access')
-      ])
+export const searchResByCheckOut = (start, end) => async (
+  dispatch,
+  getState
+) => {
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
     );
-  });
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   dispatch(loadSearchResultInProgress());
   return axios
-    .get(`/api/search/reservations/checkOut?start=${start}&end=${end}`)
+    .get(
+      `/api/search/reservations/checkOut?HotelID=${HotelID}&start=${start}&end=${end}`
+    )
     .then((res) => {
       dispatch(
         batchActions([
@@ -184,26 +195,25 @@ export const searchResByCheckOut = (start, end) => async (dispatch, getState) =>
  * Customer Search Thunks
  ************************************************** */
 export const searchCustomerByID = (ID) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-  .catch(() => {
-    return dispatch(
-      batchActions([
-        logoutUser(),
-        snackBarSuccess('UnAuthorized Access')
-      ])
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
     );
-  });
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
 
   dispatch(showLoading());
   dispatch(loadSearchResultInProgress());
   return axios
-    .get(`/api/search/customers/BookingID?BookingID=${ID}`)
+    .get(`/api/search/customers/BookingID?HotelID=${HotelID}&BookingID=${ID}`)
     .then((res) => {
       dispatch(
         batchActions([
@@ -225,25 +235,25 @@ export const searchCustomerByID = (ID) => async (dispatch, getState) => {
     });
 };
 export const searchCustomerFirstName = (name) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-  .catch(() => {
-    return dispatch(
-      batchActions([
-        logoutUser(),
-        snackBarSuccess('UnAuthorized Access')
-      ])
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
     );
-  });
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   dispatch(loadSearchResultInProgress());
   return axios
-    .get(`/api/search/customers/firstName?firstName=${name}`)
+    .get(`/api/search/customers/firstName?HotelID=${HotelID}&firstName=${name}`)
     .then((res) => {
       dispatch(
         batchActions([
@@ -263,26 +273,31 @@ export const searchCustomerFirstName = (name) => async (dispatch, getState) => {
       );
     });
 };
-export const searchCustomerByCheckIn = (start, end) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-  .catch(() => {
-    return dispatch(
-      batchActions([
-        logoutUser(),
-        snackBarSuccess('UnAuthorized Access')
-      ])
+export const searchCustomerByCheckIn = (start, end) => async (
+  dispatch,
+  getState
+) => {
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
     );
-  });
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   dispatch(loadSearchResultInProgress());
   return axios
-    .get(`/api/search/customers/checkIn?start=${start}&end=${end}`)
+    .get(
+      `/api/search/customers/checkIn?HotelID=${HotelID}&start=${start}&end=${end}`
+    )
     .then((res) => {
       dispatch(
         batchActions([
@@ -302,26 +317,31 @@ export const searchCustomerByCheckIn = (start, end) => async (dispatch, getState
       );
     });
 };
-export const searchCustomerByCheckOut = (start, end) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-  .catch(() => {
-    return dispatch(
-      batchActions([
-        logoutUser(),
-        snackBarSuccess('UnAuthorized Access')
-      ])
+export const searchCustomerByCheckOut = (start, end) => async (
+  dispatch,
+  getState
+) => {
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
     );
-  });
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   dispatch(loadSearchResultInProgress());
   return axios
-    .get(`/api/search/customers/checkOut?start=${start}&end=${end}`)
+    .get(
+      `/api/search/customers/checkOut?HotelID=${HotelID}&start=${start}&end=${end}`
+    )
     .then((res) => {
       dispatch(
         batchActions([
@@ -346,25 +366,27 @@ export const searchCustomerByCheckOut = (start, end) => async (dispatch, getStat
  * Deleted Res Search Thunks
  ************************************************* */
 export const searchDeleteResByID = (ID) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-  .catch(() => {
-    return dispatch(
-      batchActions([
-        logoutUser(),
-        snackBarSuccess('UnAuthorized Access')
-      ])
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
     );
-  });
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   dispatch(loadSearchResultInProgress());
   return axios
-    .get(`/api/search/delreservations/BookingID?BookingID=${ID}`)
+    .get(
+      `/api/search/delreservations/BookingID?HotelID=${HotelID}&BookingID=${ID}`
+    )
     .then((res) => {
       dispatch(
         batchActions([
@@ -384,26 +406,31 @@ export const searchDeleteResByID = (ID) => async (dispatch, getState) => {
       );
     });
 };
-export const searchDeleteResFirstName = (name) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-  .catch(() => {
-    return dispatch(
-      batchActions([
-        logoutUser(),
-        snackBarSuccess('UnAuthorized Access')
-      ])
+export const searchDeleteResFirstName = (name) => async (
+  dispatch,
+  getState
+) => {
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
     );
-  });
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   dispatch(loadSearchResultInProgress());
   return axios
-    .get(`/api/search/delreservations/firstName?firstName=${name}`)
+    .get(
+      `/api/search/delreservations/firstName?HotelID=${HotelID}&firstName=${name}`
+    )
     .then((res) => {
       dispatch(
         batchActions([
@@ -423,26 +450,31 @@ export const searchDeleteResFirstName = (name) => async (dispatch, getState) => 
       );
     });
 };
-export const searchDeleteResByCheckIn = (start, end) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+export const searchDeleteResByCheckIn = (start, end) => async (
+  dispatch,
+  getState
+) => {
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   dispatch(loadSearchResultInProgress());
   return axios
-    .get(`/api/search/delreservations/checkIn?start=${start}&end=${end}`)
+    .get(
+      `/api/search/delreservations/checkIn?HotelID=${HotelID}&start=${start}&end=${end}`
+    )
     .then((res) => {
       dispatch(
         batchActions([
@@ -462,26 +494,31 @@ export const searchDeleteResByCheckIn = (start, end) => async (dispatch, getStat
       );
     });
 };
-export const searchDeleteResByCheckOut = (start, end) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-  .catch(() => {
-    return dispatch(
-      batchActions([
-        logoutUser(),
-        snackBarSuccess('UnAuthorized Access')
-      ])
+export const searchDeleteResByCheckOut = (start, end) => async (
+  dispatch,
+  getState
+) => {
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
     );
-  });
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   dispatch(loadSearchResultInProgress());
   return axios
-    .get(`/api/search/delreservations/checkOut?start=${start}&end=${end}`)
+    .get(
+      `/api/search/delreservations/checkOut?HotelID=${HotelID}&start=${start}&end=${end}`
+    )
     .then((res) => {
       dispatch(
         batchActions([
@@ -505,26 +542,29 @@ export const searchDeleteResByCheckOut = (start, end) => async (dispatch, getSta
 /** *************************************************
  * BlackList Customer Search Thunks
  ************************************************* */
-export const searchBlackListByFirstName = (firstName) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-  .catch(() => {
-    return dispatch(
-      batchActions([
-        logoutUser(),
-        snackBarSuccess('UnAuthorized Access')
-      ])
+export const searchBlackListByFirstName = (firstName) => async (
+  dispatch,
+  getState
+) => {
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
     );
-  });
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   dispatch(loadSearchResultInProgress());
   return axios
-    .get(`/api/search/blacklist/name?firstName=${firstName}`)
+    .get(`/api/search/blacklist/name?HotelID=${HotelID}&firstName=${firstName}`)
     .then((res) => {
       dispatch(
         batchActions([
@@ -545,26 +585,29 @@ export const searchBlackListByFirstName = (firstName) => async (dispatch, getSta
     });
 };
 
-export const searchBlackListByID = (BookingID) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+export const searchBlackListByID = (BookingID) => async (
+  dispatch,
+  getState
+) => {
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   dispatch(loadSearchResultInProgress());
   return axios
-    .get(`/api/search/blacklist/id?BookingID=${BookingID}`)
+    .get(`/api/search/blacklist/id?HotelID=${HotelID}&BookingID=${BookingID}`)
     .then((res) => {
       dispatch(
         batchActions([

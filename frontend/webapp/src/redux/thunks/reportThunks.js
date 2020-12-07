@@ -40,24 +40,24 @@ import { logoutUser } from '../actions/authActions';
  * Thunks for Daily Report
  */
 export const loadDailyReport = (date) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   return axios
-    .get(`/api/dailyreport?date=${date}`)
+    .get(`/api/dailyreport?HotelID=${HotelID}&date=${date}`)
     .then((res) => {
       const stays = res.data.Stays;
       const refund = res.data.Refund;
@@ -65,7 +65,8 @@ export const loadDailyReport = (date) => async (dispatch, getState) => {
 
       Object.entries(stays).forEach(([key, value]) => {
         // Get Rid of ID from Mongo Document
-        if (key === '_id') return;
+        // And last remaining key
+        if (key === '_id' || key === '126') return;
         data.push({
           BookingID: value.Room.BookingID ? value.Room.BookingID : 0,
           RoomID: key,
@@ -80,7 +81,7 @@ export const loadDailyReport = (date) => async (dispatch, getState) => {
           rate: value.Room.rate ? value.Room.rate : '',
           tax: value.Room.tax ? value.Room.tax : '',
           notes: value.Room.notes ? value.Room.notes : '',
-          payment: value.Room.payment ? value.Room.payment: '',
+          payment: value.Room.payment ? value.Room.payment : '',
           initial: value.Room.initial ? value.Room.initial : '',
         });
       });
@@ -104,36 +105,28 @@ export const loadDailyReport = (date) => async (dispatch, getState) => {
     });
 };
 
-export const updateDailyReport = (date, data) => async (
-  dispatch, getState
-) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+export const updateDailyReport = (date, data) => async (dispatch, getState) => {
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   const { report } = state.reportState;
   const current = state.currRes.reservation;
 
-  // Generate Proper CheckIn and CheckOut Dates
-  data.startDate = moment(data.startDate).format('YYYY-MM-DDT12:00:00[Z]');
-  data.endDate = moment(data.endDate).format(
-    'YYYY-MM-DDT12:00:00[Z]'
-  );
-
   dispatch(showLoading());
   return axios
-    .put(`/api/dailyreport?date=${date}`, data)
+    .put(`/api/dailyreport?HotelID=${HotelID}&date=${date}`, data)
     .then((result) => {
       report[parseInt(data.RoomID, 10) - 101] = data;
       current[parseInt(data.RoomID, 10) - 101] = result.data;
@@ -148,35 +141,36 @@ export const updateDailyReport = (date, data) => async (
       );
     })
     .catch((err) => {
-      const errorMessage =
-        err.response.data.message ? err.response.data.message : 'Failed to Update';
+      const errorMessage = err.response.data.message
+        ? err.response.data.message
+        : 'Failed to Update';
       dispatch(snackBarFail(errorMessage));
       dispatch(hideLoading());
     });
 };
 
 export const updateDailyReportRefund = (refund) => async (
-  dispatch, getState
+  dispatch,
+  getState
 ) => {
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
-
-  const state =getState();
+  const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   return axios
-    .put(`/api/dailyreport/refund`, refund)
+    .put(`/api/dailyreport/refund?HotelID=${HotelID}`, refund)
     .then(() => {
       dispatch(
         batchActions([
@@ -199,32 +193,32 @@ export const updateDailyReportRefund = (refund) => async (
 
 // Load The HouseKeeping Report Sheet
 export const loadHouseKeepingReportOnSearch = (date) => async (
-  dispatch, getState
+  dispatch,
+  getState
 ) => {
-
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   return axios
-    .get(`/api/dailyreport?date=${date}`)
+    .get(`/api/dailyreport?HotelID=${HotelID}&date=${date}`)
     .then((res) => {
       const stays = res.data.Stays;
       const data = [];
 
       Object.entries(stays).forEach(([key, value]) => {
-        if (key === '_id') return;
+        if (key === '_id' || key === '126') return;
         data.push({
           RoomID: key,
           status: value.HouseKeeping.status ? value.HouseKeeping.status : 'C',
@@ -247,7 +241,7 @@ export const loadHouseKeepingReportOnSearch = (date) => async (
     .catch(() => {
       dispatch(
         batchActions([
-          loadHouseKeepingReportFail(),
+          loadHouseKeepingReportFail(date),
           hideLoading(),
           snackBarFail('Housekeeping Report Failed to Load'),
         ])
@@ -260,27 +254,27 @@ export const updateHouseKeepingReportOnAction = (data) => async (
   dispatch,
   getState
 ) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   const { houseKeepingReport } = state.houseKeepingState;
   const { date } = state.houseKeepingState;
 
   dispatch(showLoading());
   return axios
-    .put(`/api/dailyreport/housekeeping?date=${date}`, data)
+    .put(`/api/dailyreport/housekeeping?HotelID=${HotelID}&date=${date}`, data)
     .then(() => {
       houseKeepingReport[parseInt(data.RoomID, 10) - 101] = data;
 
@@ -307,24 +301,26 @@ export const updateHouseKeepingReportOnAction = (data) => async (
  * Thunks for Maintenance Log
  */
 export const initialMaintenanceLog = () => async (dispatch, getState) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
-  const requestOne = axios.get(`/api/maintenance?name=General`); // Get Maintenance Log
-  const requestTwo = axios.get(`/api/maintenance`); // Get Names
+  const requestOne = axios.get(
+    `/api/maintenance?HotelID=${HotelID}&name=General`
+  ); // Get Maintenance Log
+  const requestTwo = axios.get(`/api/maintenance?HotelID=${HotelID}`); // Get Names
 
   return axios
     .all([requestOne, requestTwo])
@@ -355,24 +351,24 @@ export const initialMaintenanceLog = () => async (dispatch, getState) => {
 };
 
 export const addMaintenanceLog = (name) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   return axios
-    .post(`/api/maintenance?name=${name}`)
+    .post(`/api/maintenance?HotelID=${HotelID}&name=${name}`)
     .then((response) => {
       if (response.data.length === 0) throw new Error();
       const currentNames = state.maintenanceState.logSearchNames;
@@ -381,13 +377,9 @@ export const addMaintenanceLog = (name) => async (dispatch, getState) => {
         Name: response.data.Name,
       });
 
-      delete response.data.Name;
-      delete response.data._id;
-      delete response.data.__v;
-
       dispatch(
         batchActions([
-          addNewMaintenanceLog(name, currentNames, response.data),
+          addNewMaintenanceLog(name, currentNames, response.data.blankLog),
           hideLoading(),
           snackBarSuccess('New Maintenance Log Added Successfully'),
         ])
@@ -404,30 +396,27 @@ export const addMaintenanceLog = (name) => async (dispatch, getState) => {
     });
 };
 
-export const searchMaintenanceLog = (searchID) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+export const searchMaintenanceLog = (name) => async (dispatch, getState) => {
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   return axios
-    .get(`/api/maintenance?id=${searchID}`)
+    .get(`/api/maintenance?HotelID=${HotelID}&name=${name}`)
     .then((response) => {
       if (response.data.length === 0) throw new Error();
-      const name = response.data.Name;
-
-      delete response.data.Name;
 
       dispatch(
         batchActions([
@@ -449,25 +438,31 @@ export const searchMaintenanceLog = (searchID) => async (dispatch, getState) => 
 };
 
 // Thunks for Individual Maintenance Log Entries
-export const addLogEntry = (name, field, newEntry) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+export const addLogEntry = (name, field, newEntry) => async (
+  dispatch,
+  getState
+) => {
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   return axios
-    .post(`/api/maintenance/logEntry?name=${name}&field=${field}`, newEntry)
+    .post(
+      `/api/maintenance/logEntry?HotelID=${HotelID}&name=${name}&field=${field}`,
+      newEntry
+    )
     .then((newMaintenanceLog) => {
       dispatch(
         batchActions([
@@ -488,25 +483,31 @@ export const addLogEntry = (name, field, newEntry) => async (dispatch, getState)
     });
 };
 
-export const updateLogEntry = (name, field, updatedEntry) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+export const updateLogEntry = (name, field, updatedEntry) => async (
+  dispatch,
+  getState
+) => {
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   return axios
-    .put(`/api/maintenance/logEntry?name=${name}&field=${field}`, updatedEntry)
+    .put(
+      `/api/maintenance/logEntry?HotelID=${HotelID}&name=${name}&field=${field}`,
+      updatedEntry
+    )
     .then((updatedMaintenanceLog) => {
       dispatch(
         batchActions([
@@ -527,26 +528,29 @@ export const updateLogEntry = (name, field, updatedEntry) => async (dispatch, ge
     });
 };
 
-export const deleteLogEntry = (name, field, ID) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+export const deleteLogEntry = (name, field, ID) => async (
+  dispatch,
+  getState
+) => {
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   return axios
     .delete(
-      `/api/maintenance/logEntry?name=${name}&field=${field}&entryID=${ID}`
+      `/api/maintenance/logEntry?HotelID=${HotelID}&name=${name}&field=${field}&entryID=${ID}`
     )
     .then((deletedMaintenanceLog) => {
       dispatch(
@@ -571,27 +575,34 @@ export const deleteLogEntry = (name, field, ID) => async (dispatch, getState) =>
 /**
  * Thunk for Generating Tax Report
  */
-export const generateTaxReport = (MonthID, YearID) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+export const generateTaxReport = (MonthID, YearID) => async (
+  dispatch,
+  getState
+) => {
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+  const { Abbreviation } = state.authState.motel;
+
   dispatch(showLoading());
-  axios.get(`/api/dailyreport/tax?MonthID=${MonthID}&YearID=${YearID}`)
+  return axios
+    .get(
+      `/api/dailyreport/tax?HotelID=${HotelID}&MonthID=${MonthID}&YearID=${YearID}`
+    )
     .then((response) => {
       const date = moment().format('MM-YYYY');
-      FileDownload(response.data, `TaxReport_${date}.csv`);
+      FileDownload(response.data, `${Abbreviation}_TaxReport_${date}.csv`);
       dispatch(
         batchActions([
           hideLoading(),
@@ -599,8 +610,7 @@ export const generateTaxReport = (MonthID, YearID) => async (dispatch, getState)
         ])
       );
     })
-    .catch((err) => {
-      console.log(err);
+    .catch(() => {
       dispatch(
         batchActions([
           hideLoading(),
@@ -608,4 +618,4 @@ export const generateTaxReport = (MonthID, YearID) => async (dispatch, getState)
         ])
       );
     });
-}
+};

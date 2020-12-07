@@ -16,24 +16,24 @@ import { logoutUser } from '../actions/authActions';
 export const updateCustomer = (updatedCust) => async (dispatch, getState) => {
   // Check auth state of cookies or from tokenExpiration Middleware and don't execute
   // remainder of auth if not authenticated
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   return axios
-    .put(`/api/customer/`, updatedCust)
+    .put(`/api/customer?HotelID=${HotelID}`, updatedCust)
     .then(() => {
       const searchResult = state.searchResultState.results;
       for (let i = 0; i < searchResult.length; i++) {
@@ -52,12 +52,7 @@ export const updateCustomer = (updatedCust) => async (dispatch, getState) => {
       );
     })
     .catch(() => {
-      dispatch(
-        batchActions([
-          hideLoading(),
-          snackBarFail('Failed to Update'),
-        ])
-      );
+      dispatch(batchActions([hideLoading(), snackBarFail('Failed to Update')]));
     });
 };
 
@@ -70,19 +65,19 @@ export const updateBlackListCust = (updatedCust) => async (
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   return axios
-    .put(`/api/blacklist`, updatedCust)
+    .put(`/api/blacklist?HotelID=${HotelID}`, updatedCust)
     .then(() => {
       const searchResult = state.searchResultState.results;
 
@@ -112,22 +107,22 @@ export const addBlackListCust = (newCust) => async (dispatch, getState) => {
   dispatch(showLoading());
   const state = getState();
 
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   return axios
-    .post(`/api/blacklist`, newCust)
+    .post(`/api/blacklist?HotelID=${HotelID}`, newCust)
     .then(() => {
       dispatch(
         batchActions([
@@ -150,23 +145,23 @@ export const addBlackListCust = (newCust) => async (dispatch, getState) => {
 
 export const removeBlackListCust = (id) => async (dispatch, getState) => {
   const state = getState();
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   return axios
-    .delete(`/api/blacklist?BookingID=${id}`)
+    .delete(`/api/blacklist?HotelID=${HotelID}&BookingID=${id}`)
     .then(() => {
       const searchResult = state.searchResultState.results;
 
@@ -187,11 +182,6 @@ export const removeBlackListCust = (id) => async (dispatch, getState) => {
       );
     })
     .catch(() => {
-      dispatch(
-        batchActions([
-          hideLoading(),
-          snackBarFail('Failed to Update'),
-        ])
-      );
+      dispatch(batchActions([hideLoading(), snackBarFail('Failed to Update')]));
     });
 };

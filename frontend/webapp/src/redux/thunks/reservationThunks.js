@@ -27,24 +27,26 @@ import {
 import { loadFormFail } from '../actions/formActions';
 
 export const createNewRes = (resData) => (dispatch, getState) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
 
-  const currThreshold = moment(moment(moment().add(3, 'days')).format('YYYY-MM-DD'));
+  const currThreshold = moment(
+    moment(moment().add(3, 'days')).format('YYYY-MM-DD')
+  );
 
   const currentTime = moment().format('hhmmssSS');
   const randDig1 = Math.floor(Math.random() * 9) + 1;
@@ -71,17 +73,12 @@ export const createNewRes = (resData) => (dispatch, getState) => {
       randDig2;
   }
 
-  // Format Check-In and Check-Out Properly
-  resData.checkIn = moment(resData.checkIn).format('YYYY-MM-DDT12:00:00[Z]');
-  resData.checkOut = moment(resData.checkOut).format(
-    'YYYY-MM-DDT12:00:00[Z]'
-  );
-
   const insertObj = {
     YearID: yearid,
     MonthID: monthid,
     BookingID: bookingid,
     CustomerID: customerid,
+    HotelID,
     ...resData,
   };
 
@@ -103,7 +100,7 @@ export const createNewRes = (resData) => (dispatch, getState) => {
       const roomType = houseKeepingReport[insertObj.RoomID - 101].type;
       axios
         .post(
-          `/api/reservation/CurrReservation?roomType=${roomType}`,
+          `/api/reservation/CurrReservation?HotelID=${HotelID}&roomType=${roomType}`,
           insertObj
         )
         .then((result) => {
@@ -145,14 +142,16 @@ export const createNewRes = (resData) => (dispatch, getState) => {
           );
         })
         .catch((err) => {
-          console.log(err);
           reject(err);
         });
     } else {
       // add new reservation to pending reservation
       dispatch(showLoading());
       axios
-        .post('/api/reservation/PendingReservation', insertObj)
+        .post(
+          `/api/reservation/PendingReservation?HotelID=${HotelID}`,
+          insertObj
+        )
         .then(() => {
           dispatch(
             batchActions([
@@ -178,20 +177,20 @@ export const updateCurrRes = (updatedRes, prevRoom = 0) => async (
   dispatch,
   getState
 ) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
+
+  const { HotelID } = state.authState.user;
 
   dispatch(showLoading());
   const currRes = state.currRes.reservation;
@@ -203,12 +202,6 @@ export const updateCurrRes = (updatedRes, prevRoom = 0) => async (
   const { houseKeepingReport } = state.houseKeepingState;
 
   const pendingThreshold = moment().add(2, 'days');
-
-  // Generate Proper CheckIn and CheckOut Dates
-  updatedRes.checkIn = moment(updatedRes.checkIn).format('YYYY-MM-DDT12:00:00[Z]');
-  updatedRes.checkOut = moment(updatedRes.checkOut).format(
-    'YYYY-MM-DDT12:00:00[Z]'
-  );
 
   return new Promise((resolve, reject) => {
     const roomType = houseKeepingReport[updatedRes.RoomID - 101].type;
@@ -226,7 +219,7 @@ export const updateCurrRes = (updatedRes, prevRoom = 0) => async (
       // UNLESS reservation is already checked in
       axios
         .put(
-          `/api/reservation/CurrReservation?BookingID=${updatedRes.BookingID}&dateChange=true&roomType=${roomType}`,
+          `/api/reservation/CurrReservation?HotelID=${HotelID}&dateChange=true&roomType=${roomType}`,
           updatedRes
         )
         .then(() => {
@@ -261,7 +254,7 @@ export const updateCurrRes = (updatedRes, prevRoom = 0) => async (
       // Keep reservation in Current Collection as checkIn date is soon
       axios
         .put(
-          `/api/reservation/CurrReservation?BookingID=${updatedRes.BookingID}&dateChange=false&roomType=${roomType}`,
+          `/api/reservation/CurrReservation?HotelID=${HotelID}&dateChange=false&roomType=${roomType}`,
           updatedRes
         )
         .then((result) => {
@@ -346,19 +339,19 @@ export const moveCurrRes = (
   origin,
   destination
 ) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
+
+  const { HotelID } = state.authState.user;
 
   dispatch(showLoading());
   const currRes = state.currRes.reservation;
@@ -372,7 +365,11 @@ export const moveCurrRes = (
   const { houseKeepingReport } = state.houseKeepingState;
 
   // Generate Proper CheckIn and CheckOut Dates
-  updatedRes.checkIn = moment(updatedRes.checkIn).format('YYYY-MM-DDT12:00:00[Z]');
+  // eslint-disable-next-line no-param-reassign
+  updatedRes.checkIn = moment(updatedRes.checkIn).format(
+    'YYYY-MM-DDT12:00:00[Z]'
+  );
+  // eslint-disable-next-line no-param-reassign
   updatedRes.checkOut = moment(updatedRes.checkOut).format(
     'YYYY-MM-DDT12:00:00[Z]'
   );
@@ -382,7 +379,7 @@ export const moveCurrRes = (
     if (destination === 'arrival' && origin === 'current') {
       axios
         .put(
-          `/api/reservation/CurrReservation?BookingID=${updatedRes.BookingID}&moveToArr=true&roomType=${roomType}`,
+          `/api/reservation/CurrReservation?HotelID=${HotelID}&moveToArr=true&roomType=${roomType}`,
           updatedRes
         )
         .then((result) => {
@@ -422,7 +419,7 @@ export const moveCurrRes = (
       // No require changes in Report so just update the reservation and dispatch the changes to the state
       axios
         .put(
-          `/api/reservation/CurrReservation?BookingID=${updatedRes.BookingID}&dateChange=false&roomType=${roomType}`,
+          `/api/reservation/CurrReservation?HotelID=${HotelID}&BookingID=${updatedRes.BookingID}&dateChange=false&roomType=${roomType}`,
           updatedRes
         )
         .then(() => {
@@ -480,27 +477,29 @@ export const moveCurrRes = (
 
 // Move reservations from Current Collection to Delete Collection
 export const deleteCurrRes = (BookingID) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   const overRes = state.overRes.reservation;
 
   dispatch(showLoading());
   return new Promise((resolve, reject) => {
     axios
-      .delete(`/api/reservation/CurrReservation?BookingID=${BookingID}`)
+      .delete(
+        `/api/reservation/CurrReservation?HotelID=${HotelID}&BookingID=${BookingID}`
+      )
       .then(() => {
         for (let i = 0; i < overRes.length; i++) {
           if (overRes[i].BookingID === BookingID) {
@@ -527,20 +526,20 @@ export const deleteCurrRes = (BookingID) => async (dispatch, getState) => {
 };
 
 export const checkInRes = (resObj) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
+
+  const { HotelID } = state.authState.user;
 
   dispatch(showLoading());
   let pending = state.pendRes.reservation;
@@ -552,12 +551,6 @@ export const checkInRes = (resObj) => async (dispatch, getState) => {
   const dailyReport = state.reportState.report;
   const { houseKeepingReport } = state.houseKeepingState;
 
-  // Generate Proper CheckIn and CheckOut Dates
-  resObj.checkIn = moment(resObj.checkIn).format('YYYY-MM-DDT12:00:00[Z]');
-  resObj.checkOut = moment(resObj.checkOut).format(
-    'YYYY-MM-DDT12:00:00[Z]'
-  );
-
   return new Promise((resolve, reject) => {
     const roomType = houseKeepingReport[resObj.RoomID - 101].type;
     if (current[resObj.RoomID - 101].BookingID) {
@@ -565,7 +558,7 @@ export const checkInRes = (resObj) => async (dispatch, getState) => {
     } else {
       axios
         .put(
-          `/api/reservation/CurrReservation?BookingID=${resObj.BookingID}&checkIn=true&roomType=${roomType}`,
+          `/api/reservation/CurrReservation?HotelID=${HotelID}&checkIn=true&roomType=${roomType}`,
           {
             ...resObj,
             Checked: 1,
@@ -624,20 +617,20 @@ export const checkInRes = (resObj) => async (dispatch, getState) => {
 };
 
 export const checkOutRes = (resObj) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
+
+  const { HotelID } = state.authState.user;
 
   dispatch(showLoading());
   const current = state.currRes.reservation;
@@ -651,9 +644,9 @@ export const checkOutRes = (resObj) => async (dispatch, getState) => {
     const roomType = houseKeepingReport[resObj.RoomID - 101].type;
 
     return axios
-      .post(`/api/customer?roomType=${roomType}`, resObj)
+      .post(`/api/customer?HotelID=${HotelID}&roomType=${roomType}`, resObj)
       .then((response) => {
-        const prevRoom = response.data.PrevRoomID.RoomID;
+        const prevRoom = response.data.PrevResObj.RoomID;
         current[prevRoom - 101] = {
           RoomID: prevRoom,
         };
@@ -682,11 +675,10 @@ export const checkOutRes = (resObj) => async (dispatch, getState) => {
           ])
         );
       })
-      .catch((err) => {
-        reject(new Error("Failed to CheckOut Guest"));
+      .catch(() => {
+        reject(new Error('Failed to CheckOut Guest'));
       });
-  })
-  .catch((err) => {
+  }).catch((err) => {
     const message = err.message ? err.message : 'Failed to Check-In Guest!';
     dispatch(
       batchActions([loadFormFail(), hideLoading(), snackBarFail(message)])
@@ -696,20 +688,20 @@ export const checkOutRes = (resObj) => async (dispatch, getState) => {
 
 // update Reservations in Pending Collection
 export const updateReservation = (updatedRes) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
+
+  const { HotelID } = state.authState.user;
 
   dispatch(showLoading());
 
@@ -720,17 +712,11 @@ export const updateReservation = (updatedRes) => async (dispatch, getState) => {
   const searchResult = state.searchResultState.results;
   let checkIn = state.info.CheckIn;
 
-  // Generate Proper CheckIn and CheckOut Dates
-  updatedRes.checkIn = moment(updatedRes.checkIn).format('YYYY-MM-DDT12:00:00[Z]');
-  updatedRes.checkOut = moment(updatedRes.checkOut).format(
-    'YYYY-MM-DDT12:00:00[Z]'
-  );
-
   if (threshold.isSameOrAfter(moment(updatedRes.checkIn))) {
     // check-in date is within threshold so update into Current
     return axios
       .put(
-        `/api/reservation/PendingReservation?BookingID=${updatedRes.BookingID}&dateChange=true`,
+        `/api/reservation/PendingReservation?HotelID=${HotelID}&dateChange=true`,
         updatedRes
       )
       .then(() => {
@@ -768,7 +754,7 @@ export const updateReservation = (updatedRes) => async (dispatch, getState) => {
   // check-in date is beyond threshold so keep in Pending
   return axios
     .put(
-      `/api/reservation/PendingReservation?BookingID=${updatedRes.BookingID}&dateChange=false`,
+      `/api/reservation/PendingReservation?HotelID=${HotelID}&dateChange=false`,
       updatedRes
     )
     .then(() => {
@@ -802,31 +788,25 @@ export const updateDelReservation = (updatedRes) => async (
   dispatch,
   getState
 ) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
 
-  // Generate Proper CheckIn and CheckOut Dates
-  updatedRes.checkIn = moment(updatedRes.checkIn).format('YYYY-MM-DDT12:00:00[Z]');
-  updatedRes.checkOut = moment(updatedRes.checkOut).format(
-    'YYYY-MM-DDT12:00:00[Z]'
-  );
-
   return axios
-    .put(`/api/reservation/delreservations`, updatedRes)
+    .put(`/api/reservation/delreservations?HotelID=${HotelID}`, updatedRes)
     .then(() => {
       const searchResult = state.searchResultState.results;
 
@@ -858,24 +838,26 @@ export const updateDelReservation = (updatedRes) => async (
 
 // Move reservation from Pending into Delete Collection
 export const cancelReservation = (BookingID) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   return axios
-    .delete(`/api/reservation/PendingReservation?BookingID=${BookingID}`)
+    .delete(
+      `/api/reservation/PendingReservation?HotelID=${HotelID}&BookingID=${BookingID}`
+    )
     .then(() => {
       const searchResult = state.searchResultState.results;
       for (let i = 0; i < searchResult.length; i++) {
@@ -905,24 +887,26 @@ export const cancelReservation = (BookingID) => async (dispatch, getState) => {
 };
 
 export const permDelReservation = (BookingID) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
   return axios
-    .delete(`/api/reservation/delreservations?BookingID=${BookingID}`)
+    .delete(
+      `/api/reservation/delreservations?HotelID=${HotelID}&BookingID=${BookingID}`
+    )
     .then(() => {
       const searchResult = state.searchResultState.results;
       for (let i = 0; i < searchResult.length; i++) {

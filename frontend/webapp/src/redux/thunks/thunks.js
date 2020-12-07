@@ -13,7 +13,6 @@ import {
   updateStayOvers,
   updateAvailable,
   updateCheckIn,
-  updateCheckOut,
 } from '../actions/actions';
 
 import { logoutUser } from '../actions/authActions';
@@ -21,24 +20,28 @@ import { logoutUser } from '../actions/authActions';
 import { loadReport, loadHouseKeepingReport } from '../actions/reportActions';
 
 const initialPageLoad = (date) => async (dispatch, getState) => {
-  axios.get('/validAccess')
-    .catch(() => {
-      return dispatch(
-        batchActions([
-          logoutUser(),
-          snackBarSuccess('UnAuthorized Access')
-        ])
-      );
-    });
+  axios
+    .get('/validAccess')
+    .catch(() =>
+      dispatch(
+        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+      )
+    );
 
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
   }
 
+  const { HotelID } = state.authState.user;
+
   dispatch(showLoading());
-  const reservationRequest = axios.get('/api/reservation/CurrReservation');
-  const reportRequest = axios.get(`/api/dailyreport?date=${date}`);
+  const reservationRequest = axios.get(
+    `/api/reservation/CurrReservation?HotelID=${HotelID}`
+  );
+  const reportRequest = axios.get(
+    `/api/dailyreport?HotelID=${HotelID}&date=${date}`
+  );
 
   return axios
     .all([reservationRequest, reportRequest])
@@ -64,17 +67,16 @@ const initialPageLoad = (date) => async (dispatch, getState) => {
           }
         });
 
+        // Number of Available Rooms
         let available = 0;
-        let checkOut = 0;
 
         const currentRes = [];
-        const today = moment().format('YYYY-MM-DD');
 
-        for (let i = 0; i < 26; i++) {
+        // Get Total Number of Rooms
+        const TotalRooms = state.authState.motelRooms.length;
+
+        for (let i = 0; i < TotalRooms; i++) {
           if (current[i] && current[i].RoomID === i + 101) {
-            if (moment(today).isSame(current[i].checkOut)) {
-              checkOut++;
-            }
             currentRes[i] = current[i];
             currentRes[i]._id = undefined;
           } else {
@@ -84,7 +86,6 @@ const initialPageLoad = (date) => async (dispatch, getState) => {
             };
           }
         }
-        available--; // for extra room of 113 which DNE
 
         // Load Daily Report
         const stays = report.data.Stays;
@@ -93,7 +94,7 @@ const initialPageLoad = (date) => async (dispatch, getState) => {
         const houseKeepingData = [];
 
         Object.entries(stays).forEach(([key, value]) => {
-          if (key === '_id') {
+          if (key === '_id' || key === '126') {
             return;
           }
           // Get Rid of ID from Mongo Document
@@ -111,7 +112,7 @@ const initialPageLoad = (date) => async (dispatch, getState) => {
             rate: value.Room.rate ? value.Room.rate : '',
             tax: value.Room.tax ? value.Room.tax : '',
             notes: value.Room.notes ? value.Room.notes : '',
-            payment: value.Room.payment ? value.Room.payment: '',
+            payment: value.Room.payment ? value.Room.payment : '',
             initial: value.Room.initial ? value.Room.initial : '',
           });
 
@@ -134,7 +135,6 @@ const initialPageLoad = (date) => async (dispatch, getState) => {
             updateStayOvers(25 - available),
             updateAvailable(available),
             updateCheckIn(pending.length),
-            updateCheckOut(checkOut),
             loadCurrResSuccess(currentRes),
             loadPendResSuccess(pending),
             loadOverResSuccess(overdue),
