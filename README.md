@@ -581,7 +581,7 @@ The backend is currently encapsulated into three layers of logic
   * Date-Access: queries and DB connections for corresponding motels
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/55326650/101309870-608c1e00-381b-11eb-8303-6c6032fb1faf.JPG"  width="80%" height="80%">
+<img src="https://user-images.githubusercontent.com/55326650/101309870-608c1e00-381b-11eb-8303-6c6032fb1faf.JPG" width="50%" height="60%">
 </div>
 
 ---
