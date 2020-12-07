@@ -1,5 +1,10 @@
 module.exports = {
-  extends: ['airbnb', 'prettier', 'plugin:react-hooks/recommended'],
+  extends: [
+    'react-app',
+    'airbnb',
+    'prettier',
+    'plugin:react-hooks/recommended',
+  ],
   plugins: ['prettier'],
   rules: {
     'react/jsx-curly-newline': 'off',
