@@ -5,7 +5,7 @@
 
 </div>
 
-This project is a landing page (website) and management system for small-scale hotel operations with ability to manage/track revenue in short-term and long-term stays, email reservation confirmation, generate tax reports/revenue, as well as track housekeeping operations and maintenance logs with more features to come in the future! 
+This project is a landing page (website) and management system for small-scale hotel operations with ability to manage/track revenue in short-term and long-term stays, email reservation confirmation, generate tax reports/revenue, as well as track housekeeping operations and maintenance logs for multiple motels with more features to come in the future! 
 
 It is built as a full-stack javascript application and deployed to Digital Ocean Kubernetes with static files served from DigitalOcean Spaces. See below for [infrastructure](#Infrastructure).
   - **Frontend-Hotel Website**: SSR App Boilerplated with RazzleJS and Styled with MaterialUI 
@@ -45,7 +45,7 @@ npm install
 "hashPassword":"$2b$10$LH3jmEAVCED5ZJPRv.cSTOsQ1bIAD2tJOtefjVHWj9pE6ev0WXYsC"
 ```
 
-4. Run Sequlize Migration and Seed files `npm run migrateToDev`
+4. Run Sequlize Migration and Seed files `npm run migrateToDev` and `npm run seedToDev`
 
 5. Edit `.env` located in the backend root directory with appropriate variables and save
 > If you don't want to have the email messaging queue running as part of the app, you don't have to fill those Google OAUTH fields but if you do, you can either enter your existing info or obtain them from this [tutorial](#https://medium.com/@nickroach_50526/sending-emails-with-node-js-using-smtp-gmail-and-oauth2-316fe9c790a1)
@@ -122,7 +122,7 @@ The main application logic is deployed to DigitalOcean Kubernetes for a resilent
 
 The kubernetes cluster is exposed with a public IP address using the NGINX Ingress Controller, which acts as a reverse-proxy to send users to the appropriate service. 
 
-The public IP address of the NGINX Controller is mapped to two DNS A records `www.bigskylodge.com admins.bigskylodge.com` with HTTPS protocol.
+The public IP address of the NGINX Controller is mapped to two DNS A records with HTTPS protocol.
 
 Static contents such as images, fonts, and javascript files are served from DigitalOcean Spaces CDN for fast delivery.
 
@@ -145,7 +145,7 @@ The hotel website is a universial javascript application bootstrapped with [Razz
 
 ## Management System
 
-The management system is a [react-redux](#https://react-redux.js.org/) single page application bootstrapped with [create-react-app](#https://github.com/facebook/create-react-app). It proxies requests to an [API backend server](#Backend-API) for database persistence and is authenticated using jwt-tokens signed from the backend.
+The management system is a [react-redux](#https://react-redux.js.org/) single page application bootstrapped with [create-react-app](#https://github.com/facebook/create-react-app). It proxies requests to an [API backend server](#Backend-API) for database persistence and is authenticated using jwt-tokens signed from the backend. It is also able to serve multiple hotels based on Login credentials.
 
 React-components are organized into the `/pages` and `/components` directory and redux files in the `/redux` 
 
@@ -173,6 +173,12 @@ This app utlizes the following open-source projects/resources for display and ma
    - [Formik](#https://formik.org/)
    - [Formik-Material-UI](#https://github.com/stackworx/formik-material-ui)
    - [Material-Table](#https://material-table.com/#/)
+
+---
+### How the system handles multiple Hotel Systems
+---
+
+The frontend systems currently serves two Hotels specified in the backend but uses the same interface to serve the Hotels. API requests are differentiated with a HotelID query parameter and the hotel room numbers are determine by an array that the backend sends upon login. This array is stored in the redux state and is used to display the hotel numbers on the frontend for users to interact with. 
 
 ---
 ### How Reservations are tracked, displayed, and stored
@@ -241,13 +247,13 @@ Currently, a user can search for *Reservations*, *Deleted Reservations*, *Custom
 *How Search and Form Display Works*
 
 The searchResult state consists of the following with default values: 
-```bash 
+```javascript 
 searchType: 'none'   // Specifies what table or collection should be queried. [Customer, Pending/Delete Reservation Collection, Blacklists]
 results: []          // The array of reservation/customer objects returned from the API request
 ```
 
 The form state consists of the following with default value: 
-```bash 
+```javascript 
   open: false,    // Whether the form is displayed or not
   list: 0,        // Which type of form should be rendered. See Code Comment for complete list
   data: {},       // The data the form should be rendering
@@ -315,7 +321,7 @@ The **Staff Page** tracks the user accounts who have access to the management sy
 Once a employee logins, their jwt token will expire 60 minutes from the time it is signed. After that 60 minutes is up, any subsequent dispatch will logout the user and require a login for a new token. More details of this can be found below in challenges.
 
 Along with this, before any disptach of thunks/API requests, a request is made to the server to check for the existence of any httpOnly cookies that may have been cleared from the browser tab:
-```bash 
+```javascript 
     axios.get('/validAccess')
     .catch(() => {
       return dispatch(
@@ -328,7 +334,7 @@ Along with this, before any disptach of thunks/API requests, a request is made t
   ```
   
 After this request is a conditon to check for the **authState** which will prevent any subsequent statements from being executed if a logout has been dispatched from either the `checkTokenExpiration Middleware` or the previous request for the existence of httpOnly cookies:
-```bash
+```javascript
   const state = getState();
   if (!state.authState.isAuthenticated) {
     return null;
@@ -337,7 +343,7 @@ After this request is a conditon to check for the **authState** which will preve
 
 
 The management system also takes into consideration the authorization of each user based on the `position` field 
-```bash 
+```javascript 
 position field: 
 0 = Owners
 1 = Managers
@@ -394,7 +400,7 @@ I first defined a `<MyForm>` component as a stateless reusable component for oth
 
 When a component renders a form, it can pass in a maximum of 3 actions (doesn't have to pass in all three) which will dispatch thunks accordingly. It'll also pass in data for the form to render, type of form, and whether it display the form or not
 
-```bash 
+```javascript 
  const formAction2 = (dataRes) => {
     if (formType === 1) {
       logger('check out guest');
@@ -425,7 +431,7 @@ In my `Form.js` file which defined the `<MyForm>` component, I first used tenary
 
 The `<MyForm>` component also has an `actionType` local state to determine which action button was clicked and `handleSubmit()` to set the state accordingly
 
-```bash 
+```javascript 
   const [actionType, setActionType] = React.useState('none');
 
   const handleSubmit = (formType, submitHandler) => {
@@ -444,7 +450,7 @@ The `<MyForm>` component also has an `actionType` local state to determine which
 
 Then, in the onSubmit props of the `Formik` component, it would call the corresponding actions passed down from the parent based on the `actionType` local state of the `<MyForm>` component
 
-```bash 
+```javascript 
   if (actionType === 'action1') {
     props.action1(
       {
@@ -470,7 +476,7 @@ Then, in the onSubmit props of the `Formik` component, it would call the corresp
 ```
 
 All forms had a common `<FormActions>` component which displays the different action buttons based on the form type. 
-```bash 
+```javascript 
   <FormActions
     submitForm={submitForm}
     handleForm={handleSubmit}
@@ -480,7 +486,7 @@ All forms had a common `<FormActions>` component which displays the different ac
 ```
 
 In the `<FormActions>` component, it'll set different names of button depending on form type and render only buttons that need to be rendered as well as their appropriate name: 
-```bash
+```javascript
   if (type === 0) {
     button1 = 'New Reservation';
     button2 = '';
@@ -530,7 +536,7 @@ As you can see here, different buttons will render/hide based on the `formType` 
 
 2. Another challenge I faced was automatically logging out the user after their jwt token expired. To solve this, I used [Redux Middlewares](#https://redux.js.org/tutorials/fundamentals/part-4-store#middleware) to check for the token expiration date before every dispatch and logout the user is that expiration date has been succeeded. 
 
-```bash 
+```javascript 
 const checkTokenExpirationMiddleware = (store) => (next) => (action) => {
   const authenticationState = store.getState().authState;
   if (
@@ -551,11 +557,13 @@ applyMiddleware(checkTokenExpirationMiddleware, thunk)
 <a name="Backend-API"/>
 
 ## Backend API
+> For more detail on backend, please see the `README` located in the backend directory. 
 
-The backend api server serves as a gateway between the frontend and the database, manipluating data through transaction queries and mongo aggregations to return the desired result that the frontend requests. 
+The backend api server serves as a gateway between the frontend and the database, manipluating data through transaction queries and mongo aggregations to return the desired result that the frontend requests. Because the backend server has to be able to serve different hotels each with different room numbers and their own reservations, a `HotelID` query string is used to differentiate API requests. 
 
-All backend api requests go through `/api` route where an express router autenticates the request and sends the it to the matching router.
-All staff requests go through `/user` route where an express router authenticates requests for CRUD operations on staff data but directs login and logout requests to their matching router.
+All backend api requests go through `/api` route where an express router autenticates the request and sends the it to the matching router. A hotel check middleware also intercepts the request, obtains the `HotelID` of the request and stores it in a Conductor for it to use to run commands. 
+
+All login requests go through `/user` route where an express router directs login and logout requests to their matching router.
 
 This app makes use of the following modules: 
   - *[ExpressJS](#https://expressjs.com/)* Middleware: for API routering and server side rendering.
@@ -567,7 +575,14 @@ This app makes use of the following modules:
   - *[nodemailer](#https://nodemailer.com/about/)*: for sending reservation confirmation emails with gmail
 
 
-The backend is currently organized into 10 services which contain all the logic of each endpoint requests: 
+The backend is currently encapsulated into three layers of logic
+  * Controller: handles all API routes
+  * Services: business logic
+  * Date-Access: queries and DB connections for corresponding motels
+
+<div align="center">
+<img src="https://user-images.githubusercontent.com/55326650/101309870-608c1e00-381b-11eb-8303-6c6032fb1faf.JPG"  width="80%" height="80%">
+</div>
 
 ---
 ### Authentication Service (MongoDB)
@@ -593,7 +608,7 @@ The authentication strategy used by this app is a pretty straightforward and sim
   - If it exists, decode it, assign it to `req.user` and move onto the next middleware. 
   - Else assign `req.user = null` and move onto the next middleware
 
-```bash 
+```javascript 
   app.use((req, res, next) => {
     const { token } = req.cookies;
 
@@ -610,7 +625,7 @@ The authentication strategy used by this app is a pretty straightforward and sim
 ```
 3. If request is though `/api`, request must go through `loginRequired` middleware to check for the authorization of the request based on the definition of `req.user`, which was asigned in the previous middleware
 
-```bash
+```javascript
   loginRequired: (req, res, next) => {
     if (req.user) {
       return next();
