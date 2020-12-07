@@ -12,7 +12,7 @@ module.exports = {
         {
           ID: {
             type: Sequelize.STRING,
-            field: 'id',
+            field: 'ID',
             primaryKey: true,
             allowNull: false,
           },

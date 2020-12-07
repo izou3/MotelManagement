@@ -60,16 +60,26 @@ module.exports = {
             field: 'RoomID',
             allowNull: false,
           },
-          created_at: {
-            type: Sequelize.DATE,
-            field: 'created_at',
-            defaultValue: Sequelize.fn('NOW'),
+          HotelID: {
+            type: Sequelize.MEDIUMINT,
+            field: 'HotelID',
+            allowNull: false,
+          },
+          StyleID: {
+            type: Sequelize.TINYINT,
+            field: 'StyleID',
             allowNull: false,
           },
           comments: {
             type: Sequelize.TEXT('tiny'),
             field: 'comments',
             allowNull: true,
+          },
+          created_at: {
+            type: Sequelize.DATE,
+            field: 'created_at',
+            defaultValue: Sequelize.fn('NOW'),
+            allowNull: false,
           },
         },
         { transaction }
@@ -105,6 +115,24 @@ module.exports = {
         fields: ['PaymentID'],
         references: {
           table: 'Payment',
+          field: 'ID',
+        },
+      });
+
+      await queryInterface.addConstraint('IndCustomer', {
+        type: 'foreign key',
+        fields: ['HotelID'],
+        references: {
+          table: 'Motels',
+          field: 'ID',
+        },
+      });
+
+      await queryInterface.addConstraint('IndCustomer', {
+        type: 'foreign key',
+        fields: ['StyleID'],
+        references: {
+          table: 'RoomStyle',
           field: 'ID',
         },
       });
