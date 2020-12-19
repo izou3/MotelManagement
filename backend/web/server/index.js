@@ -2,6 +2,7 @@
  * Module dependencies.
  */
 const path = require('path');
+const cors = require('cors');
 const express = require('express');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
@@ -10,28 +11,43 @@ const RateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 const { isCelebrateError } = require('celebrate');
 
-const logger = require('../lib/logger/logger');
+const logger = require('../../lib/logger/logger');
 const routes = require('./routes/index');
 const authRoutes = require('./routes/authRoute');
 
 const {
   loginRequired,
   loginCheck,
-} = require('../middlewares/Authentication/AuthMiddlewares');
+} = require('../../lib/middlewares/Authentication/AuthMiddlewares');
 
 /*
  * Main Express Middleware
  */
 module.exports = (param) => {
   const { values } = param;
-  const { agenda } = param;
+  const { config } = param;
   const mongo = values[0];
   const sqlPool = values[1];
   const app = express();
 
   // Pug Setup
   app.set('view engine', 'pug');
-  app.set('views', path.join(__dirname, '../views'));
+  if (process.env.NODE_ENV === 'production') {
+    app.set('views', path.join(__dirname, './views'));
+  } else {
+    app.set('views', path.join(__dirname, '../../views'));
+  }
+
+  // In Production, app is behind a proxy so trust X-Forwarded-Host headers
+  app.set('trust proxy', true);
+
+  // Cors from Frontend Server
+  app.use(
+    cors({
+      origin: config.clientDomain,
+      credentials: true,
+    })
+  );
 
   // Helmet Setup
   app.use(helmet());
@@ -52,6 +68,9 @@ module.exports = (param) => {
     max: 100, // limit number of request per IP
     delayMs: 0, // disables delays
   });
+
+  //  apply to all requests
+  app.use(limiter);
 
   /**
    * Set the User if token in defined in the cookie.
@@ -77,7 +96,7 @@ module.exports = (param) => {
   app.use('/user', authRoutes({ sqlPool }));
 
   // API Routes to Access Reservations and Customers
-  app.use('/api', loginRequired, routes({ mongo, sqlPool, agenda }));
+  app.use('/api', loginRequired, routes({ mongo, sqlPool }));
 
   // 404 Error handler
   app.use((req, res, next) => {
@@ -88,6 +107,8 @@ module.exports = (param) => {
 
   // Error handler
   app.use((err, req, res, next) => {
+    // eslint-disable-next-line no-console
+    console.log(config.clientDomain);
     if (isCelebrateError(err)) {
       // if joi produces an error, it's likely a client-side problem
       return res.status(400).json({

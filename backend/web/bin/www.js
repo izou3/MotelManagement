@@ -2,7 +2,6 @@
  * Module dependencies.
  */
 const http = require('http');
-const cluster = require('cluster');
 const Agenda = require('agenda');
 const debug = require('debug')('motel:http');
 require('regenerator-runtime/runtime'); // to allow aysnc/await syntax during webpack bundle
@@ -57,7 +56,7 @@ Promise.all([mongoPromise(), sqlPromise()])
     });
 
     // API Routes
-    const app = require('../index')({ config, values });
+    const app = require('../server/index')({ config, values });
 
     /**
      * Get port from environment and store in Express.
@@ -69,24 +68,37 @@ Promise.all([mongoPromise(), sqlPromise()])
      * Create HTTP server and listen on the provided port
      */
     const server = http.createServer(app);
-    if (process.env.NODE_ENV === 'production') {
-      if (cluster.isMaster) {
-        // Fork http server load in production mode
-        logger.info(`Master ${process.pid} is running`);
-        cluster.fork();
-        cluster.fork();
 
-        cluster.on('exit', () => {
-          logger.info(`Worker ${process.pid} died`);
-          cluster.fork();
-        });
-      } else {
-        server.listen(port);
-      }
-    } else {
-      // Run Single Process http server in development mode
-      server.listen(port);
-    }
+    /**
+     * Load in Socket Connection
+     */
+    logger.info('Socket Listening');
+    const io = require('../socket/index')({ config });
+    io.attach(server);
+
+    server.listen(port);
+
+    /**
+     * @TODO use Redis Adapter In order to use child processes with SocketIO
+     */
+    // if (process.env.NODE_ENV === 'production') {
+    //   if (cluster.isMaster) {
+    //     // Fork http server load in production mode
+    //     logger.info(`Master ${process.pid} is running`);
+    //     cluster.fork();
+    //     cluster.fork();
+
+    //     cluster.on('exit', () => {
+    //       logger.info(`Worker ${process.pid} died`);
+    //       cluster.fork();
+    //     });
+    //   } else {
+    //     server.listen(port);
+    //   }
+    // } else {
+    //   // Run Single Process http server in development mode
+    //   server.listen(port);
+    // }
 
     server.on('listening', () => {
       const addr = server.address();
