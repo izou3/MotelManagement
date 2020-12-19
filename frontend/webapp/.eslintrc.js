@@ -3,7 +3,6 @@ module.exports = {
     'react-app',
     'airbnb',
     'prettier',
-    'plugin:react-hooks/recommended',
   ],
   plugins: ['prettier'],
   rules: {
