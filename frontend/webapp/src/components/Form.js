@@ -1,10 +1,11 @@
+/* eslint-disable no-nested-ternary */
 /**
  * Module Dependencies
  */
 import React from 'react';
 import moment from 'moment';
 
-//MaterialUI Components
+// MaterialUI Components
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Box from '@material-ui/core/Box';
@@ -178,7 +179,7 @@ const ResForm = (props) => {
     submitHandler();
   };
 
-  const formTitle = (type) => {
+  const formTitle = () => {
     let returnString = '';
     if (type === 0) {
       returnString = 'New Reservation';
@@ -190,16 +191,13 @@ const ResForm = (props) => {
       returnString = `BookingID: ${data.BookingID}`;
     }
     return returnString;
-  }
+  };
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md">
-      <DialogTitle>
-        {formTitle(type)}
-      </DialogTitle>
-      {
-        type === 7 ? (
-          <>
+      <DialogTitle>{formTitle()}</DialogTitle>
+      {type === 7 ? (
+        <>
           <Formik
             initialValues={{
               BookingID: data.BookingID,
@@ -276,506 +274,502 @@ const ResForm = (props) => {
             )}
           </Formik>
         </>
-        ) : (
-          (type === 8 || type === 9) ? (
-            <>
-              <Formik
-                initialValues={{
-                  firstName: data.firstName ? data.firstName : '',
-                  password: data.password ? data.password : '',
-                  lastName: data.lastName ? data.lastName : '',
-                  position: data.position ? data.position : 0,
-                  email: data.email ? data.email : '',
-                  username: data.username ? data.username : '',
-                }}
+      ) : type === 8 || type === 9 ? (
+        <>
+          <Formik
+            initialValues={{
+              firstName: data.firstName ? data.firstName : '',
+              password: data.password ? data.password : '',
+              lastName: data.lastName ? data.lastName : '',
+              position: data.position ? data.position : 0,
+              email: data.email ? data.email : '',
+              username: data.username ? data.username : '',
+            }}
+            validate={(values) => {
+              const errors = {};
 
-                validate={(values) => {
-                  const errors = {};
+              if (type === 9) {
+                if (!values.username || values.username.trim().length === 0) {
+                  errors.username = 'Username is Required';
+                } else if (values.username.trim().length > 20) {
+                  errors.username = 'Username Too Long';
+                }
 
-                  if (type === 9) {
-                    if (!values.username || values.username.trim().length === 0) {
-                      errors.username = 'Username is Required';
-                    } else if (values.username.trim().length > 20) {
-                      errors.username = 'Username Too Long'
+                if (!values.password || values.password.trim().length === 0) {
+                  errors.password = 'Password is Required';
+                } else if (values.password.trim().length < 8) {
+                  errors.password = 'Password is Too Short';
+                } else if (values.password.trim().length > 25) {
+                  errors.password = 'Password is Too Long';
+                }
+              }
+
+              if (values.firstName.trim().length === 0) {
+                errors.firstName = 'First Name Cannot be Blank';
+              } else if (values.firstName.trim().length > 20) {
+                errors.firstName = 'Use a Shorter Name';
+              }
+
+              if (values.lastName.trim().length === 0) {
+                errors.lastName = 'First Name Cannot be Blank';
+              } else if (values.lastName.trim().length > 20) {
+                errors.lastName = 'Use a Shorter Name';
+              }
+
+              if (values.email.trim().length === 0) {
+                errors.email = 'Email Cannot Be Blank';
+              } else if (values.email.trim().length > 40) {
+                errors.email = 'Email is too Long';
+              } else if (
+                !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)
+              ) {
+                errors.email = 'Invalid email address';
+              }
+
+              return errors;
+            }}
+            onSubmit={(values, { setSubmitting }) => {
+              if (actionType === 'action1') {
+                logger('Create Staff');
+                props.action1(values);
+              } else if (actionType === 'action2') {
+                logger('Update Staff');
+                // eslint-disable-next-line no-param-reassign
+                delete values.password;
+                logger(values);
+                props.action2(values);
+              } else if (actionType === 'action3') {
+                logger('Delete Staff');
+                props.action3(values.username);
+              }
+              setSubmitting(false);
+            }}
+          >
+            {({ submitForm, isSubmitting }) => (
+              <Form>
+                <DialogContent>
+                  <Grid container justify="space-evenly">
+                    {
+                      // Render New Form
+                      !data.username && (
+                        <>
+                          <Grid item xs={5} className={classes.textField}>
+                            <Field
+                              fullWidth
+                              component={TextField}
+                              variant="outlined"
+                              name="username"
+                              type="text"
+                              label="Username"
+                            />
+                          </Grid>
+                          <Grid item xs={5} className={classes.textField}>
+                            <Field
+                              fullWidth
+                              component={TextField}
+                              variant="outlined"
+                              name="password"
+                              type="password"
+                              label="Password"
+                            />
+                          </Grid>
+                        </>
+                      )
                     }
 
-                    if (!values.password || values.password.trim().length === 0) {
-                      errors.password = 'Password is Required';
-                    } else if (values.password.trim().length < 8) {
-                      errors.password = 'Password is Too Short';
-                    } else if (values.password.trim().length > 25) {
-                      errors.password = 'Password is Too Long';
-                    }
-                  }
+                    <Grid item xs={5} className={classes.textField}>
+                      <Field
+                        fullWidth
+                        component={TextField}
+                        variant="outlined"
+                        name="firstName"
+                        type="text"
+                        label="firstName"
+                      />
+                    </Grid>
+                    <Grid item xs={5} className={classes.textField}>
+                      <Field
+                        component={TextField}
+                        fullWidth
+                        name="lastName"
+                        label="Last Name"
+                        variant="outlined"
+                      />
+                    </Grid>
 
-                  if (values.firstName.trim().length === 0) {
-                    errors.firstName = 'First Name Cannot be Blank';
-                  } else if (values.firstName.trim().length > 20) {
-                    errors.firstName = 'Use a Shorter Name';
-                  }
+                    <Grid item xs={3} className={classes.textField}>
+                      <Field
+                        component={TextField}
+                        select
+                        fullWidth
+                        name="position"
+                        label="Position"
+                        variant="outlined"
+                      >
+                        <MenuItem value={0}>Owner</MenuItem>
+                        <MenuItem value={1}>Manager</MenuItem>
+                        <MenuItem value={2}>Housekeeper</MenuItem>
+                      </Field>
+                    </Grid>
 
-                  if (values.lastName.trim().length === 0) {
-                    errors.lastName = 'First Name Cannot be Blank';
-                  } else if (values.lastName.trim().length > 20) {
-                    errors.lastName = 'Use a Shorter Name';
-                  }
+                    <Grid item xs={7} className={classes.textField}>
+                      <Field
+                        component={TextField}
+                        fullWidth
+                        name="email"
+                        label="email"
+                        variant="outlined"
+                      />
+                    </Grid>
+                  </Grid>
+                </DialogContent>
+                <DialogActions>
+                  <FormActions
+                    submitForm={submitForm}
+                    handleForm={handleSubmit}
+                    isSubmitting={isSubmitting}
+                    type={type}
+                  />
+                </DialogActions>
+              </Form>
+            )}
+          </Formik>
+        </>
+      ) : (
+        <>
+          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <Formik
+              initialValues={{
+                firstName: data.firstName ? data.firstName : '',
+                lastName: data.lastName ? data.lastName : '',
+                ReservationID: data.ReservationID ? data.ReservationID : 0,
+                PaymentID: data.PaymentID ? data.PaymentID : 0,
+                RoomID: data.RoomID ? data.RoomID : '',
+                StateID: data.StateID ? data.StateID : '',
+                StyleID: data.StyleID ? data.StyleID : 0,
+                pricePaid: data.pricePaid ? data.pricePaid : '',
+                tax: data.tax ? data.tax : '',
+                checkIn: data.checkIn
+                  ? moment(data.checkIn).format()
+                  : moment().format(),
+                checkOut: data.checkOut
+                  ? moment(data.checkOut).format()
+                  : moment().add(1, 'days').format(),
+                numGuests: data.numGuests ? data.numGuests : '',
+                email: data.email ? data.email : '',
+                phone: data.phone ? data.phone : '',
+                comments: data.comments ? data.comments : '',
+              }}
+              validate={(values) => {
+                const errors = {};
 
-                  if (values.email.trim().length === 0) {
-                    errors.email = 'Email Cannot Be Blank';
-                  } else if (values.email.trim().length > 40) {
-                    errors.email = 'Email is too Long';
-                  } else if (
+                if (!values.firstName) {
+                  errors.firstName = 'Required';
+                } else if (values.firstName.trim().length > 20) {
+                  errors.firstName = 'Must be 15 characters or less';
+                }
+
+                if (!values.lastName) {
+                  errors.lastName = 'Required';
+                } else if (values.lastName.trim().length > 20) {
+                  errors.lastName = 'Must be 20 characters or less';
+                }
+
+                if (!values.numGuests) {
+                  errors.numGuests = 'Required';
+                } else if (isNaN(values.numGuests)) {
+                  errors.numGuests = 'Must be a Number';
+                } else if (values.numGuests > 10) {
+                  errors.numGuests = 'Too Much!!';
+                }
+
+                if (values.email) {
+                  if (
                     !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(
                       values.email
-                    )) {
-                    errors.email = 'Invalid email address';
-                  }
-
-                  return errors;
-                }}
-
-                onSubmit={(values, { setSubmitting }) => {
-                  if (actionType === 'action1') {
-                    logger('Create Staff');
-                    props.action1(values);
-                  } else if (actionType === 'action2') {
-                    logger('Update Staff');
-                    delete values.password;
-                    logger(values);
-                    props.action2(values);
-                  } else if (actionType === 'action3') {
-                    logger('Delete Staff');
-                    props.action3(values.username);
-                  }
-                  setSubmitting(false);
-                }}
-              >
-                {({ submitForm, isSubmitting }) => (
-                  <Form>
-                    <DialogContent>
-                      <Grid container justify="space-evenly">
-                        {
-                          // Render New Form
-                          !data.username &&
-                          <>
-                            <Grid item xs={5} className={classes.textField}>
-                              <Field
-                                fullWidth
-                                component={TextField}
-                                variant="outlined"
-                                name="username"
-                                type="text"
-                                label="Username"
-                              />
-                            </Grid>
-                            <Grid item xs={5} className={classes.textField}>
-                              <Field
-                                fullWidth
-                                component={TextField}
-                                variant="outlined"
-                                name="password"
-                                type="password"
-                                label="Password"
-                              />
-                            </Grid>
-                          </>
-                        }
-
-                        <Grid item xs={5} className={classes.textField}>
-                          <Field
-                            fullWidth
-                            component={TextField}
-                            variant="outlined"
-                            name="firstName"
-                            type="text"
-                            label="firstName"
-                          />
-                        </Grid>
-                        <Grid item xs={5} className={classes.textField}>
-                          <Field
-                            component={TextField}
-                            fullWidth
-                            name="lastName"
-                            label="Last Name"
-                            variant="outlined"
-                          />
-                        </Grid>
-
-                        <Grid item xs={3} className={classes.textField}>
-                          <Field
-                            component={TextField}
-                            select
-                            fullWidth
-                            name="position"
-                            label="Position"
-                            variant="outlined"
-                          >
-                            <MenuItem value={0}>Owner</MenuItem>
-                            <MenuItem value={1}>Manager</MenuItem>
-                            <MenuItem value={2}>Housekeeper</MenuItem>
-                          </Field>
-                        </Grid>
-
-                        <Grid item xs={7} className={classes.textField}>
-                          <Field
-                            component={TextField}
-                            fullWidth
-                            name="email"
-                            label="email"
-                            variant="outlined"
-                          />
-                        </Grid>
-
-                      </Grid>
-                    </DialogContent>
-                    <DialogActions>
-                      <FormActions
-                        submitForm={submitForm}
-                        handleForm={handleSubmit}
-                        isSubmitting={isSubmitting}
-                        type={type}
-                      />
-                    </DialogActions>
-                  </Form>
-                )}
-              </Formik>
-            </>
-          ) : (
-          <>
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <Formik
-                initialValues={{
-                  firstName: data.firstName ? data.firstName : '',
-                  lastName: data.lastName ? data.lastName : '',
-                  ReservationID: data.ReservationID ? data.ReservationID : 0,
-                  PaymentID: data.PaymentID ? data.PaymentID : 0,
-                  RoomID: data.RoomID ? data.RoomID : '',
-                  StateID: data.StateID ? data.StateID : '',
-                  StyleID: data.StyleID ? data.StyleID : 0,
-                  pricePaid: data.pricePaid ? data.pricePaid : '',
-                  tax: data.tax ? data.tax : '',
-                  checkIn: data.checkIn
-                    ? moment(data.checkIn).format()
-                    : moment().format(),
-                  checkOut: data.checkOut
-                    ? moment(data.checkOut).format()
-                    : moment().add(1, 'days').format(),
-                  numGuests: data.numGuests ? data.numGuests : '',
-                  email: data.email ? data.email : '',
-                  phone: data.phone ? data.phone : '',
-                  comments: data.comments ? data.comments : '',
-                }}
-                validate={(values) => {
-                  const errors = {};
-
-                  if (!values.firstName) {
-                    errors.firstName = 'Required';
-                  } else if (values.firstName.trim().length > 20) {
-                    errors.firstName = 'Must be 15 characters or less';
-                  }
-
-                  if (!values.lastName) {
-                    errors.lastName = 'Required';
-                  } else if (values.lastName.trim().length > 20) {
-                    errors.lastName = 'Must be 20 characters or less';
-                  }
-
-                  if (!values.numGuests) {
-                    errors.numGuests = 'Required';
-                  } else if (isNaN(values.numGuests)) {
-                    errors.numGuests = 'Must be a Number';
-                  } else if (values.numGuests > 10) {
-                    errors.numGuests = 'Too Much!!';
-                  }
-
-                  if (values.email) {
-                    if (
-                      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(
-                        values.email
-                      )
-                    ) {
-                      errors.email = 'Invalid email address';
-                    } else if (values.email.length > 48) {
-                      errors.email = 'Must be 48 characters or less';
-                    }
-                  }
-
-                  if (values.phone) {
-                    if (values.phone.length < 10 || values.phone.length > 10) {
-                      errors.phone = "Number isn't 10 digits";
-                    }
-                  }
-
-                  if (values.StateID) {
-                    if (values.StateID.length > 2) {
-                      errors.StateID = 'Abbreviate';
-                    }
-                  }
-
-                  if (
-                    moment(values.checkIn).isSameOrAfter(moment(values.checkOut))
+                    )
                   ) {
-                    errors.pricePaid = "Check Out Can't be before Check In";
+                    errors.email = 'Invalid email address';
+                  } else if (values.email.length > 48) {
+                    errors.email = 'Must be 48 characters or less';
                   }
+                }
 
-                  if (!values.pricePaid) {
-                    errors.pricePaid = 'Required';
-                  } else if (isNaN(values.pricePaid)) {
-                    errors.pricePaid = 'Not a price';
+                if (values.phone) {
+                  if (values.phone.length < 10 || values.phone.length > 10) {
+                    errors.phone = "Number isn't 10 digits";
                   }
+                }
 
-                  if (!values.tax) {
-                    errors.tax = 'Required';
-                  } else if (isNaN(values.tax)) {
-                    errors.tax = 'Not a tax';
+                if (values.StateID) {
+                  if (values.StateID.length > 2) {
+                    errors.StateID = 'Abbreviate';
                   }
+                }
 
-                  if (!values.RoomID) {
-                    errors.RoomID = 'Required';
-                  } else if (isNaN(values.RoomID)) {
-                    errors.RoomID = 'Not a Number';
-                  } else if (values.RoomID > 127 || values.RoomID < 101) {
-                    errors.RoomID = 'Not a Room';
-                  }
+                if (
+                  moment(values.checkIn).isSameOrAfter(moment(values.checkOut))
+                ) {
+                  errors.pricePaid = "Check Out Can't be before Check In";
+                }
 
-                  if (values.comments.length > 245) {
-                    errors.comments = 'Must be less than 245 characters';
-                  }
+                if (!values.pricePaid) {
+                  errors.pricePaid = 'Required';
+                } else if (isNaN(values.pricePaid)) {
+                  errors.pricePaid = 'Not a price';
+                }
 
-                  return errors;
-                }}
-                onSubmit={(values, { setSubmitting }) => {
-                  setSubmitting(true);
+                if (!values.tax) {
+                  errors.tax = 'Required';
+                } else if (isNaN(values.tax)) {
+                  errors.tax = 'Not a tax';
+                }
 
-                  if (actionType === 'action1') {
-                    props.action1(
-                      {
-                        ...data,
-                        ...values,
-                      },
-                      data.RoomID
-                    );
-                  } else if (actionType === 'action2') {
-                    props.action2({
+                if (!values.RoomID) {
+                  errors.RoomID = 'Required';
+                } else if (isNaN(values.RoomID)) {
+                  errors.RoomID = 'Not a Number';
+                } else if (values.RoomID > 127 || values.RoomID < 101) {
+                  errors.RoomID = 'Not a Room';
+                }
+
+                if (values.comments.length > 245) {
+                  errors.comments = 'Must be less than 245 characters';
+                }
+
+                return errors;
+              }}
+              onSubmit={(values, { setSubmitting }) => {
+                setSubmitting(true);
+
+                if (actionType === 'action1') {
+                  props.action1(
+                    {
                       ...data,
                       ...values,
-                    });
-                  } else if (actionType === 'action3') {
-                    props.action3(
-                      {
-                        ...data,
-                        ...values,
-                      },
-                      data.RoomID
-                    );
-                  }
+                    },
+                    data.RoomID
+                  );
+                } else if (actionType === 'action2') {
+                  props.action2({
+                    ...data,
+                    ...values,
+                  });
+                } else if (actionType === 'action3') {
+                  props.action3(
+                    {
+                      ...data,
+                      ...values,
+                    },
+                    data.RoomID
+                  );
+                }
 
-                  setSubmitting(false);
-                }}
-              >
-                {({ submitForm, isSubmitting }) => (
-                  <Form>
-                    <DialogContent>
-                      <Grid container justify="space-evenly">
-                        <Grid item xs={5} className={classes.textField}>
-                          <Field
-                            fullWidth
-                            component={TextField}
-                            variant="outlined"
-                            name="firstName"
-                            type="text"
-                            label="First Name"
-                          />
-                        </Grid>
-
-                        <Grid item xs={5} className={classes.textField}>
-                          <Field
-                            component={TextField}
-                            fullWidth
-                            name="lastName"
-                            label="Last Name"
-                            variant="outlined"
-                          />
-                        </Grid>
-
-                        <Grid item xs={1} className={classes.textField}>
-                          <Field
-                            component={TextField}
-                            fullWidth
-                            name="numGuests"
-                            label="Guests"
-                            variant="outlined"
-                          />
-                        </Grid>
-
-                        <Grid item xs={5} className={classes.textField}>
-                          <Field
-                            component={TextField}
-                            fullWidth
-                            id="email"
-                            name="email"
-                            label="Email"
-                            variant="outlined"
-                          />
-                        </Grid>
-
-                        <Grid item xs={4} className={classes.textField}>
-                          <Field
-                            component={TextField}
-                            fullWidth
-                            id="phone"
-                            name="phone"
-                            label="phone"
-                            variant="outlined"
-                          />
-                        </Grid>
-
-                        <Grid item xs={2} className={classes.textField}>
-                          <Field
-                            component={TextField}
-                            fullWidth
-                            id="StateID"
-                            name="StateID"
-                            label="State"
-                            variant="outlined"
-                          />
-                        </Grid>
-
-                        <Grid item xs={3} className={classes.textField}>
-                          <Field
-                            component={DatePicker}
-                            fullWidth
-                            name="checkIn"
-                            label="Check In"
-                          />
-                        </Grid>
-
-                        <Grid item xs={3} className={classes.textField}>
-                          <Field
-                            component={DatePicker}
-                            fullWidth
-                            name="checkOut"
-                            label="Check Out"
-                          />
-                        </Grid>
-
-                        <Grid item xs={3} className={classes.textField}>
-                          <Field
-                            component={TextField}
-                            select
-                            fullWidth
-                            name="ReservationID"
-                            label="Reservation"
-                            variant="outlined"
-                          >
-                            <MenuItem value={0}>Booking.com</MenuItem>
-                            <MenuItem value={1}>Expedia Partners</MenuItem>
-                            <MenuItem value={2}>Phone Call</MenuItem>
-                            <MenuItem value={3}>Walk-In</MenuItem>
-                            <MenuItem value={4}>Others</MenuItem>
-                          </Field>
-                        </Grid>
-
-                        <Grid item xs={2} className={classes.textField}>
-                          <Field
-                            component={TextField}
-                            select
-                            fullWidth
-                            label="Payment"
-                            name="PaymentID"
-                            variant="outlined"
-                          >
-                            <MenuItem value={0}>Card</MenuItem>
-                            <MenuItem value={1}>Cash</MenuItem>
-                            <MenuItem value={2}>Check</MenuItem>
-                            <MenuItem value={3}>Other</MenuItem>
-                          </Field>
-                        </Grid>
-
-                        <Grid item xs={3} className={classes.textField}>
-                          <Field
-                            fullWidth
-                            component={TextField}
-                            name="pricePaid"
-                            label="Price Paid"
-                            variant="outlined"
-                            margin="normal"
-                          />
-                        </Grid>
-
-                        <Grid item xs={3} className={classes.textField}>
-                          <Field
-                            fullWidth
-                            component={TextField}
-                            name="tax"
-                            label="Tax"
-                            variant="outlined"
-                            margin="normal"
-                          />
-                        </Grid>
-
-                        <Grid item xs={2} className={classes.textField2}>
-                          <Field
-                            component={TextField}
-                            select
-                            fullWidth
-                            label="Room"
-                            name="RoomID"
-                            variant="outlined"
-                          >
-                          {
-                            roomList.map((room, index) => (
-                              <MenuItem key={room} value={index+101}>{room}</MenuItem>
-                            ))
-                          }
-                          </Field>
-                        </Grid>
-
-                        <Grid item xs={3} className={classes.textField2}>
-                          <Field
-                            component={TextField}
-                            select
-                            fullWidth
-                            label="Room Style"
-                            name="StyleID"
-                            variant="outlined"
-                          >
-                            <MenuItem value={0}>Single Queen</MenuItem>
-                            <MenuItem value={1}>Single King</MenuItem>
-                            <MenuItem value={2}>Double Queen</MenuItem>
-                            <MenuItem value={3}>Kitchnette</MenuItem>
-                            <MenuItem value={4}>Triple Queen</MenuItem>
-                          </Field>
-                        </Grid>
-
-                        <Grid item xs={12} className={classes.textField}>
-                          <Field
-                            fullWidth
-                            component={TextField}
-                            multiline
-                            rowsMax={4}
-                            name="comments"
-                            label="comments"
-                            variant="outlined"
-                          />
-                        </Grid>
+                setSubmitting(false);
+              }}
+            >
+              {({ submitForm, isSubmitting }) => (
+                <Form>
+                  <DialogContent>
+                    <Grid container justify="space-evenly">
+                      <Grid item xs={5} className={classes.textField}>
+                        <Field
+                          fullWidth
+                          component={TextField}
+                          variant="outlined"
+                          name="firstName"
+                          type="text"
+                          label="First Name"
+                        />
                       </Grid>
-                    </DialogContent>
-                    <DialogActions>
-                      <FormActions
-                        submitForm={submitForm}
-                        handleForm={handleSubmit}
-                        isSubmitting={isSubmitting}
-                        type={type}
-                      />
-                    </DialogActions>
-                  </Form>
-                )}
-              </Formik>
-            </MuiPickersUtilsProvider>
-          </>
-        ))
-      }
+
+                      <Grid item xs={5} className={classes.textField}>
+                        <Field
+                          component={TextField}
+                          fullWidth
+                          name="lastName"
+                          label="Last Name"
+                          variant="outlined"
+                        />
+                      </Grid>
+
+                      <Grid item xs={1} className={classes.textField}>
+                        <Field
+                          component={TextField}
+                          fullWidth
+                          name="numGuests"
+                          label="Guests"
+                          variant="outlined"
+                        />
+                      </Grid>
+
+                      <Grid item xs={5} className={classes.textField}>
+                        <Field
+                          component={TextField}
+                          fullWidth
+                          id="email"
+                          name="email"
+                          label="Email"
+                          variant="outlined"
+                        />
+                      </Grid>
+
+                      <Grid item xs={4} className={classes.textField}>
+                        <Field
+                          component={TextField}
+                          fullWidth
+                          id="phone"
+                          name="phone"
+                          label="phone"
+                          variant="outlined"
+                        />
+                      </Grid>
+
+                      <Grid item xs={2} className={classes.textField}>
+                        <Field
+                          component={TextField}
+                          fullWidth
+                          id="StateID"
+                          name="StateID"
+                          label="State"
+                          variant="outlined"
+                        />
+                      </Grid>
+
+                      <Grid item xs={3} className={classes.textField}>
+                        <Field
+                          component={DatePicker}
+                          fullWidth
+                          name="checkIn"
+                          label="Check In"
+                        />
+                      </Grid>
+
+                      <Grid item xs={3} className={classes.textField}>
+                        <Field
+                          component={DatePicker}
+                          fullWidth
+                          name="checkOut"
+                          label="Check Out"
+                        />
+                      </Grid>
+
+                      <Grid item xs={3} className={classes.textField}>
+                        <Field
+                          component={TextField}
+                          select
+                          fullWidth
+                          name="ReservationID"
+                          label="Reservation"
+                          variant="outlined"
+                        >
+                          <MenuItem value={0}>Booking.com</MenuItem>
+                          <MenuItem value={1}>Expedia Partners</MenuItem>
+                          <MenuItem value={2}>Phone Call</MenuItem>
+                          <MenuItem value={3}>Walk-In</MenuItem>
+                          <MenuItem value={4}>Others</MenuItem>
+                        </Field>
+                      </Grid>
+
+                      <Grid item xs={2} className={classes.textField}>
+                        <Field
+                          component={TextField}
+                          select
+                          fullWidth
+                          label="Payment"
+                          name="PaymentID"
+                          variant="outlined"
+                        >
+                          <MenuItem value={0}>Card</MenuItem>
+                          <MenuItem value={1}>Cash</MenuItem>
+                          <MenuItem value={2}>Check</MenuItem>
+                          <MenuItem value={3}>Other</MenuItem>
+                        </Field>
+                      </Grid>
+
+                      <Grid item xs={3} className={classes.textField}>
+                        <Field
+                          fullWidth
+                          component={TextField}
+                          name="pricePaid"
+                          label="Price Paid"
+                          variant="outlined"
+                          margin="normal"
+                        />
+                      </Grid>
+
+                      <Grid item xs={3} className={classes.textField}>
+                        <Field
+                          fullWidth
+                          component={TextField}
+                          name="tax"
+                          label="Tax"
+                          variant="outlined"
+                          margin="normal"
+                        />
+                      </Grid>
+
+                      <Grid item xs={2} className={classes.textField2}>
+                        <Field
+                          component={TextField}
+                          select
+                          fullWidth
+                          label="Room"
+                          name="RoomID"
+                          variant="outlined"
+                        >
+                          {roomList.map((room, index) => (
+                            <MenuItem key={room} value={index + 101}>
+                              {room}
+                            </MenuItem>
+                          ))}
+                        </Field>
+                      </Grid>
+
+                      <Grid item xs={3} className={classes.textField2}>
+                        <Field
+                          component={TextField}
+                          select
+                          fullWidth
+                          label="Room Style"
+                          name="StyleID"
+                          variant="outlined"
+                        >
+                          <MenuItem value={0}>Single Queen</MenuItem>
+                          <MenuItem value={1}>Single King</MenuItem>
+                          <MenuItem value={2}>Double Queen</MenuItem>
+                          <MenuItem value={3}>Kitchnette</MenuItem>
+                          <MenuItem value={4}>Triple Queen</MenuItem>
+                        </Field>
+                      </Grid>
+
+                      <Grid item xs={12} className={classes.textField}>
+                        <Field
+                          fullWidth
+                          component={TextField}
+                          multiline
+                          rowsMax={4}
+                          name="comments"
+                          label="comments"
+                          variant="outlined"
+                        />
+                      </Grid>
+                    </Grid>
+                  </DialogContent>
+                  <DialogActions>
+                    <FormActions
+                      submitForm={submitForm}
+                      handleForm={handleSubmit}
+                      isSubmitting={isSubmitting}
+                      type={type}
+                    />
+                  </DialogActions>
+                </Form>
+              )}
+            </Formik>
+          </MuiPickersUtilsProvider>
+        </>
+      )}
     </Dialog>
   );
 };

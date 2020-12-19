@@ -191,13 +191,13 @@ const NavBarLink = (props) => {
             </ListItem>
           </Link>
           <Link to="/dash" className={classes.linkLabels}>
-              <ListItem button>
-                <ListItemIcon>
-                  <MailOutlineIcon />
-                </ListItemIcon>
-                <ListItemText primary="Email" />
-              </ListItem>
-            </Link>
+            <ListItem button>
+              <ListItemIcon>
+                <MailOutlineIcon />
+              </ListItemIcon>
+              <ListItemText primary="Email" />
+            </ListItem>
+          </Link>
           <Link to="/staff/housekeeping" className={classes.linkLabels}>
             <ListItem button>
               <ListItemIcon>
@@ -240,9 +240,7 @@ const Navbar = (props) => {
   };
 
   const logoutOnAction = () => {
-    props.logout(() => {
-      return history.push('/staff/login');
-    });
+    props.logout(() => history.push('/staff/login'));
   };
 
   return (
@@ -269,7 +267,7 @@ const Navbar = (props) => {
                 <MenuIcon />
               </IconButton>
               <Typography variant="h6" noWrap>
-                {motelInfo.MotelName + ' Management'}
+                {`${motelInfo.MotelName} Management`}
               </Typography>
               <IconButton
                 color="inherit"

@@ -40,9 +40,14 @@ const App = ({ auth }) => {
       <Router>
         <Switch>
           <Route exact path="/staff/login" component={Login} />
-          <Route exact path="/dash" render={
-            () => (window.location = "https://admins.bigskylodge.com/dash/")
-          } />
+          <Route
+            exact
+            path="/dash"
+            // eslint-disable-next-line no-return-assign
+            render={() =>
+              (window.location = 'https://api.bigskylodge.com/dash/')
+            }
+          />
           <PrivateRoute
             exact
             path="/staff/"

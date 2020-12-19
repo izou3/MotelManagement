@@ -1,8 +1,11 @@
-import axios from 'axios';
-import moment from 'moment';
 import { batchActions } from 'redux-batched-actions';
 import logger from '../../logger';
 
+// Config
+import config from '../../config';
+import axios from './axios';
+
+// Redux Actions
 import { loginUser, logoutUser } from '../actions/authActions';
 
 import {
@@ -12,8 +15,7 @@ import {
   hideLoading,
 } from '../actions/actions';
 
-import initialPageLoad from './thunks';
-import { initialMaintenanceLog } from './reportThunks';
+const Config = config[process.env.NODE_ENV || 'development'];
 
 /**
  * Post Request to Login User
@@ -22,41 +24,74 @@ export const loginStaff = (userInfo, redirect) => async (dispatch) => {
   dispatch(showLoading());
   axios.defaults.withCredentials = true; // Make Cookie Present in every Request Header
   return axios
-    .post(`/user/login`, userInfo)
+    .post(`${Config.apiHost}/user/login`, userInfo)
     .then((res) => {
       const { user, MotelInfo, MotelRoom } = res.data;
-      const today = moment().format('YYYY-MM-DD');
 
+      // Join SocketIO Room
+      // No Need to HideLoading as Thunks in batched actions
+      // hide loading or will send it as part of single render
       dispatch(
         batchActions([
+          { type: 'server/login', payload: user.HotelID },
           loginUser(user, MotelInfo, MotelRoom),
           snackBarSuccess('Successfully Logged In'),
-          initialPageLoad(today),
-          initialMaintenanceLog(),
-          hideLoading(),
         ])
       );
       redirect(user);
     })
-    .catch(() => {
+    .catch((err) => {
+      logger(err);
       dispatch(batchActions([snackBarFail('Login Failed'), hideLoading()]));
     });
 };
 
-export const logoutStaff = (redirect) => async (dispatch) => {
+export const logoutStaff = (redirect) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get(`/user/logout`)
+    .get(`${Config.apiHost}/user/logout`)
     .then((res) => {
       logger(res);
+      const state = getState();
+      const { HotelID } = state.authState.user;
+
       dispatch(
         batchActions([
+          { type: 'server/logout', payload: HotelID },
           logoutUser(),
           snackBarSuccess('Successfully Logged Out!'),
           hideLoading(),
         ])
       );
       redirect();
+    })
+    .catch((err) => {
+      logger(err);
+      dispatch(
+        snackBarFail('Failed to Logout. Seesion Will Expire in 30 minutes.'),
+        dispatch(hideLoading())
+      );
+    });
+};
+
+export const expireStaff = () => async (dispatch, getState) => {
+  dispatch(showLoading());
+  return axios
+    .get(`${Config.apiHost}/user/logout`)
+    .then((res) => {
+      logger(res);
+      const state = getState();
+      const { HotelID } = state.authState.user;
+
+      dispatch(
+        batchActions([
+          { type: 'server/logout', payload: HotelID },
+          logoutUser(),
+          snackBarSuccess('Session Timeout! Login Again!'),
+          hideLoading(),
+        ])
+      );
+      location.replace('localhost:3000/staff');
     })
     .catch((err) => {
       logger(err);

@@ -5,7 +5,6 @@ import React from 'react';
 import Moment from 'react-moment';
 import moment from 'moment';
 
-
 // MaterialUI Components
 import { makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
@@ -76,7 +75,9 @@ export default function RegTable(props) {
                   <PageviewIcon />
                 </IconButton>
               </StyledTableCell>
-              <StyledTableCell>{ roomList ? roomList[index] : null }</StyledTableCell>
+              <StyledTableCell>
+                {roomList ? roomList[index] : null}
+              </StyledTableCell>
               <StyledTableCell>
                 {res.checkIn ? (
                   <Moment
