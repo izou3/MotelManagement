@@ -80,9 +80,10 @@ class UpdateDailyReportRoomRecord {
         originalRes.tax +=
           this._NewRoomRecord.tax - parseFloat(originalRec.tax);
 
-        originalRes.checkIn = moment(this._NewRoomRecord.startDate).format(
-          'YYYY-MM-DDT12:00:00[Z]'
-        );
+        // checkIn Does Not Change in Document in CurrentReservation
+        // originalRes.checkIn = moment(this._NewRoomRecord.startDate).format(
+        //   'YYYY-MM-DDT12:00:00[Z]'
+        // );
         originalRes.checkOut = moment(
           moment(this._NewRoomRecord.endDate).add(1, 'days')
         ).format('YYYY-MM-DDT12:00:00[Z]');

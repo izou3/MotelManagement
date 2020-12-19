@@ -302,7 +302,7 @@ class UpdateCurrRes {
         notes: originalRec.notes ? originalRec.notes : '',
         type: originalRec.type ? originalRec.type : '',
         payment: originalRec.payment ? originalRec.payment : '',
-        startDate: this._UpdateResObj.checkIn,
+        startDate: originalRec.startDate, // checkIn Does Not Change
         endDate: moment(
           moment(this._UpdateResObj.checkOut).subtract(1, 'day')
         ).format('YYYY-MM-DDT12:00:00[Z]'),
