@@ -2,6 +2,7 @@ require('dotenv').config();
 
 module.exports = {
   development: {
+    clientDomain: process.env.DEVELOPMENT_CLIENT_DOMAIN,
     sitename: 'Big Sky Lodge [DEVELOPMENT]',
     HTTP_PORT: process.env.HTTP_PORT,
     AGENDA_PORT: process.env.AGENDA_PORT,
@@ -21,6 +22,7 @@ module.exports = {
     emailTemplatePath: process.env.DEV_EMAIL_TEMPLATE_PATH,
   },
   test: {
+    clientDomain: process.env.TEST_CLIENT_DOMAIN,
     sitename: 'Big Sky Lodge [Test]',
     HTTP_PORT: process.env.HTTP_PORT,
     AGENDA_PORT: process.env.AGENDA_PORT,
@@ -38,6 +40,7 @@ module.exports = {
     emailTemplatePath: process.env.DEV_EMAIL_TEMPLATE_PATH,
   },
   production: {
+    clientDomain: process.env.PRODUCTION_CLIENT_DOMAIN,
     sitename: 'Big Sky Lodge',
     HTTP_PORT: process.env.HTTP_PORT,
     AGENDA_PORT: process.env.AGENDA_PORT,

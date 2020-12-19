@@ -30,7 +30,7 @@ module.exports = {
     username: process.env.PROD_SQLUSER,
     password: process.env.PROD_SQLPASSWORD,
     database: process.env.PROD_SQLDB,
-    host: process.env.PROD_HOST,
+    host: process.env.PUBLIC_PROD_HOST,
     port: process.env.PROD_SQL_PORT,
     sslmode: process.env.REQUIRED,
     dialect: 'mysql',
