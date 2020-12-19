@@ -171,6 +171,13 @@ function Row(props) {
                     new Promise((resolve, reject) => {
                       setTimeout(() => {
                         // Error Validation
+                        if (!newData.description) {
+                          reject();
+                          // eslint-disable-next-line no-undef
+                          alert('Description Cannot be Blank');
+                          return;
+                        }
+
                         if (newData.description.trim().length > 100) {
                           reject();
                           // eslint-disable-next-line no-undef

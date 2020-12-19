@@ -18,6 +18,7 @@ import 'react-calendar/dist/Calendar.css';
 
 // Dashboard Components
 import { connect } from 'react-redux';
+import { batchActions } from 'redux-batched-actions';
 import NavBar from '../components/NavBar';
 import FullPageLoader from '../components/FullPageLoader';
 import Form from '../components/Form';
@@ -27,9 +28,15 @@ import PageTable from '../components/tables/PageTable';
 // Redux Components
 import { snackBarClose } from '../redux/actions/actions';
 
+// Socket Actions for Form Notification
+import {
+  socketLoadForm,
+  socketLoadPendingForm,
+  socketLoadOverForm,
+} from '../redux/actions/socket/form';
+
 // Actions
 import {
-  loadForm,
   loadFormFail,
   loadFormWithRoom,
   loadCurFormWithData,
@@ -233,7 +240,7 @@ const Home = ({
           <FullPageLoader loading={loading} />
           <Snackbar
             open={snackBar.open}
-            autoHideDuration={2000}
+            autoHideDuration={10000}
             onClose={closeSnackBar}
           >
             <Alert severity={snackBar.alert}>{snackBar.message}</Alert>
@@ -329,22 +336,49 @@ const mapStateToProps = (state) => ({
   loading: state.loadingState.isLoading,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch, ownProps) => ({
   createNewCurrentReservation: (resData) => dispatch(createNewRes(resData)),
+
   updateCurrentRes: (updatedRes, prevRoomID) =>
     dispatch(updateCurrRes(updatedRes, prevRoomID)),
+
   moveCurrentReservation: (dataRes, prevRoom, origin, destination) =>
     dispatch(moveCurrRes(dataRes, prevRoom, origin, destination)),
+
   deleteCurrentReservation: (BookingID, dataRes) =>
     dispatch(deleteCurrRes(BookingID, dataRes)),
+
   checkInReservation: (resObj) => dispatch(checkInRes(resObj)),
   checkOutReservation: (resObj) => dispatch(checkOutRes(resObj)),
 
-  openEmptyForm: () => dispatch(loadForm()),
-  openNewFormRoom: (room) => dispatch(loadFormWithRoom(room)),
-  openCurrForm: (resData) => dispatch(loadCurFormWithData(resData)),
-  openPendForm: (resData) => dispatch(loadPendFormWithData(resData)),
-  openOverForm: (resData) => dispatch(loadOverFormWithData(resData)),
+  openNewFormRoom: (room) =>
+    dispatch(
+      batchActions([
+        loadFormWithRoom(room),
+        socketLoadForm(ownProps.user, room.RoomID),
+      ])
+    ),
+  openCurrForm: (resData) =>
+    dispatch(
+      batchActions([
+        loadCurFormWithData(resData),
+        socketLoadForm(ownProps.user, resData.RoomID),
+      ])
+    ),
+  openPendForm: (resData) =>
+    dispatch(
+      batchActions([
+        loadPendFormWithData(resData),
+        socketLoadPendingForm(ownProps.user, resData),
+      ])
+    ),
+  openOverForm: (resData) =>
+    dispatch(
+      batchActions([
+        loadOverFormWithData(resData),
+        socketLoadOverForm(ownProps.user, resData),
+      ])
+    ),
 
   closeForm: () => dispatch(loadFormFail()),
   closeSnackBar: () => dispatch(snackBarClose()),

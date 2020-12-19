@@ -59,7 +59,8 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(3),
   },
   search: {
-    width: '30%',
+    alignItem: 'left',
+    width: '100%',
     marginBottom: '1em',
     padding: theme.spacing(1),
   },
@@ -211,69 +212,76 @@ const Report = ({
             justify="space-between"
             alignItems="center"
           >
-            <Typography variant="h5">
-              <Box fontWeight="fontWeightBold">
-                {`Daily Report for ${moment(reportDate, 'YYYY-MM-DD').format(
-                  'dddd, MMMM Do YYYY'
-                )}`}
-              </Box>
-            </Typography>
-            <Paper elevation={3} className={classes.search}>
-              <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                <Formik
-                  initialValues={{
-                    reportSearch: moment(),
-                  }}
-                  validate={(values) => {
-                    const errors = {};
+            <Grid item xs={6}>
+              <Typography variant="h5">
+                <Box fontWeight="fontWeightBold">
+                  {`Daily Report for ${moment(reportDate, 'YYYY-MM-DD').format(
+                    'dddd, MMMM Do YYYY'
+                  )}`}
+                </Box>
+              </Typography>
+              <Typography variant="body2">
+                End Date is always one Day Before CheckOut
+              </Typography>
+            </Grid>
+            <Grid item xs={4}>
+              <Paper elevation={3} className={classes.search}>
+                <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                  <Formik
+                    initialValues={{
+                      reportSearch: moment(),
+                    }}
+                    validate={(values) => {
+                      const errors = {};
 
-                    if (moment().isBefore(values.reportSearch)) {
-                      snackBarFailed('Not a Valid Date');
-                      errors.reportSearch = 'Not a Valid Date';
-                    }
+                      if (moment().isBefore(values.reportSearch)) {
+                        snackBarFailed('Not a Valid Date');
+                        errors.reportSearch = 'Not a Valid Date';
+                      }
 
-                    return errors;
-                  }}
-                  onSubmit={(values, { setSubmitting }) => {
-                    setSubmitting(true);
+                      return errors;
+                    }}
+                    onSubmit={(values, { setSubmitting }) => {
+                      setSubmitting(true);
 
-                    loadReport(
-                      moment(values.reportSearch).format('YYYY-MM-DD')
-                    );
-                    setSubmitting(false);
-                  }}
-                >
-                  {({ submitForm }) => (
-                    <Form>
-                      <Grid
-                        container
-                        justify="space-around"
-                        alignItems="center"
-                      >
-                        <Grid item xs={8}>
-                          <Field
-                            fullWidth
-                            component={DatePicker}
-                            variant="outlined"
-                            name="reportSearch"
-                            label="Date"
-                          />
+                      loadReport(
+                        moment(values.reportSearch).format('YYYY-MM-DD')
+                      );
+                      setSubmitting(false);
+                    }}
+                  >
+                    {({ submitForm }) => (
+                      <Form>
+                        <Grid
+                          container
+                          justify="space-around"
+                          alignItems="center"
+                        >
+                          <Grid item xs={8}>
+                            <Field
+                              fullWidth
+                              component={DatePicker}
+                              variant="outlined"
+                              name="reportSearch"
+                              label="Date"
+                            />
+                          </Grid>
+                          <Grid item xs={3}>
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={submitForm}
+                            >
+                              Search
+                            </Button>
+                          </Grid>
                         </Grid>
-                        <Grid item xs={3}>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={submitForm}
-                          >
-                            Search
-                          </Button>
-                        </Grid>
-                      </Grid>
-                    </Form>
-                  )}
-                </Formik>
-              </MuiPickersUtilsProvider>
-            </Paper>
+                      </Form>
+                    )}
+                  </Formik>
+                </MuiPickersUtilsProvider>
+              </Paper>
+            </Grid>
           </Grid>
           <MaterialTable
             columns={columns}
@@ -289,20 +297,55 @@ const Report = ({
               search: false,
               toolbar: false,
               paging: true,
+              pageSize: 10, // make initial page size
+              emptyRowsWhenPaging: false,
+              pageSizeOptions: [10, 20, 30], // rows selection options
               headerStyle: {
                 fontWeight: 'bold',
               },
+              rowStyle: (rowData) => ({
+                backgroundColor:
+                  // eslint-disable-next-line no-nested-ternary
+                  rowData.BookingID && rowData.endDate.length === 0
+                    ? 'rgb(255,121,97, 0.3)'
+                    : selectedRow === rowData.tableData.id
+                    ? 'rgb(117,124,232, 0.3)'
+                    : '#FFF',
+              }),
             }}
             editable={{
               isEditable: (rowData) => rowData.BookingID,
               isDeletable: (rowData) => rowData.BookingID,
-              onRowUpdate: (newData) =>
+              onRowUpdate: (newData, oldData) =>
                 new Promise((resolve, reject) => {
                   setTimeout(() => {
                     /**
                      * Error Validation
                      */
-                    if (newData.endDate.length === 0) {
+                    if (!oldData.endDate || oldData.endDate.length === 0) {
+                      const newStartDate = moment(newData.startDate).format(
+                        'YYYY-MM-DD'
+                      );
+                      const oldStartDate = moment(oldData.startDate).format(
+                        'YYYY-MM-DD'
+                      );
+
+                      if (!moment(newStartDate).isSame(oldStartDate, 'day')) {
+                        reject();
+                        // eslint-disable-next-line no-undef
+                        alert('Cant change start date when extending Guest');
+                        return;
+                      }
+                    }
+
+                    if (!newData.startDate || newData.startDate.length === 0) {
+                      reject();
+                      // eslint-disable-next-line no-undef
+                      alert('Must Specify Start Date');
+                      return;
+                    }
+
+                    if (!newData.endDate || newData.endDate.length === 0) {
                       reject();
                       // eslint-disable-next-line no-undef
                       alert('Must Specify End Date');
@@ -363,7 +406,9 @@ const Report = ({
                       ) {
                         reject();
                         // eslint-disable-next-line no-undef
-                        alert('Not A Proper Type. Must be N, S/O, WK, or NO');
+                        alert(
+                          'Not A Proper Type. Must be N, S/O, WK1-3, or NO'
+                        );
                         return;
                       }
                     }
@@ -407,6 +452,17 @@ const Report = ({
                 initialValues={{
                   refundAmount: refundSum || 0,
                   comments: refundNotes || '',
+                }}
+                validate={(values) => {
+                  const errors = {};
+
+                  if (values.refundAmount === '') {
+                    errors.refundAmount = 'Cannot be empty';
+                  } else if (isNaN(values.refundAmount)) {
+                    errors.refundAmount = 'Not a Number';
+                  }
+
+                  return errors;
                 }}
                 onSubmit={(values, { setSubmitting }) => {
                   setSubmitting(true);

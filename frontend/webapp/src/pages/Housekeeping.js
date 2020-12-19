@@ -88,6 +88,8 @@ const Report = ({
 }) => {
   const classes = useStyles();
 
+  const [selectedRow, setSelectedRow] = React.useState(null);
+
   const columns = [
     {
       title: 'Room',
@@ -200,13 +202,28 @@ const Report = ({
             columns={columns}
             data={houseKeepingReport}
             // eslint-disable-next-line no-shadow
+            onRowClick={(evt, selectedRow) => {
+              setSelectedRow(selectedRow.tableData.id);
+            }}
             options={{
               search: false,
               toolbar: false,
               paging: true,
+              pageSize: 10, // make initial page size
+              emptyRowsWhenPaging: false,
+              pageSizeOptions: [10, 20, 30], // rows selection options
               headerStyle: {
                 fontWeight: 'bold',
               },
+              rowStyle: (rowData) => ({
+                backgroundColor:
+                  // eslint-disable-next-line no-nested-ternary
+                  rowData.status === 'C'
+                    ? 'rgb(255,121,97, 0.3)'
+                    : selectedRow === rowData.tableData.id
+                    ? 'rgb(117,124,232, 0.3)'
+                    : '#FFF',
+              }),
             }}
             editable={{
               onRowUpdate: (newData) =>
