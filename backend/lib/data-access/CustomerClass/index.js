@@ -176,7 +176,7 @@ class Customers extends Motel {
    * @returns A SQL Query for an array of the newly added IndCustomer Obj
    */
   addNewIndCustomer(IndCustomerData = []) {
-    const sql = `INSERT INTO ${this._IndCustomer}(BookingID, CustomerID, price_paid, tax, check_in, check_out, num_guests, reservationid, paymentID, roomid, hotelid, styleid, comments) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?);`;
+    const sql = `INSERT INTO ${this._IndCustomer}(BookingID, CustomerID, price_paid, tax, check_in, check_out, num_guests, reservationid, paymentID, roomid, hotelid, styleid, comments) VALUES(?,?,?,?,STR_TO_DATE(?, '%Y-%m-%dT%H:%i:%sZ'),STR_TO_DATE(?, '%Y-%m-%dT%H:%i:%sZ'),?,?,?,?,?,?,?);`;
     return mysql.format(sql, IndCustomerData);
   }
 
@@ -200,11 +200,12 @@ class Customers extends Motel {
    * ]} updatedIndCustData
    *
    * @Note HotelID field is not neccessary but is kept for clearity
+   * @Note Date Args are in YYYY-MM-DD[T]HH:MM:SS[Z] UTC Format
    *
    * @returns A SQL Query for an array of the newly updated IndCustomerObj
    */
   updateIndCustomerByID(BookingID, updatedIndCustData = []) {
-    const sql = `UPDATE ${this._IndCustomer} SET price_paid=?, tax=?, check_in=?, check_out=?, num_guests=?, reservationid=?, paymentid=?, roomid=?, hotelid=?, styleid=?, comments=? WHERE bookingid = '${BookingID}'`;
+    const sql = `UPDATE ${this._IndCustomer} SET price_paid=?, tax=?, check_in=STR_TO_DATE(?, '%Y-%m-%dT%H:%i:%sZ'), check_out=STR_TO_DATE(?, '%Y-%m-%dT%H:%i:%sZ'), num_guests=?, reservationid=?, paymentid=?, roomid=?, hotelid=?, styleid=?, comments=? WHERE bookingid = '${BookingID}'`;
     return mysql.format(sql, updatedIndCustData);
   }
 }
