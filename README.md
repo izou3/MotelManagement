@@ -90,19 +90,144 @@ Note that you must run one or the either of the landing or management system fro
 
 # Documentation
 ## Table of Contents
-1. [Infrastructure](#Infrastructure)
-2. [Frontend-Website](#Landing-Page)
-3. [Frontend-Management System](#Management-System)
-4. [Backend-API](#Backend-API)
-5. [Backend-Jobs](#Backend-Jobs)
-6. [MySQL Database Schema](#MySQL-Database-Schema)
-7. [MongoDB Database Schema](#MongoDB-Database-Schema)
-8. [Development](#Development)
-9. [Testing](#Testing)
-10. [Debugging](#Debugging)
-11. [Deployment](#Deployment)
-12. [Future Features and Issues](#Future-Features-and-Issues)
-13. [Credits](#Credit)
+1. [Business Logic/User Guide](#User-Guide)
+2. [Infrastructure](#Infrastructure)
+3. [Frontend-Website](#Landing-Page)
+4. [Frontend-Management System](#Management-System)
+5. [Backend-API](#Backend-API)
+6. [Backend-Jobs](#Backend-Jobs)
+7. [MySQL Database Schema](#MySQL-Database-Schema)
+8. [MongoDB Database Schema](#MongoDB-Database-Schema)
+9. [Development](#Development)
+10. [Testing](#Testing)
+11. [Debugging](#Debugging)
+12. [Deployment](#Deployment)
+13. [Future Features and Issues](#Future-Features-and-Issues)
+14. [Credits](#Credit)
+
+<a name="User-Guide"/>
+
+## Business Logic/User Guide
+This management system is a specific way of managing small hotel operations, especially for small businesses. 
+
+### Creating New Reservations (Dashboard): 
+* There are 2 different ways to create a new reservation into the system. 
+
+  1. When the guest is checking in right and the reservation hasn't been created before, the user can simply click on the *Search* icon located next to the room that the guest is checking in and enter the reservation data. Once data is enterted, click *New Reservation* located in the bottom right to check the guest into the selected room.
+
+  2. When guest will check in the future, the user will need to go to the *Search* page in the menu on the left. Once there, they can click on *New Reservation* button on the right. From there, they can enter the reservation data. NOTE THAT: 
+      * If check-in date is beyond 48 hours of the current day, the reservation data will be stored elsewhere assesible by searching for reservations and moved by the background job when its check-in date is close enough to Current day. 
+      * If check-in date is within 48 hours of the current day, the reservation data will be stored under *48 Hour Arrivals* in the main dashboard page. 
+
+### Updating Reservations (DashBoard): 
+There are several different updates that can be made to reservations in the main dashboard page. 
+
+The main dashboard page separates its reservations/checked-in guests into 3 tables.
+
+  * The table towards the left is the *Main Hotel table* contains all the hotel's room bumber and currently checked in guests as well as empty rooms. 
+  * The two smaller tables towards the right contains (with labels) reservations that will check-in within 48 hours as *Arrivals Table* as well as an overdue table to store reservations that have failed to check-in as *Overdue Table*. 
+
+  1. **Check-In Guests**: This option is available to reservations stored under the 48-hours arrival table. Here, when is guest shows up to check in, the user can click on the *Search* button next to the record,, navigate to the bottom right, and click the *Check-In* button where they will then be moved to the *Main Hotel Table* corresponding hotel room.
+    * NOTE: if the room is currently occupied, the check-in request will fail with an error. 
+    * NOTE: when checking in a guest, the user can update the guest's info and click on the *Check-In* button to both update the guest record as well as check them in.
+    * NOTE: if the check-in request is successfully, a new user record will be created in the *DailyReport* and *Housekeeping* sheets. 
+
+  2. **Check-Out Guests**: This option is available to reservations stored under the *Main Hotel Table*. Here, when a guest is going to check-out, the user can click on the *Search* button next to the record, navigate to the bottom right, and click the *Check-Out* button where they will removed from the *Main Hotel Table* and checked out. 
+    * NOTE: if the check-out request is successfully, the user record will be removed from the *DailyReport* page and the *Housekeeping* sheet will be updated correspondingly. 
+
+  3. **Move To Arrivals**: This option is available to reservations stored under the *Main Hotel Table* and *Overdue* table. Here, the user can simply move reservations between in case of mistakes or circumstances. 
+    * NOTE: if request is successfully from *Main Hotel Table* to *Arrivals* table, the user record will be removed from the *DailyReport* page and the *Housekeeping* sheet will be updated correspondingly. 
+
+  4. **Move To Over**: This option is available to reservations stored under the *Arrivals Table*. Here, if a guest fails to check-in, the user can just move the reservations into the *Overdue table* where they can be deleted later, stored in case they show up, or specific circumstances. 
+  
+  5. **Updates in Arrivals Table**: To update, the user can click on the *Search* button next to the record, navigate to the bottom right, and click the *Update* button where they will update the reservation record.
+    * NOTE: if the user updates the check-in date to beyond 48-hours of the current day, the reservation will be removed from the *Arrivals Table* and stored elsewhere where it can searched and moved into the *Arrivals Table* by the background job when its check-in date is close enough to current day.  
+
+  6. **Updates in Main Hotel Table**: To update, the user can click on the *Search* button next to the record, navigate to the bottom right, and click the *Update* button where they will update the reservation record.
+    * NOTE: if the user updated the room to another room, the guest's *DailyReport* record will move as well and *Housekeeping* sheet will be updated too. However if the updated room is currently occupied, the request will fail with error. 
+
+  7. **Updates in Overdue Table**: To update, the user can click on the *Search* button next to the record, navigate to the bottom right, and click the *Update* button where they will update the reservation record.
+
+
+### Updating DailyReport Records: 
+For long-term guests, when extending their stay, its easiest to use the DailyReport to extend them. By default, every guest that is due or overdue the current day has their record in the DailyReport but without an *endDate* specified and *paid* set to false. If that guest checks out, their record is removed but if the user needs to extend the guest, they can simply click the *pen* button next to the record, specify an *endDate* field as well as the amount paid, type of payment etc. 
+
+Please also note the following when updating in the **DailyReport** page
+
+  * When a guest is due or overdue the current day, the *startDate* field is set to the current day, no matter how much they're overdue. The user can just change the startDate based on circumstances
+  * The *endDate* field is always one day behind the guest check-out. 
+  * Updating the *endDate* field will cause an update in the corresponding reservation's *Check-Out* field under the main dashboard page. However, updating the *startDate* field will NOT change the *check-in* field of the corresponding reservation under in the main dashboard page. This is so that we can always track when the reservation first checked in and the days they had extended their stay. 
+  * When a reservation checks in, the *payment* and *type* field for its DailyReport record is generated based on the reservation's data. However, when the user is extending the reservation in the DailyReport or any further updates, they would have to manually enter the *payment* and *type* fields.
+  * Any record without an *endDate* field specified will be marked red under they're either checked-out or extended. 
+  * User can search and update previous DailyReports. However, if the user updates a record in which the guest has already checked out, the request will be rejected with error or if a user changes an *date* fields for any previous records, they must also update the corresponding *date* field for the Daily Reports after the current Daily Report in which they're editing. 
+
+
+### Managing Maintenance Log:
+The maintenance log can be used to record maintenances done to each room as well as general facilities. A user can also create new maintenance logs to track unrelated maintenances such as cleaning air conditioners, etc. 
+
+Different maintenance logs can be searched or added in the right hand side but users CANNOT delete existing maintenance logs. 
+
+  * To add a new log entry for a corresponding room, click on the *Plus* icon in the top right corner.
+  * To Edit a log entry for a corresponding room, click on the *Pen* icon next to the record. 
+  * To Delete a log entry for a corresponding room, click on the *Trash* icon next to the record. 
+
+### Managing Housekeeping Sheet: 
+By default, any recorded changes done by the user under the main dashboard page is automated to update housekeeping sheet. A user can update a ousekeeping sheet to simply determine which housekeeper to clean the room as well as any notes for the room. 
+
+Whether the room is occupied or needs to be cleaned is determined by checking in and checking out guests in the main dashboard. However, once a room a ready, the user can simply update the room record to be ready. 
+
+### Searching: 
+There are four different places to search and four different ways to search them listed below.
+  * Customers: all guests who have checked out of the current hotel. 
+      * Users can update them or add them to BlackList. 
+
+  * Reservations: all reservations who are atleast 48-hours removed from checking in based on the current day
+      * Users can update or delete these reservations 
+      * If user update a reservation's *check-in* date field to within 48-hours of the current day, that reservation will get moved to the *Arrivals* table under the main dashboard page. 
+
+  * Deleted Reservations: all reservations who have been removed or deleted. 
+      * Users can removed them forever
+
+  * BlackList: all customers that have checked out but been added onto the blacklist. 
+      * ONLY guests that have checked out can be added/removed from the BlackList
+      * Customers who are on the Blacklist also have their record in Customers. 
+      * If a customer has checked-in multiple times before, user can add only one of their stays to the blacklist or all of their stays but either way, their name will be stored in the blacklist records 
+
+  * SearchByFirstName: search for all occurances of a specified First Name
+  * SearchByBookingID: search for a occurance of a specified BookingID
+  * SearchByCheckIn: search for all occurances whose *check-in* field is within a specified range 
+  * SearchByCheckOut: search for all occurances whose *check-out* field is within a specified range 
+
+### Generating Tax Report:
+To generate a tax report, select the month and year and an excel file will be downloaded to your browser containing summaries for each day as well as total. Tax Report will only be generated based on the current number of Daily Reports for the specified month and year. 
+
+So if you generate a tax report at the end of the current month, you will get all neccessary records of each day but if you generate a tax report only a few days into the current month, you'll only get records up until the current day. 
+
+### Managing Staff: 
+Users of the owner position can create, update, and delete new staff members as well as restrict access to certain members. 
+
+### Reservation Confirmation Emails
+This page is restricted to owners only.
+When a new reservation is created, if their email address is specified, an email job will be queued in the Agenda Dashboard to be sent. Also if any jobs fail to run when scheduled, they can be requeued to be rerun again. 
+
+### Daily Jobs
+Everyday at noon, a new DailyReport will be generated for the current day and any reservations within 48-hours of the current day will be moved into the *Arrivals* table in the main dashboard to be checked in. 
+
+### Live Updates
+As of now, this system is not recommended to handle real-time updates and concurrent users. However the following features are implemented for real-time updates. 
+
+  * Any actions in the Main Dashboard Page
+  * Any actions in the DailyReport and Housekeeping sheet
+  * If a user is updating a record in the Main Dashboard page, all other concurrent users will be notified of the user updating the record. 
+
+The following pages do not support real-time updates: 
+
+  * Maintenance Log Page
+  * Staff Page
+  * Search Page 
+
+### Trouble Shooting
+If any errors or unexpected events occur, best course of action is just to refresh the page as all data is presist in a database. If that doesn't work, try removing all cookies and browser cache and refresh. 
 
 <a name="Infrastructure"/>
 
