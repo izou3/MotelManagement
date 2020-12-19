@@ -4,7 +4,7 @@ const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
   entry: {
-    server: './bin/agenda.js',
+    server: './worker/agenda-server/agenda.js',
   },
   output: {
     path: path.join(__dirname, 'dist'),

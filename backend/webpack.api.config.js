@@ -1,10 +1,10 @@
 const path = require('path');
-// eslint-disable-next-line import/no-extraneous-dependencies
+
 const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
   entry: {
-    server: './bin/www.js',
+    server: './web/bin/www.js',
   },
   output: {
     path: path.join(__dirname, 'dist'),
