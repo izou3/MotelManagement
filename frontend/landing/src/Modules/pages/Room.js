@@ -149,7 +149,7 @@ function Room (props) {
             </Typography>
             <Divider className={classes.divider}/>
           </Grid>
-          <Grid
+          {/* <Grid
             container
             direction="row"
             justify="space-around"
@@ -220,9 +220,9 @@ function Room (props) {
                 </CardContent>
               </Card>
             </Grid>
-          </Grid>
+          </Grid> */}
           <Grid item xs={12} className={classes.RoomDes}>
-            <Divider className={classes.divider}/>
+            {/* <Divider className={classes.divider}/> */}
             <Typography variant="h4">
               Rooms
             </Typography>
