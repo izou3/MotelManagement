@@ -36,8 +36,10 @@
     "redux-batched-actions": "^0.5.0",
     "redux-devtools-extension": "^2.13.8",
     "redux-persist": "^6.0.0",
+    "redux-socket.io": "^1.4.0",
     "redux-thunk": "^2.3.0",
     "reselect": "^4.0.0",
+    "socket.io-client": "^3.0.4",
     "validator": "^13.1.17"
   },
   "scripts": {
@@ -48,7 +50,10 @@
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": "react-app",
+    "plugins": [
+      "react-hooks"
+    ]
   },
   "browserslist": {
     "production": [
@@ -65,15 +70,13 @@
   "devDependencies": {
     "eslint": "^6.6.0",
     "eslint-config-airbnb": "^18.2.1",
-    "eslint-config-node": "^4.1.0",
     "eslint-config-prettier": "^7.0.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jsx-a11y": "^6.4.1",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^3.1.4",
+    "eslint-plugin-prettier": "^3.2.0",
     "eslint-plugin-react": "^7.21.5",
     "eslint-plugin-react-hooks": "^4.0.0",
-    "prettier": "^2.1.2",
+    "prettier": "^2.2.1",
     "webpack": "^4.42.0",
     "webpack-cli": "^3.3.12",
     "webpack-node-externals": "^2.5.2"
