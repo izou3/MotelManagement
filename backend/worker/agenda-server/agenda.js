@@ -8,8 +8,9 @@
  * Module dependencies
  */
 const path = require('path');
+const cors = require('cors');
 const Agenda = require('agenda');
-const Agendash = require('agendash');
+const Agendash = require('agendash2');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
@@ -29,7 +30,7 @@ const mongoDB = require('../../lib/db/mongo.js');
 // Authentication Service
 const {
   loginRequired,
-} = require('../../middlewares/Authentication/AuthMiddlewares');
+} = require('../../lib/middlewares/Authentication/AuthMiddlewares');
 
 const app = express();
 (async function run() {
@@ -53,7 +54,21 @@ const app = express();
 
     // Pug Setup
     app.set('view engine', 'pug');
-    app.set('views', path.join(__dirname, '../../views'));
+    if (process.env.NODE_ENV === 'production') {
+      app.set('views', path.join(__dirname, './views'));
+    } else {
+      app.set('views', path.join(__dirname, '../../views'));
+    }
+
+    // In Production, app is behind a proxy so trust X-Forwarded-Host headers
+    app.set('trust proxy', true);
+
+    app.use(
+      cors({
+        origin: config.clientDomain,
+        credentials: true,
+      })
+    );
 
     // Cookie Setup for Auth
     app.use(cookieParser());
@@ -62,19 +77,18 @@ const app = express();
      * Set the User if token in defined in the cookie.
      */
     app.use((req, res, next) => {
-      const { token } = req.cookies;
-
+      console.log(req.cookies);
       try {
+        const { token } = req.cookies;
         if (!token) throw new Error('Undefined Token');
         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
         req.user = decoded;
+        next();
       } catch (err) {
         req.user = undefined;
         const error = new Error('Unauthorized User');
         error.status = 401;
         next(error);
-      } finally {
-        next();
       }
     });
 
