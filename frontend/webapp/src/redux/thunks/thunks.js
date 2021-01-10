@@ -30,7 +30,7 @@ const Config = config[process.env.NODE_ENV || 'development'];
 const initialPageLoad = (date) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -161,11 +161,13 @@ const initialPageLoad = (date) => async (dispatch, getState) => {
           );
         });
     })
-    .catch((err) => {
-      // eslint-disable-next-line no-console
-      console.log(err);
+    .catch(() => {
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       );
     });
 };

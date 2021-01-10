@@ -39,6 +39,7 @@ import {
   loadMaintenanceLogOnSearch,
   loadMaintenanceLog,
   addNewMaintenanceLog,
+  deleteMaintenanceLog,
   loadMaintenanceFail,
 } from '../actions/reportActions';
 
@@ -52,7 +53,7 @@ const Config = config[process.env.NODE_ENV || 'development'];
 export const loadDailyReport = (date) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -112,7 +113,11 @@ export const loadDailyReport = (date) => async (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -120,7 +125,7 @@ export const loadDailyReport = (date) => async (dispatch, getState) => {
 export const updateDailyReport = (date, data) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -130,6 +135,7 @@ export const updateDailyReport = (date, data) => async (dispatch, getState) => {
       const { HotelID } = state.authState.user;
       const { report } = state.reportState;
       const current = state.currRes.reservation;
+
       return axios
         .put(
           `${Config.apiHost}/api/dailyreport?HotelID=${HotelID}&date=${date}`,
@@ -175,7 +181,11 @@ export const updateDailyReport = (date, data) => async (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -186,7 +196,7 @@ export const updateDailyReportRefund = (refund) => async (
 ) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -229,7 +239,11 @@ export const updateDailyReportRefund = (refund) => async (
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -245,7 +259,7 @@ export const loadHouseKeepingReportOnSearch = (date) => async (
 ) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -296,7 +310,11 @@ export const loadHouseKeepingReportOnSearch = (date) => async (
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -308,7 +326,7 @@ export const updateHouseKeepingReportOnAction = (data) => async (
 ) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -362,7 +380,11 @@ export const updateHouseKeepingReportOnAction = (data) => async (
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -373,7 +395,7 @@ export const updateHouseKeepingReportOnAction = (data) => async (
 export const initialMaintenanceLog = () => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -418,7 +440,11 @@ export const initialMaintenanceLog = () => async (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -426,7 +452,7 @@ export const initialMaintenanceLog = () => async (dispatch, getState) => {
 export const addMaintenanceLog = (name) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -467,7 +493,11 @@ export const addMaintenanceLog = (name) => async (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -475,7 +505,7 @@ export const addMaintenanceLog = (name) => async (dispatch, getState) => {
 export const searchMaintenanceLog = (name) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -510,7 +540,63 @@ export const searchMaintenanceLog = (name) => async (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
+      )
+    );
+};
+
+export const deleteMaintenanceSheet = (name) => async (dispatch, getState) => {
+  dispatch(showLoading());
+  return axios
+    .get(`${Config.apiHost}/validAccess`)
+    .then(() => {
+      const state = getState();
+      if (!state.authState.isAuthenticated) {
+        return null;
+      }
+
+      const { HotelID } = state.authState.user;
+
+      return axios
+        .delete(
+          `${Config.apiHost}/api/maintenance?HotelID=${HotelID}&name=${name}`
+        )
+        .then((response) => {
+          if (response.data.length === 0) throw new Error();
+          let currentNames = state.maintenanceState.logSearchNames;
+          currentNames = currentNames.filter(
+            (nameRecord) => nameRecord.Name !== name
+          );
+
+          dispatch(
+            batchActions([
+              deleteMaintenanceLog(currentNames, response.data),
+              hideLoading(),
+              snackBarSuccess(`${name} Maintenance Log Deleted Successfully`),
+            ])
+          );
+        })
+        .catch(() => {
+          dispatch(
+            batchActions([
+              loadMaintenanceFail(),
+              hideLoading(),
+              snackBarFail('Maintenance Failed to Delete'),
+            ])
+          );
+        });
+    })
+    .catch(() =>
+      dispatch(
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -522,7 +608,7 @@ export const addLogEntry = (name, field, newEntry) => async (
 ) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -554,6 +640,7 @@ export const addLogEntry = (name, field, newEntry) => async (
       dispatch(
         batchActions([
           logoutUser(),
+          hideLoading(),
           snackBarSuccess('Timeout! Please Log Back In'),
         ])
       )
@@ -566,7 +653,7 @@ export const updateLogEntry = (name, field, updatedEntry) => async (
 ) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(async () => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -593,14 +680,18 @@ export const updateLogEntry = (name, field, updatedEntry) => async (
           dispatch(
             batchActions([
               hideLoading(),
-              snackBarFail('Maintenance Failed to Load'),
+              snackBarFail('Failed to Update Entry'),
             ])
           );
         });
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -611,7 +702,7 @@ export const deleteLogEntry = (name, field, ID) => async (
 ) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -636,14 +727,18 @@ export const deleteLogEntry = (name, field, ID) => async (
           dispatch(
             batchActions([
               hideLoading(),
-              snackBarFail('Maintenance Failed to Load'),
+              snackBarFail('Failed to Delete Entry'),
             ])
           );
         });
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -657,7 +752,7 @@ export const generateTaxReport = (MonthID, YearID) => async (
 ) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -691,7 +786,11 @@ export const generateTaxReport = (MonthID, YearID) => async (
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };

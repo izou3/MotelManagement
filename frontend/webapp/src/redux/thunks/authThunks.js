@@ -41,7 +41,7 @@ export const loginStaff = (userInfo, redirect) => async (dispatch) => {
       redirect(user);
     })
     .catch((err) => {
-      logger(err);
+      logger(err.response);
       dispatch(batchActions([snackBarFail('Login Failed'), hideLoading()]));
     });
 };
@@ -67,37 +67,14 @@ export const logoutStaff = (redirect) => async (dispatch, getState) => {
     })
     .catch((err) => {
       logger(err);
-      dispatch(
-        snackBarFail('Failed to Logout. Seesion Will Expire in 30 minutes.'),
-        dispatch(hideLoading())
-      );
-    });
-};
-
-export const expireStaff = () => async (dispatch, getState) => {
-  dispatch(showLoading());
-  return axios
-    .get(`${Config.apiHost}/user/logout`)
-    .then((res) => {
-      logger(res);
-      const state = getState();
-      const { HotelID } = state.authState.user;
-
-      dispatch(
+      return dispatch(
         batchActions([
-          { type: 'server/logout', payload: HotelID },
-          logoutUser(),
-          snackBarSuccess('Session Timeout! Login Again!'),
+          snackBarFail('Failed to Logout. Sesion Will Expire in 30 minutes.'),
           hideLoading(),
         ])
       );
-      location.replace('localhost:3000/staff');
-    })
-    .catch((err) => {
-      logger(err);
-      dispatch(
-        snackBarFail('Failed to Logout. Seesion Will Expire in 30 minutes.'),
-        dispatch(hideLoading())
-      );
     });
 };
+
+export const expireStaff = () => async () =>
+  axios.get(`${Config.apiHost}/user/logout`);

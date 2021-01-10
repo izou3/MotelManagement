@@ -25,7 +25,7 @@ const Config = config[process.env.NODE_ENV || 'development'];
 export const createNewStaff = (newStaff) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -59,7 +59,11 @@ export const createNewStaff = (newStaff) => async (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -70,7 +74,7 @@ export const createNewStaff = (newStaff) => async (dispatch, getState) => {
 export const getAllStaff = () => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -100,7 +104,11 @@ export const getAllStaff = () => async (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -111,7 +119,7 @@ export const getAllStaff = () => async (dispatch, getState) => {
 export const updateStaff = (updatedObj) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -151,7 +159,11 @@ export const updateStaff = (updatedObj) => async (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -162,7 +174,7 @@ export const updateStaff = (updatedObj) => async (dispatch, getState) => {
 export const deleteStaff = (username) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -202,7 +214,11 @@ export const deleteStaff = (username) => async (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };

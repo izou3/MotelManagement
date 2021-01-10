@@ -28,7 +28,7 @@ const Config = config[process.env.NODE_ENV || 'development'];
 export const searchResByID = (ID) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -62,14 +62,18 @@ export const searchResByID = (ID) => async (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
 export const searchResFirstName = (name) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -103,7 +107,11 @@ export const searchResFirstName = (name) => async (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -113,7 +121,7 @@ export const searchResByCheckIn = (start, end) => async (
 ) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -147,7 +155,11 @@ export const searchResByCheckIn = (start, end) => async (
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -157,7 +169,7 @@ export const searchResByCheckOut = (start, end) => async (
 ) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -191,7 +203,11 @@ export const searchResByCheckOut = (start, end) => async (
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -202,7 +218,7 @@ export const searchResByCheckOut = (start, end) => async (
 export const searchCustomerByID = (ID) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -237,14 +253,18 @@ export const searchCustomerByID = (ID) => async (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
 export const searchCustomerFirstName = (name) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -278,7 +298,11 @@ export const searchCustomerFirstName = (name) => async (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -288,7 +312,7 @@ export const searchCustomerByCheckIn = (start, end) => async (
 ) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -323,7 +347,11 @@ export const searchCustomerByCheckIn = (start, end) => async (
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -333,7 +361,7 @@ export const searchCustomerByCheckOut = (start, end) => async (
 ) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -367,7 +395,11 @@ export const searchCustomerByCheckOut = (start, end) => async (
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -378,7 +410,7 @@ export const searchCustomerByCheckOut = (start, end) => async (
 export const searchDeleteResByID = (ID) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -413,7 +445,11 @@ export const searchDeleteResByID = (ID) => async (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -423,7 +459,7 @@ export const searchDeleteResFirstName = (name) => async (
 ) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -457,7 +493,11 @@ export const searchDeleteResFirstName = (name) => async (
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -467,7 +507,7 @@ export const searchDeleteResByCheckIn = (start, end) => async (
 ) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -501,7 +541,11 @@ export const searchDeleteResByCheckIn = (start, end) => async (
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -511,7 +555,7 @@ export const searchDeleteResByCheckOut = (start, end) => async (
 ) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -545,7 +589,11 @@ export const searchDeleteResByCheckOut = (start, end) => async (
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -559,7 +607,7 @@ export const searchBlackListByFirstName = (firstName) => async (
 ) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -593,7 +641,60 @@ export const searchBlackListByFirstName = (firstName) => async (
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
+      )
+    );
+};
+
+export const searchBlackListByLastName = (lastName) => async (
+  dispatch,
+  getState
+) => {
+  dispatch(showLoading());
+  return axios
+    .get(`${Config.apiHost}/validAccess`)
+    .then(() => {
+      const state = getState();
+      if (!state.authState.isAuthenticated) {
+        return null;
+      }
+
+      const { HotelID } = state.authState.user;
+      dispatch(loadSearchResultInProgress());
+      return axios
+        .get(
+          `${Config.apiHost}/api/search/blacklist/lastName?HotelID=${HotelID}&lastName=${lastName}`
+        )
+        .then((res) => {
+          dispatch(
+            batchActions([
+              hideLoading(),
+              loadSearchResultSuccess(res.data),
+              snackBarSuccess(`${res.data.length} Results Found`),
+            ])
+          );
+        })
+        .catch(() => {
+          dispatch(
+            batchActions([
+              hideLoading(),
+              snackBarFail('Failed to Find a Match'),
+              loadSearchResultFail(),
+            ])
+          );
+        });
+    })
+    .catch(() =>
+      dispatch(
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -604,7 +705,7 @@ export const searchBlackListByID = (BookingID) => async (
 ) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -638,7 +739,11 @@ export const searchBlackListByID = (BookingID) => async (
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };

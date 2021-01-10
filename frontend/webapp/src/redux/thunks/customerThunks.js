@@ -20,11 +20,12 @@ import { logoutUser } from '../actions/authActions';
 
 const Config = config[process.env.NODE_ENV || 'development'];
 
-export const updateCustomer = (updatedCust) => async (dispatch, getState) =>
+export const updateCustomer = (updatedCust) => async (dispatch, getState) => {
   // Check auth state of cookies or from tokenExpiration Middleware and don't execute
   // remainder of auth if not authenticated
-  axios
-    .get('/validAccess')
+  dispatch(showLoading());
+  return axios
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -32,8 +33,6 @@ export const updateCustomer = (updatedCust) => async (dispatch, getState) =>
       }
 
       const { HotelID } = state.authState.user;
-
-      dispatch(showLoading());
       return axios
         .put(`${Config.apiHost}/api/customer?HotelID=${HotelID}`, updatedCust)
         .then(() => {
@@ -61,9 +60,14 @@ export const updateCustomer = (updatedCust) => async (dispatch, getState) =>
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
+};
 
 export const updateBlackListCust = (updatedCust) => async (
   dispatch,
@@ -71,7 +75,7 @@ export const updateBlackListCust = (updatedCust) => async (
 ) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -85,7 +89,7 @@ export const updateBlackListCust = (updatedCust) => async (
           const searchResult = state.searchResultState.results;
 
           for (let i = 0; i < searchResult.length; i++) {
-            if (searchResult[i].BookingID === updatedCust.BookingID) {
+            if (searchResult[i].CustomerID === updatedCust.CustomerID) {
               searchResult[i] = updatedCust;
               break;
             }
@@ -108,16 +112,67 @@ export const updateBlackListCust = (updatedCust) => async (
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
 
 // Add and delete Blacklist Customers from Search Result
+export const addNewBlackListCust = (newCustObj) => async (
+  dispatch,
+  getState
+) => {
+  dispatch(showLoading());
+  return axios
+    .get(`${Config.apiHost}/validAccess`)
+    .then(() => {
+      const state = getState();
+      if (!state.authState.isAuthenticated) {
+        return null;
+      }
+
+      const { HotelID } = state.authState.user;
+
+      return axios
+        .post(
+          `${Config.apiHost}/api/blacklist/NewCustomer?HotelID=${HotelID}`,
+          newCustObj
+        )
+        .then(() => {
+          dispatch(
+            batchActions([
+              loadFormFail(),
+              hideLoading(),
+              snackBarSuccess('Added Successfully'),
+            ])
+          );
+        })
+        .catch((err) => {
+          const message =
+            err.response.data.message === 'Customer Already In BlackList'
+              ? 'Customer Already In BlackList'
+              : 'Failed to Add to BlackList';
+          dispatch(batchActions([hideLoading(), snackBarFail(message)]));
+        });
+    })
+    .catch(() =>
+      dispatch(
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
+      )
+    );
+};
 export const addBlackListCust = (newCust) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -133,31 +188,36 @@ export const addBlackListCust = (newCust) => async (dispatch, getState) => {
             batchActions([
               loadFormFail(),
               hideLoading(),
-              snackBarSuccess('Added Successfully'),
+              snackBarSuccess('Added Successfully to BlackList'),
             ])
           );
         })
-        .catch(() => {
-          dispatch(
-            batchActions([
-              loadFormFail(),
-              hideLoading(),
-              snackBarFail('Already in Blacklist'),
-            ])
-          );
+        .catch((err) => {
+          const message =
+            err.response.data.message === 'Customer Already In BlackList'
+              ? 'Customer Already In BlackList'
+              : 'Failed to Add to BlackList';
+          dispatch(batchActions([hideLoading(), snackBarFail(message)]));
         });
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
 
-export const removeBlackListCust = (id) => async (dispatch, getState) => {
+export const removeBlackListCust = (CustomerID) => async (
+  dispatch,
+  getState
+) => {
   dispatch(showLoading());
   axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -168,13 +228,13 @@ export const removeBlackListCust = (id) => async (dispatch, getState) => {
 
       return axios
         .delete(
-          `${Config.apiHost}/api/blacklist?HotelID=${HotelID}&BookingID=${id}`
+          `${Config.apiHost}/api/blacklist?HotelID=${HotelID}&CustomerID=${CustomerID}`
         )
         .then(() => {
           const searchResult = state.searchResultState.results;
 
           for (let i = 0; i < searchResult.length; i++) {
-            if (searchResult[i].BookingID === id) {
+            if (searchResult[i].CustomerID === CustomerID) {
               searchResult.splice(i, 1);
               break;
             }
@@ -197,7 +257,11 @@ export const removeBlackListCust = (id) => async (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };

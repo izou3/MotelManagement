@@ -42,7 +42,7 @@ const Config = config[process.env.NODE_ENV || 'development'];
 export const createNewRes = (resData) => (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -92,7 +92,9 @@ export const createNewRes = (resData) => (dispatch, getState) => {
       const pending = state.pendRes.reservation;
       const current = state.currRes.reservation;
       const dailyReport = state.reportState.report;
+      const dailyReportDate = state.reportState.date;
       const { houseKeepingReport } = state.houseKeepingState;
+      const housekeepingDate = state.houseKeepingState.date;
       let checkIn = state.info.CheckIn;
       let stayOver = state.info.Stayovers;
 
@@ -107,10 +109,9 @@ export const createNewRes = (resData) => (dispatch, getState) => {
 
         if (currThreshold.isAfter(moment(resData.checkIn))) {
           // add new reservation to current reservation
-          const roomType = houseKeepingReport[insertObj.RoomID - 101].type;
           return axios
             .post(
-              `${Config.apiHost}/api/reservation/CurrReservation?HotelID=${HotelID}&roomType=${roomType}`,
+              `${Config.apiHost}/api/reservation/CurrReservation?HotelID=${HotelID}`,
               insertObj
             )
             .then((result) => {
@@ -118,15 +119,27 @@ export const createNewRes = (resData) => (dispatch, getState) => {
                 pending.push(insertObj);
 
                 checkIn++;
-                dispatch(
+                return dispatch(
                   batchActions([
                     updateSocketCheckIn(HotelID, checkIn),
                     loadSocketPendResSuccess(HotelID, pending),
+                    hideLoading(),
+                    loadFormFail(),
+                    snackBarSuccess('Created Successfully!'),
                   ])
                 );
-              } else {
-                // Make Appropriate changes to the state
-                current[insertObj.RoomID - 101] = insertObj;
+              }
+
+              // Make Appropriate changes to the state
+              stayOver++;
+              current[insertObj.RoomID - 101] = insertObj;
+              const today = moment().format('YYYY-MM-DD');
+
+              if (
+                moment(dailyReportDate).isSame(today, 'day') &&
+                moment(housekeepingDate).isSame(today, 'day')
+              ) {
+                // DailyReport and Housekeeping State is current day so make need to change both
                 dailyReport[insertObj.RoomID - 101] = {
                   ...result.data.Stays[insertObj.RoomID].Room,
                   RoomID: insertObj.RoomID,
@@ -135,21 +148,66 @@ export const createNewRes = (resData) => (dispatch, getState) => {
                   ...result.data.Stays[insertObj.RoomID].HouseKeeping,
                   RoomID: insertObj.RoomID,
                 };
-                stayOver++;
-
-                dispatch(
+                // For a single render
+                return dispatch(
                   batchActions([
+                    updateSocketReport(HotelID, dailyReport),
+                    updateSocketHouseKeepingReport(HotelID, houseKeepingReport),
                     updateSocketStayOvers(HotelID, stayOver),
                     updateSocketAvailable(HotelID, 25 - stayOver),
                     loadSocketCurrResSuccess(HotelID, current),
-                    updateSocketReport(HotelID, dailyReport),
-                    updateSocketHouseKeepingReport(HotelID, houseKeepingReport),
+                    hideLoading(),
+                    loadFormFail(),
+                    snackBarSuccess('Created Successfully!'),
                   ])
                 );
               }
 
+              if (moment(housekeepingDate).isSame(today, 'day')) {
+                // Only Housekeeping State is current day so just change housekeeping
+                houseKeepingReport[insertObj.RoomID - 101] = {
+                  ...result.data.Stays[insertObj.RoomID].HouseKeeping,
+                  RoomID: insertObj.RoomID,
+                };
+                return dispatch(
+                  batchActions([
+                    updateSocketHouseKeepingReport(HotelID, houseKeepingReport),
+                    updateSocketStayOvers(HotelID, stayOver),
+                    updateSocketAvailable(HotelID, 25 - stayOver),
+                    loadSocketCurrResSuccess(HotelID, current),
+                    hideLoading(),
+                    loadFormFail(),
+                    snackBarSuccess('Created Successfully!'),
+                  ])
+                );
+              }
+
+              if (moment(dailyReportDate).isSame(today, 'day')) {
+                // Only DailyReport is current day so just change housekeeping
+                dailyReport[insertObj.RoomID - 101] = {
+                  ...result.data.Stays[insertObj.RoomID].Room,
+                  RoomID: insertObj.RoomID,
+                };
+                return dispatch(
+                  batchActions([
+                    updateSocketReport(HotelID, dailyReport),
+                    updateSocketStayOvers(HotelID, stayOver),
+                    updateSocketAvailable(HotelID, 25 - stayOver),
+                    loadSocketCurrResSuccess(HotelID, current),
+                    hideLoading(),
+                    loadFormFail(),
+                    snackBarSuccess('Created Successfully!'),
+                  ])
+                );
+              }
+
+              // Both Housekeeping and DailyReport state is not current day so
+              // don't change either
               return dispatch(
                 batchActions([
+                  updateSocketStayOvers(HotelID, stayOver),
+                  updateSocketAvailable(HotelID, 25 - stayOver),
+                  loadSocketCurrResSuccess(HotelID, current),
                   hideLoading(),
                   loadFormFail(),
                   snackBarSuccess('Created Successfully!'),
@@ -186,7 +244,11 @@ export const createNewRes = (resData) => (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -198,7 +260,7 @@ export const updateCurrRes = (updatedRes, prevRoom = 0) => async (
 ) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -213,12 +275,13 @@ export const updateCurrRes = (updatedRes, prevRoom = 0) => async (
 
       let checkIn = state.info.CheckIn;
       const dailyReport = state.reportState.report;
+      const dailyReportDate = state.reportState.date;
       const { houseKeepingReport } = state.houseKeepingState;
+      const housekeepingDate = state.houseKeepingState.date;
 
       const pendingThreshold = moment().add(2, 'days');
 
       return new Promise((resolve, reject) => {
-        const roomType = houseKeepingReport[updatedRes.RoomID - 101].type;
         if (
           updatedRes.Checked === 1 &&
           currRes[updatedRes.RoomID - 101].BookingID &&
@@ -234,7 +297,7 @@ export const updateCurrRes = (updatedRes, prevRoom = 0) => async (
           // UNLESS reservation is already checked in
           return axios
             .put(
-              `${Config.apiHost}/api/reservation/CurrReservation?HotelID=${HotelID}&dateChange=true&roomType=${roomType}`,
+              `${Config.apiHost}/api/reservation/CurrReservation?HotelID=${HotelID}&dateChange=true`,
               updatedRes
             )
             .then(() => {
@@ -269,10 +332,11 @@ export const updateCurrRes = (updatedRes, prevRoom = 0) => async (
         // Keep reservation in Current Collection as checkIn date is soon
         return axios
           .put(
-            `${Config.apiHost}/api/reservation/CurrReservation?HotelID=${HotelID}&dateChange=false&roomType=${roomType}`,
+            `${Config.apiHost}/api/reservation/CurrReservation?HotelID=${HotelID}&dateChange=false`,
             updatedRes
           )
           .then((result) => {
+            // Update in Overdue
             if (updatedRes.Checked === 2) {
               // Update in Arrivals
               for (let i = 0; i < pendRes.length; i++) {
@@ -281,8 +345,18 @@ export const updateCurrRes = (updatedRes, prevRoom = 0) => async (
                   break;
                 }
               }
-              dispatch(loadSocketPendResSuccess(HotelID, pendRes));
-            } else if (updatedRes.Checked === 0) {
+              return dispatch(
+                batchActions([
+                  loadSocketPendResSuccess(HotelID, pendRes),
+                  loadFormFail(),
+                  hideLoading(),
+                  snackBarSuccess('Updated Successfully!'),
+                ])
+              );
+            }
+
+            // Update in Pending
+            if (updatedRes.Checked === 0) {
               // Update in Overdue
               for (let i = 0; i < overRes.length; i++) {
                 if (overRes[i].BookingID === updatedRes.BookingID) {
@@ -290,11 +364,34 @@ export const updateCurrRes = (updatedRes, prevRoom = 0) => async (
                   break;
                 }
               }
-              dispatch(loadSocketOverResSuccess(HotelID, overRes));
-            } else {
-              // Update in current
+              return dispatch(
+                batchActions([
+                  loadSocketOverResSuccess(HotelID, overRes),
+                  loadFormFail(),
+                  hideLoading(),
+                  snackBarSuccess('Updated Successfully!'),
+                ])
+              );
+            }
 
-              // Room Has Been updated
+            // Update in Current
+            /**
+             * @NOTE Redux seems to change the state if currRes, etc are reinitilized even though
+             * there wasn't any dispatch.
+             *
+             * Therefore the reinitialization of states for if rooms are changed are controlled by
+             * each condition for a single render.
+             */
+            currRes[updatedRes.RoomID - 101] = result.data.UpdatedRes;
+
+            const today = moment().format('YYYY-MM-DD');
+            if (
+              moment(dailyReportDate).isSame(today, 'day') &&
+              moment(housekeepingDate).isSame(today, 'day')
+            ) {
+              // DailyReport and Housekeeping state are the current day so need to change both
+
+              // Room Has Been updated (moved)
               if (prevRoom !== updatedRes.RoomID) {
                 currRes[prevRoom - 101] = {
                   RoomID: prevRoom,
@@ -309,7 +406,6 @@ export const updateCurrRes = (updatedRes, prevRoom = 0) => async (
                 };
               }
 
-              currRes[updatedRes.RoomID - 101] = result.data.UpdatedRes;
               dailyReport[updatedRes.RoomID - 101] = {
                 ...result.data.UpdatedReport.Stays[`${updatedRes.RoomID}`].Room,
                 RoomID: updatedRes.RoomID,
@@ -319,17 +415,84 @@ export const updateCurrRes = (updatedRes, prevRoom = 0) => async (
                   .HouseKeeping,
                 RoomID: updatedRes.RoomID,
               };
-
-              dispatch(
+              return dispatch(
                 batchActions([
-                  loadSocketCurrResSuccess(HotelID, currRes),
                   updateSocketReport(HotelID, dailyReport),
                   updateSocketHouseKeepingReport(HotelID, houseKeepingReport),
+                  loadSocketCurrResSuccess(HotelID, currRes),
+                  loadFormFail(),
+                  hideLoading(),
+                  snackBarSuccess('Updated Successfully!'),
                 ])
               );
             }
+
+            if (moment(dailyReportDate).isSame(today, 'day')) {
+              // Only DailyReport state is current day so just change this
+
+              // Room Has Been updated (moved)
+              if (prevRoom !== updatedRes.RoomID) {
+                currRes[prevRoom - 101] = {
+                  RoomID: prevRoom,
+                };
+                dailyReport[prevRoom - 101] = {
+                  RoomID: prevRoom,
+                };
+              }
+              dailyReport[updatedRes.RoomID - 101] = {
+                ...result.data.UpdatedReport.Stays[`${updatedRes.RoomID}`].Room,
+                RoomID: updatedRes.RoomID,
+              };
+              return dispatch(
+                batchActions([
+                  updateSocketReport(HotelID, dailyReport),
+                  loadSocketCurrResSuccess(HotelID, currRes),
+                  loadFormFail(),
+                  hideLoading(),
+                  snackBarSuccess('Updated Successfully!'),
+                ])
+              );
+            }
+
+            if (moment(housekeepingDate).isSame(today, 'day')) {
+              // Room Has Been updated (moved)
+              if (prevRoom !== updatedRes.RoomID) {
+                currRes[prevRoom - 101] = {
+                  RoomID: prevRoom,
+                };
+                houseKeepingReport[prevRoom - 101] = {
+                  ...result.data.UpdatedReport.Stays[`${prevRoom}`]
+                    .HouseKeeping,
+                  RoomID: prevRoom,
+                };
+              }
+              // Only Housekeeping state is current day so just change this
+              houseKeepingReport[updatedRes.RoomID - 101] = {
+                ...result.data.UpdatedReport.Stays[`${updatedRes.RoomID}`]
+                  .HouseKeeping,
+                RoomID: updatedRes.RoomID,
+              };
+              return dispatch(
+                batchActions([
+                  updateSocketHouseKeepingReport(HotelID, houseKeepingReport),
+                  loadSocketCurrResSuccess(HotelID, currRes),
+                  loadFormFail(),
+                  hideLoading(),
+                  snackBarSuccess('Updated Successfully!'),
+                ])
+              );
+            }
+
+            // Housekeeping and DailyReport state are not current day so change neither
+            // Room Has Been updated (moved)
+            if (prevRoom !== updatedRes.RoomID) {
+              currRes[prevRoom - 101] = {
+                RoomID: prevRoom,
+              };
+            }
             return dispatch(
               batchActions([
+                // loadSocketCurrResSuccess(HotelID, currRes),
                 loadFormFail(),
                 hideLoading(),
                 snackBarSuccess('Updated Successfully!'),
@@ -348,10 +511,15 @@ export const updateCurrRes = (updatedRes, prevRoom = 0) => async (
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
+
 // move reservations in current collection between different fields of Checked
 export const moveCurrRes = (
   updatedRes,
@@ -361,7 +529,7 @@ export const moveCurrRes = (
 ) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -377,7 +545,9 @@ export const moveCurrRes = (
       let available = state.info.Available;
       let stayOvers = state.info.Stayovers;
       const dailyReport = state.reportState.report;
+      const dailyReportDate = state.reportState.date;
       const { houseKeepingReport } = state.houseKeepingState;
+      const housekeepingDate = state.houseKeepingState.date;
 
       // Generate Proper CheckIn and CheckOut Dates
       // eslint-disable-next-line no-param-reassign
@@ -390,36 +560,99 @@ export const moveCurrRes = (
       );
 
       return new Promise((resolve, reject) => {
-        const roomType = houseKeepingReport[prevRoom - 101].type;
         if (destination === 'arrival' && origin === 'current') {
           return axios
             .put(
-              `${Config.apiHost}/api/reservation/CurrReservation?HotelID=${HotelID}&moveToArr=true&roomType=${roomType}`,
+              `${Config.apiHost}/api/reservation/CurrReservation?HotelID=${HotelID}&moveToArr=true`,
               updatedRes
             )
             .then((result) => {
               currRes[prevRoom - 101] = {
                 RoomID: prevRoom,
               };
-              dailyReport[prevRoom - 101] = {
-                RoomID: prevRoom,
-              };
-              houseKeepingReport[prevRoom - 101] = {
-                ...result.data.Stays[`${prevRoom}`].HouseKeeping,
-                RoomID: prevRoom,
-              };
+
               pendRes.push(updatedRes);
               // Update info
               checkIn++;
               stayOvers--;
               available++;
 
+              const today = moment().format('YYYY-MM-DD');
+              if (
+                moment(dailyReportDate).isSame(today, 'day') &&
+                moment(housekeepingDate).isSame(today, 'day')
+              ) {
+                // DailyReport and Housekeeping state are current day so change both
+                dailyReport[prevRoom - 101] = {
+                  RoomID: prevRoom,
+                };
+                houseKeepingReport[prevRoom - 101] = {
+                  ...result.data.Stays[`${prevRoom}`].HouseKeeping,
+                  RoomID: prevRoom,
+                };
+                return dispatch(
+                  batchActions([
+                    loadSocketCurrResSuccess(HotelID, currRes),
+                    loadSocketPendResSuccess(HotelID, pendRes),
+                    updateSocketReport(HotelID, dailyReport),
+                    updateSocketHouseKeepingReport(HotelID, houseKeepingReport),
+                    updateSocketCheckIn(HotelID, checkIn),
+                    updateSocketStayOvers(HotelID, stayOvers),
+                    updateSocketAvailable(HotelID, available),
+                    loadFormFail(),
+                    hideLoading(),
+                    snackBarSuccess('Moved Successfully!'),
+                  ])
+                );
+              }
+
+              if (moment(housekeepingDate).isSame(today, 'day')) {
+                houseKeepingReport[prevRoom - 101] = {
+                  ...result.data.Stays[`${prevRoom}`].HouseKeeping,
+                  RoomID: prevRoom,
+                };
+                // Only Housekeeping is current day so just change this
+                return dispatch(
+                  batchActions([
+                    loadSocketCurrResSuccess(HotelID, currRes),
+                    loadSocketPendResSuccess(HotelID, pendRes),
+                    updateSocketHouseKeepingReport(HotelID, houseKeepingReport),
+                    updateSocketCheckIn(HotelID, checkIn),
+                    updateSocketStayOvers(HotelID, stayOvers),
+                    updateSocketAvailable(HotelID, available),
+                    loadFormFail(),
+                    hideLoading(),
+                    snackBarSuccess('Moved Successfully!'),
+                  ])
+                );
+              }
+
+              if (moment(dailyReportDate).isSame(today, 'day')) {
+                // Only DailyReport is current day so just change this
+                dailyReport[prevRoom - 101] = {
+                  RoomID: prevRoom,
+                };
+                return dispatch(
+                  batchActions([
+                    loadSocketCurrResSuccess(HotelID, currRes),
+                    loadSocketPendResSuccess(HotelID, pendRes),
+                    updateSocketReport(HotelID, dailyReport),
+                    updateSocketCheckIn(HotelID, checkIn),
+                    updateSocketStayOvers(HotelID, stayOvers),
+                    updateSocketAvailable(HotelID, available),
+                    loadFormFail(),
+                    hideLoading(),
+                    snackBarSuccess('Moved Successfully!'),
+                  ])
+                );
+              }
+
+              // DailyReport and Houekeeping are not current day so change neither
+              // will only result in one render
               return dispatch(
                 batchActions([
                   loadSocketCurrResSuccess(HotelID, currRes),
                   loadSocketPendResSuccess(HotelID, pendRes),
-                  updateSocketReport(HotelID, dailyReport),
-                  updateSocketHouseKeepingReport(HotelID, houseKeepingReport),
                   updateSocketCheckIn(HotelID, checkIn),
                   updateSocketStayOvers(HotelID, stayOvers),
                   updateSocketAvailable(HotelID, available),
@@ -434,7 +667,7 @@ export const moveCurrRes = (
         // No require changes in Report so just update the reservation and dispatch the changes to the state
         return axios
           .put(
-            `${Config.apiHost}/api/reservation/CurrReservation?HotelID=${HotelID}&BookingID=${updatedRes.BookingID}&dateChange=false&roomType=${roomType}`,
+            `${Config.apiHost}/api/reservation/CurrReservation?HotelID=${HotelID}&BookingID=${updatedRes.BookingID}&dateChange=false`,
             updatedRes
           )
           .then(() => {
@@ -492,7 +725,11 @@ export const moveCurrRes = (
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -501,7 +738,7 @@ export const moveCurrRes = (
 export const deleteCurrRes = (BookingID) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -545,7 +782,11 @@ export const deleteCurrRes = (BookingID) => async (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -553,7 +794,7 @@ export const deleteCurrRes = (BookingID) => async (dispatch, getState) => {
 export const checkInRes = (resObj) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -568,16 +809,17 @@ export const checkInRes = (resObj) => async (dispatch, getState) => {
       let available = state.info.Available;
       let stayOvers = state.info.Stayovers;
       const dailyReport = state.reportState.report;
+      const dailyReportDate = state.reportState.date;
       const { houseKeepingReport } = state.houseKeepingState;
+      const housekeepingDate = state.houseKeepingState.date;
 
       return new Promise((resolve, reject) => {
-        const roomType = houseKeepingReport[resObj.RoomID - 101].type;
         if (current[resObj.RoomID - 101].BookingID) {
           reject(new Error('Cannot Check In Guest into Occupied Room'));
         } else {
           axios
             .put(
-              `${Config.apiHost}/api/reservation/CurrReservation?HotelID=${HotelID}&checkIn=true&roomType=${roomType}`,
+              `${Config.apiHost}/api/reservation/CurrReservation?HotelID=${HotelID}&checkIn=true`,
               {
                 ...resObj,
                 Checked: 1,
@@ -589,31 +831,85 @@ export const checkInRes = (resObj) => async (dispatch, getState) => {
                 (res) => res.BookingID !== resObj.BookingID
               );
               current[resObj.RoomID - 101] = result.data.UpdatedRes;
-
-              // Update DailyReport and HouseKeeping State
-              dailyReport[resObj.RoomID - 101] = {
-                ...result.data.UpdatedReport.Stays[`${resObj.RoomID}`].Room,
-                RoomID: resObj.RoomID,
-              };
-              houseKeepingReport[resObj.RoomID - 101] = {
-                ...result.data.UpdatedReport.Stays[`${resObj.RoomID}`]
-                  .HouseKeeping,
-                RoomID: resObj.RoomID,
-              };
-
               // Update Info
               checkIn--;
               available--;
               stayOvers++;
-              dispatch(
+
+              const today = moment().format('YYYY-MM-DD');
+              if (
+                moment(dailyReportDate).isSame(today, 'day') &&
+                moment(housekeepingDate).isSame(today, 'day')
+              ) {
+                // Update DailyReport and HouseKeeping State as DailyReport and Housekeeping state
+                // is set to current day
+                dailyReport[resObj.RoomID - 101] = {
+                  ...result.data.UpdatedReport.Stays[`${resObj.RoomID}`].Room,
+                  RoomID: resObj.RoomID,
+                };
+                houseKeepingReport[resObj.RoomID - 101] = {
+                  ...result.data.UpdatedReport.Stays[`${resObj.RoomID}`]
+                    .HouseKeeping,
+                  RoomID: resObj.RoomID,
+                };
+                return dispatch(
+                  batchActions([
+                    updateSocketCheckIn(HotelID, checkIn),
+                    updateSocketAvailable(HotelID, available),
+                    updateSocketStayOvers(HotelID, stayOvers),
+                    loadSocketPendResSuccess(HotelID, pending),
+                    loadSocketCurrResSuccess(HotelID, current),
+                    updateSocketReport(HotelID, dailyReport),
+                    updateSocketHouseKeepingReport(HotelID, houseKeepingReport),
+                  ])
+                );
+              }
+
+              if (moment(housekeepingDate).isSame(today, 'day')) {
+                // Update only Housekeeping as only housekeeping state is set to current day
+                houseKeepingReport[resObj.RoomID - 101] = {
+                  ...result.data.UpdatedReport.Stays[`${resObj.RoomID}`]
+                    .HouseKeeping,
+                  RoomID: resObj.RoomID,
+                };
+                return dispatch(
+                  batchActions([
+                    updateSocketCheckIn(HotelID, checkIn),
+                    updateSocketAvailable(HotelID, available),
+                    updateSocketStayOvers(HotelID, stayOvers),
+                    loadSocketPendResSuccess(HotelID, pending),
+                    loadSocketCurrResSuccess(HotelID, current),
+                    updateSocketHouseKeepingReport(HotelID, houseKeepingReport),
+                  ])
+                );
+              }
+
+              if (moment(dailyReportDate).isSame(today, 'day')) {
+                // Update only DailyReport as only housekeeping state is set to current day
+                dailyReport[resObj.RoomID - 101] = {
+                  ...result.data.UpdatedReport.Stays[`${resObj.RoomID}`].Room,
+                  RoomID: resObj.RoomID,
+                };
+                return dispatch(
+                  batchActions([
+                    updateSocketCheckIn(HotelID, checkIn),
+                    updateSocketAvailable(HotelID, available),
+                    updateSocketStayOvers(HotelID, stayOvers),
+                    loadSocketPendResSuccess(HotelID, pending),
+                    loadSocketCurrResSuccess(HotelID, current),
+                    updateSocketReport(HotelID, dailyReport),
+                  ])
+                );
+              }
+
+              // DailyReport and Housekeeping are not current day so change neither
+              return dispatch(
                 batchActions([
                   updateSocketCheckIn(HotelID, checkIn),
                   updateSocketAvailable(HotelID, available),
                   updateSocketStayOvers(HotelID, stayOvers),
                   loadSocketPendResSuccess(HotelID, pending),
                   loadSocketCurrResSuccess(HotelID, current),
-                  updateSocketReport(HotelID, dailyReport),
-                  updateSocketHouseKeepingReport(HotelID, houseKeepingReport),
                 ])
               );
             })
@@ -639,7 +935,11 @@ export const checkInRes = (resObj) => async (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -647,7 +947,7 @@ export const checkInRes = (resObj) => async (dispatch, getState) => {
 export const checkOutRes = (resObj) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -660,40 +960,98 @@ export const checkOutRes = (resObj) => async (dispatch, getState) => {
       let available = state.info.Available;
       let stayOvers = state.info.Stayovers;
       const dailyReport = state.reportState.report;
+      const dailyReportDate = state.reportState.date;
+
       const { houseKeepingReport } = state.houseKeepingState;
+      const housekeepingDate = state.houseKeepingState.date;
 
-      return new Promise((resolve, reject) => {
-        const roomType = houseKeepingReport[resObj.RoomID - 101].type;
-
-        return axios
-          .post(
-            `${Config.apiHost}/api/customer?HotelID=${HotelID}&roomType=${roomType}`,
-            resObj
-          )
+      return new Promise((resolve, reject) =>
+        axios
+          .post(`${Config.apiHost}/api/customer?HotelID=${HotelID}`, resObj)
           .then((response) => {
             const prevRoom = response.data.PrevResObj.RoomID;
             current[prevRoom - 101] = {
               RoomID: prevRoom,
             };
-            dailyReport[prevRoom - 101] = {
-              ...response.data.UpdatedReport.Stays[`${prevRoom}`].Room,
-              RoomID: prevRoom,
-            };
-            houseKeepingReport[prevRoom - 101] = {
-              ...response.data.UpdatedReport.Stays[`${prevRoom}`].HouseKeeping,
-              RoomID: prevRoom,
-            };
 
+            // Update Info
             available++;
             stayOvers--;
 
-            dispatch(
+            const today = moment().format('YYYY-MM-DD');
+            if (
+              moment(dailyReportDate).isSame(today, 'day') &&
+              moment(housekeepingDate).isSame(today, 'day')
+            ) {
+              // DailyReport and Housekeeping are current day so change both
+              dailyReport[prevRoom - 101] = {
+                ...response.data.UpdatedReport.Stays[`${prevRoom}`].Room,
+                RoomID: prevRoom,
+              };
+              houseKeepingReport[prevRoom - 101] = {
+                ...response.data.UpdatedReport.Stays[`${prevRoom}`]
+                  .HouseKeeping,
+                RoomID: prevRoom,
+              };
+              return dispatch(
+                batchActions([
+                  updateSocketAvailable(HotelID, available),
+                  updateSocketStayOvers(HotelID, stayOvers),
+                  loadSocketCurrResSuccess(HotelID, current),
+                  updateSocketReport(HotelID, dailyReport),
+                  updateSocketHouseKeepingReport(HotelID, houseKeepingReport),
+                  loadFormFail(),
+                  hideLoading(),
+                  snackBarSuccess('Checked Out Guest'),
+                ])
+              );
+            }
+
+            if (moment(dailyReportDate).isSame(today, 'day')) {
+              // Only DailyReport is current day so just change this
+              dailyReport[prevRoom - 101] = {
+                ...response.data.UpdatedReport.Stays[`${prevRoom}`].Room,
+                RoomID: prevRoom,
+              };
+              return dispatch(
+                batchActions([
+                  updateSocketAvailable(HotelID, available),
+                  updateSocketStayOvers(HotelID, stayOvers),
+                  loadSocketCurrResSuccess(HotelID, current),
+                  updateSocketReport(HotelID, dailyReport),
+                  loadFormFail(),
+                  hideLoading(),
+                  snackBarSuccess('Checked Out Guest'),
+                ])
+              );
+            }
+
+            if (moment(housekeepingDate).isSame(today, 'day')) {
+              // Only Housekeeping is current day so just change this
+              houseKeepingReport[prevRoom - 101] = {
+                ...response.data.UpdatedReport.Stays[`${prevRoom}`]
+                  .HouseKeeping,
+                RoomID: prevRoom,
+              };
+              return dispatch(
+                batchActions([
+                  updateSocketAvailable(HotelID, available),
+                  updateSocketStayOvers(HotelID, stayOvers),
+                  loadSocketCurrResSuccess(HotelID, current),
+                  updateSocketHouseKeepingReport(HotelID, houseKeepingReport),
+                  loadFormFail(),
+                  hideLoading(),
+                  snackBarSuccess('Checked Out Guest'),
+                ])
+              );
+            }
+
+            // DailyReport and Housekeeping are not current day so change neither
+            return dispatch(
               batchActions([
                 updateSocketAvailable(HotelID, available),
                 updateSocketStayOvers(HotelID, stayOvers),
                 loadSocketCurrResSuccess(HotelID, current),
-                updateSocketReport(HotelID, dailyReport),
-                updateSocketHouseKeepingReport(HotelID, houseKeepingReport),
                 loadFormFail(),
                 hideLoading(),
                 snackBarSuccess('Checked Out Guest'),
@@ -702,8 +1060,8 @@ export const checkOutRes = (resObj) => async (dispatch, getState) => {
           })
           .catch(() => {
             reject(new Error('Failed to CheckOut Guest'));
-          });
-      }).catch((err) => {
+          })
+      ).catch((err) => {
         const message = err.message ? err.message : 'Failed to Check-In Guest!';
         dispatch(
           batchActions([loadFormFail(), hideLoading(), snackBarFail(message)])
@@ -712,7 +1070,11 @@ export const checkOutRes = (resObj) => async (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -721,7 +1083,7 @@ export const checkOutRes = (resObj) => async (dispatch, getState) => {
 export const updateReservation = (updatedRes) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -810,7 +1172,11 @@ export const updateReservation = (updatedRes) => async (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -821,7 +1187,7 @@ export const updateDelReservation = (updatedRes) => async (
 ) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -865,7 +1231,11 @@ export const updateDelReservation = (updatedRes) => async (
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -874,7 +1244,7 @@ export const updateDelReservation = (updatedRes) => async (
 export const cancelReservation = (BookingID) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -915,7 +1285,11 @@ export const cancelReservation = (BookingID) => async (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
@@ -923,7 +1297,7 @@ export const cancelReservation = (BookingID) => async (dispatch, getState) => {
 export const permDelReservation = (BookingID) => async (dispatch, getState) => {
   dispatch(showLoading());
   return axios
-    .get('/validAccess')
+    .get(`${Config.apiHost}/validAccess`)
     .then(() => {
       const state = getState();
       if (!state.authState.isAuthenticated) {
@@ -965,7 +1339,11 @@ export const permDelReservation = (BookingID) => async (dispatch, getState) => {
     })
     .catch(() =>
       dispatch(
-        batchActions([logoutUser(), snackBarSuccess('UnAuthorized Access')])
+        batchActions([
+          logoutUser(),
+          hideLoading(),
+          snackBarSuccess('UnAuthorized Access'),
+        ])
       )
     );
 };
