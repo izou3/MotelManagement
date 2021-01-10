@@ -144,8 +144,11 @@ const Report = ({
             <Paper elevation={3} className={classes.search}>
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
                 <Formik
+                  enableReinitialize
                   initialValues={{
-                    reportSearch: moment(),
+                    reportSearch: moment(houseKeepingDate, 'YYYY-MM-DD').format(
+                      'YYYY-MM-DDT12:00:00[Z]'
+                    ),
                   }}
                   validate={(values) => {
                     const errors = {};

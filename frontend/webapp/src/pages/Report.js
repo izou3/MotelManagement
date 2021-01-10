@@ -176,7 +176,7 @@ const Report = ({
         minWidth: 200,
       },
     },
-    { title: 'Rate', field: 'rate', type: 'numeric' },
+    { title: 'Total Price', field: 'rate', type: 'numeric' },
     { title: 'Tax', field: 'tax', type: 'numeric' },
     {
       title: 'In',
@@ -228,8 +228,11 @@ const Report = ({
               <Paper elevation={3} className={classes.search}>
                 <MuiPickersUtilsProvider utils={DateFnsUtils}>
                   <Formik
+                    enableReinitialize
                     initialValues={{
-                      reportSearch: moment(),
+                      reportSearch: moment(reportDate, 'YYYY-MM-DD').format(
+                        'YYYY-MM-DDT12:00:00[Z]'
+                      ),
                     }}
                     validate={(values) => {
                       const errors = {};
@@ -439,6 +442,15 @@ const Report = ({
                       ? newData.tax
                       : '0';
 
+                    // Format Dates. Backend Middleware doesn't work
+                    // b/c axios formats JS String Dates in payload of requests
+                    submitData.startDate = moment(submitData.startDate).format(
+                      'YYYY-MM-DDT12:00:00[Z]'
+                    );
+                    submitData.endDate = moment(submitData.endDate).format(
+                      'YYYY-MM-DDT12:00:00[Z]'
+                    );
+
                     updateReport(reportDate, submitData);
                     resolve();
                   }, 100);
@@ -457,7 +469,7 @@ const Report = ({
                   const errors = {};
 
                   if (values.refundAmount === '') {
-                    errors.refundAmount = 'Cannot be empty';
+                    errors.refundAmount = 'Enter 0 if empty';
                   } else if (isNaN(values.refundAmount)) {
                     errors.refundAmount = 'Not a Number';
                   }

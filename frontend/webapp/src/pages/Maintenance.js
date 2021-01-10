@@ -2,6 +2,7 @@
  * Module Dependencies
  */
 import React from 'react';
+import moment from 'moment';
 
 // MaterialUI Components
 import { makeStyles } from '@material-ui/core/styles';
@@ -45,6 +46,7 @@ import {
 
 import {
   addMaintenanceLog,
+  deleteMaintenanceSheet,
   searchMaintenanceLog,
   addLogEntry,
   updateLogEntry,
@@ -89,6 +91,10 @@ const useStyles = makeStyles((theme) => ({
   },
   actions: {
     padding: theme.spacing(1),
+  },
+  deleteActions: {
+    padding: theme.spacing(1),
+    marginTop: '5rem',
   },
 }));
 
@@ -191,7 +197,18 @@ function Row(props) {
                           alert('Not a valid Cost');
                           return;
                         }
+                        if (newData.cost === '') {
+                          reject();
+                          alert('Enter 0 if empty');
+                          return;
+                        }
 
+                        // Format Dates. Backend Middleware doesn't work
+                        // b/c axios formats JS String Dates in payload of requests
+                        // eslint-disable-next-line no-param-reassign
+                        newData.date = moment(newData.date).format(
+                          'YYYY-MM-DDT12:00:00[Z]'
+                        );
                         updateEntry(newData);
                         resolve();
                       }, 100);
@@ -207,8 +224,21 @@ function Row(props) {
                           return;
                         }
 
+                        if (newData.cost === '') {
+                          reject();
+                          alert('Enter 0 if empty');
+                          return;
+                        }
+
                         // Setting Initial Values
                         // Initial Values set in Columns Fails to work
+
+                        // Format Dates. Backend Middleware doesn't work
+                        // b/c axios formats JS String Dates in payload of requests
+                        // eslint-disable-next-line no-param-reassign
+                        newData.date = moment(newData.date).format(
+                          'YYYY-MM-DDT12:00:00[Z]'
+                        );
 
                         addEntry(newData);
                         resolve();
@@ -241,6 +271,7 @@ function Maintenance({
   snackBar,
   logout,
   createNewMaintenanceLog,
+  deleteMaintenanceLog,
   searchForMaintenanceLog,
   addLog,
   updateLog,
@@ -255,6 +286,8 @@ function Maintenance({
       setActionType('add');
     } else if (formType === 'search') {
       setActionType('search');
+    } else if (formType === 'delete') {
+      setActionType('delete');
     }
     submitHandler();
   };
@@ -342,6 +375,7 @@ function Maintenance({
                         ? maintenanceChoices[0].Name
                         : 0,
                     createMaintenance: '',
+                    maintenanceDelete: '',
                   }}
                   validate={(values) => {
                     const errors = {};
@@ -354,9 +388,8 @@ function Maintenance({
 
                     return errors;
                   }}
-                  onSubmit={(values, { setSubmitting }) => {
+                  onSubmit={(values, { setSubmitting, resetForm }) => {
                     setSubmitting(true);
-
                     if (actionType === 'add') {
                       /**
                        * @TODO Validate Only when certain actionType is triggered
@@ -370,8 +403,11 @@ function Maintenance({
                     } else if (actionType === 'search') {
                       // Search Maintenance Log
                       searchForMaintenanceLog(values.maintenanceSearch);
+                    } else if (actionType === 'delete') {
+                      // Delete Maintenance Log
+                      deleteMaintenanceLog(values.maintenanceDelete);
                     }
-
+                    resetForm();
                     setSubmitting(false);
                   }}
                 >
@@ -426,6 +462,40 @@ function Maintenance({
                             Add
                           </Button>
                         </Grid>
+                        <Grid item xs={7} className={classes.deleteActions}>
+                          <Field
+                            fullWidth
+                            component={Select}
+                            variant="outlined"
+                            name="maintenanceDelete"
+                          >
+                            {maintenanceChoices.map((choice) => {
+                              if (choice.Name !== 'General') {
+                                return (
+                                  <MenuItem
+                                    key={choice._id}
+                                    value={choice.Name}
+                                  >
+                                    {choice.Name}
+                                  </MenuItem>
+                                );
+                              }
+                              return null;
+                            })}
+                          </Field>
+                        </Grid>
+                        <Grid item xs={4} className={classes.deleteActions}>
+                          <Button
+                            fullWidth
+                            variant="outlined"
+                            color="secondary"
+                            onClick={() =>
+                              submitFormAction('delete', submitForm)
+                            }
+                          >
+                            Delete
+                          </Button>
+                        </Grid>
                       </Grid>
                     </Form>
                   )}
@@ -452,6 +522,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
   logout: (redirect) => dispatch(logoutStaff(redirect)),
   createNewMaintenanceLog: (name) => dispatch(addMaintenanceLog(name)),
+  deleteMaintenanceLog: (name) => dispatch(deleteMaintenanceSheet(name)),
   searchForMaintenanceLog: (id) => dispatch(searchMaintenanceLog(id)),
 
   addLog: (name, field, newEntry) =>
