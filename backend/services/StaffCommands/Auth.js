@@ -14,10 +14,15 @@ class Login {
 
   async execute(HotelID) {
     const Staff = new StaffClass(HotelID);
-    if (this._req.user) {
-      const { token } = this._req.cookies;
-      return token;
-    }
+
+    // Not neccessary as this doesn't return Motel/User info
+    // Even if token already exists, if user tries to login
+    // a different way, server will send new token for new user
+    // if (this._req.user) {
+    //   const { token } = this._req.cookies;
+    //   return token;
+    // }
+
     const query = { username: this._req.body.username };
     const staff = await Staff.findStaff(query);
 
@@ -28,7 +33,6 @@ class Login {
     if (!staff.comparePassword(this._req.body.password, staff.hashPassword)) {
       throw new Error('Authentication Failed! Wrong Password');
     }
-
     // Obtain Motel Info and Room Number List
     const Customer = new CustomerClass(staff.HotelID); // passes in HotelID as Number
     const Motels = await this._pool.query(Customer.getMotelInfo());
@@ -64,7 +68,7 @@ class Login {
       },
       config.jwtKey,
       {
-        expiresIn: 3600, // 60 Minute Expiration Date
+        expiresIn: 3600, // 90 Minute Expiration Date
       }
     );
 
