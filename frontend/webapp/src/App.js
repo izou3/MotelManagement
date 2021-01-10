@@ -5,8 +5,12 @@ import React from 'react';
 import moment from 'moment';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
+// Idle Component
+import { useIdleTimer } from 'react-idle-timer';
+
 // Redux Dependencies
 import { connect, useDispatch } from 'react-redux';
+import { batchActions } from 'redux-batched-actions';
 
 // Thunks
 import { logoutStaff } from './redux/thunks/authThunks';
@@ -30,10 +34,27 @@ const App = ({ auth }) => {
   React.useEffect(() => {
     if (auth.isAuthenticated) {
       const today = moment().format('YYYY-MM-DD');
-      dispatch(initialPageLoad(today));
-      dispatch(initialMaintenanceLog());
+      dispatch(batchActions([initialPageLoad(today), initialMaintenanceLog()]));
     }
   }, [auth.isAuthenticated, dispatch]);
+
+  const handleOnIdle = () => {
+    // If user is logged in, log out user if Idle timeout is up
+    if (auth.isAuthenticated) {
+      // eslint-disable-next-line no-console
+      console.log('user timeout');
+      dispatch({ type: 'IDLE_USER' });
+    }
+  };
+
+  /**
+   * React Idle Hook to set a timeout of inactivity and a handler to
+   * execute if timeout is reached
+   */
+  useIdleTimer({
+    timeout: 20 * 60000, // Time until Idle which is 20 Minutes
+    onIdle: handleOnIdle, // Handler for Idle
+  });
 
   return (
     <>
