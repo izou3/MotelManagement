@@ -580,6 +580,11 @@ cd backend/
 npm run debug
 ```
 
+## Deployment
+ The landing page and frontend of the management system are bundled into statis JS and image files that are stored under the `build/` directory. They're then loaded onto the Object storage in DO. 
+
+ The backend servers are bundled and compiled using webpack to generate a two JS file (API and Background Job Server) that is are stored under the `dist/` directory. These files are used to build docker images for both servers and pushed to dockerhub for tje kubernetes service to pull.
+
 <a name="Credits"/>
 
 ## Credits
