@@ -26,13 +26,15 @@ module.exports = {
   FormatReportDate: (req, res, next) => {
     const { startDate, endDate } = req.body;
     if (startDate) {
-      const formattedStartDate = moment(startDate).format(
-        'YYYY-MM-DDT12:00:00[Z]'
-      );
+      const formattedStartDate = moment
+        .utc(startDate)
+        .format('YYYY-MM-DDT12:00:00[Z]');
       req.body.startDate = formattedStartDate;
     }
     if (endDate) {
-      const formattedEndDate = moment(endDate).format('YYYY-MM-DDT12:00:00[Z]');
+      const formattedEndDate = moment
+        .utc(endDate)
+        .format('YYYY-MM-DDT12:00:00[Z]');
       req.body.endDate = formattedEndDate;
     }
     return next();

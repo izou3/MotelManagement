@@ -8,6 +8,13 @@ module.exports = {
     },
   }),
 
+  ValidateSearchByLastName: celebrate({
+    [Segments.QUERY]: {
+      HotelID: Joi.number().integer().required(),
+      lastName: Joi.string().required(),
+    },
+  }),
+
   ValidateSearchByBookingID: celebrate({
     [Segments.QUERY]: {
       HotelID: Joi.number().integer().required(),
