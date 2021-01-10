@@ -406,18 +406,22 @@ The agenda instance is backed by a collection in the MongoDB where it stores job
 ## MySQL Database Schema
 The MySQL database schema holds reservations who have checked out called *Customers*. The schema described below was designed with the intent of storing repeat customers. 
 
-*Customer Table*: 
+**Customer Table**: 
 
    | CustomerID    | YearID | MonthID | first_name | last_name | email | phone | state |
    | ------------- |:------:| :------:| :---------:| :--------:| :----:| :----:| -----:|
 
+</br></br>
+**IndCustomer Table (For repeat guests):**
 
-*IndCustomer Table (For repeat guests):*
+   | BookingID     | CustomerID | price_paid | tax | check_in | check_out | ReservationID | PaymentID |
+   | ------------- |:----------:| :---------:| :--:| :-------:| :--------:| :------------:|:---------:|
 
-   | BookingID     | CustomerID | price_paid | tax | check_in | check_out | num_guests | ReservationID | PaymentID | RoomID | created_at | comments  | HotelID | RoomStyle |
-   | ------------- |:----------:| :---------:| :--:| :-------:| :--------:| :---------:| :------------:| :--------:| :-----:| :---------:| :-------:| :------:|
+   | RoomID | RoomStyle | HotelID | num_guests | comments | created_at |
+   | -------| --------- | :------:| :---------:| :-------:| :---------:|
    
- *Reservation Type*            
+  </br></br>
+ **Reservation Type**            
  | ID    | Reservtion |    
  | ----- | ----------:|    
  |   0   |   Walk-In  |
@@ -427,7 +431,8 @@ The MySQL database schema holds reservations who have checked out called *Custom
  |   4   |   AirBnB   |
  |   5   |    Other   |
  
-  *Payment Type*            
+ </br></br>
+  **Payment Type**            
  | ID    | Reservtion |    
  | ----- | ----------:|    
  |   0   |    Card    |
@@ -435,6 +440,7 @@ The MySQL database schema holds reservations who have checked out called *Custom
  |   2   |    Check   |
  |   3   |    Other   |
 
+</br>
 
 <a name="MongoDB-Database-Schema"/>
 
@@ -590,21 +596,21 @@ npm run debug
 ## Credits
 This project would not be possible without the huge open source community out there. All the fantastic modules, cool UI features, free services, medium blogs, and detailed documentations that have made this project possible and helped me learn and grow alot. Thank you! 
 
-  - [MomentJS](#https://momentjs.com/)
-  - [Axios](#https://github.com/axios/axios)
-  - [js-file-download](#https://www.npmjs.com/package/js-file-download)
-  - [Formik](#https://formik.org/)
-  - [Formik-Material-UI](#https://github.com/stackworx/formik-material-ui)
-  - [Material-Table](#https://material-table.com/#/)
-  - [ExpressJS](#https://expressjs.com/) 
+  - [MomentJS](https://momentjs.com/)
+  - [Axios](https://github.com/axios/axios)
+  - [js-file-download](https://www.npmjs.com/package/js-file-download)
+  - [Formik](https://formik.org/)
+  - [Formik-Material-UI](https://github.com/stackworx/formik-material-ui)
+  - [Material-Table](https://material-table.com/#/)
+  - [ExpressJS](https://expressjs.com/) 
   - [SocketIO](https://socket.io/)
-  - [jsonwebtoken](#https://github.com/auth0/node-jsonwebtoken)
-  - [mysql2](#https://github.com/sidorares/node-mysql2)
-  - [mongoose](#https://mongoosejs.com/)
-  - [Morgan](#https://github.com/expressjs/morgan) 
-  - [Winston](#https://github.com/winstonjs/winston)
-  - [Sequelize](#https://sequelize.org/)
-  - [Nodemailer](#https://nodemailer.com/about/)
+  - [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)
+  - [mysql2](https://github.com/sidorares/node-mysql2)
+  - [mongoose](https://mongoosejs.com/)
+  - [Morgan](https://github.com/expressjs/morgan) 
+  - [Winston](https://github.com/winstonjs/winston)
+  - [Sequelize](https://sequelize.org/)
+  - [Nodemailer](https://nodemailer.com/about/)
 
-Also thanks to [gifcap](#https://gifcap.dev/) for the easy animations!
+Also thanks to [gifcap](https://gifcap.dev/) for the easy animations!
 
