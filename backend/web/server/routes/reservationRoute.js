@@ -130,8 +130,7 @@ module.exports = () => {
      * @post Add new Reservation to Current Collection
      */
     .post(ValidateCreateReservation, FormatDataDate, (req, res, next) => {
-      const { roomType } = req.query;
-      return Conductor.run(new CreateCurrRes(req.body, roomType))
+      return Conductor.run(new CreateCurrRes(req.body))
         .then((result) => {
           return res.send(result);
         })
@@ -145,10 +144,7 @@ module.exports = () => {
      * @put Update new Reservation to Current Collection
      */
     .put(ValidateUpdateReservation, FormatDataDate, async (req, res, next) => {
-      const { dateChange } = req.query;
-      const { checkIn } = req.query;
-      const { moveToArr } = req.query;
-      const { roomType } = req.query;
+      const { dateChange, checkIn, moveToArr } = req.query;
 
       if (dateChange === 'true') {
         // If checkIn date changed so that it needed to be moved to Pending
@@ -172,7 +168,7 @@ module.exports = () => {
       }
       if (checkIn === 'true') {
         // Update key Checked from 2 to 1
-        return Conductor.run(new CheckInCurrRes(req.body, roomType))
+        return Conductor.run(new CheckInCurrRes(req.body))
           .then((result) => {
             return res.send(result);
           })
@@ -183,7 +179,7 @@ module.exports = () => {
           });
       }
       if (moveToArr === 'true') {
-        return Conductor.run(new UpdateCurrToArrivals(req.body, roomType))
+        return Conductor.run(new UpdateCurrToArrivals(req.body))
           .then((result) => {
             return res.send(result);
           })

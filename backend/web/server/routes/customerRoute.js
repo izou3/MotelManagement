@@ -36,8 +36,7 @@ module.exports = (param) => {
      * @post Create New Customer and Delete Reservation from Current and DailyReport
      */
     .post(ValidateCreateCustomer, FormatDataDate, async (req, res, next) => {
-      const { roomType } = req.query;
-      return Conductor.run(new CreateNewCustomer(req.body, roomType, sqlPool))
+      return Conductor.run(new CreateNewCustomer(req.body, sqlPool))
         .then((result) => {
           return res.send(result);
         })

@@ -16,6 +16,7 @@ module.exports = (param) => {
   router.route('/login').post((req, res, next) => {
     return Conductor.run(new Login(req, res, sqlPool))
       .then((result) => {
+        console.log(result);
         const { token, user, MotelInfo, MotelRoom } = result;
         return res
           .cookie('token', token, { httpOnly: true, SameSite: 'strict' }) // Limit CSRF attacks
@@ -25,8 +26,8 @@ module.exports = (param) => {
             MotelRoom,
           });
       })
-      .catch((err) => {
-        const error = new Error(err.message);
+      .catch(() => {
+        const error = new Error('Failed to Login');
         error.status = 400;
         return next(error);
       });

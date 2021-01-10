@@ -70,11 +70,9 @@ module.exports = () => {
     })
     .delete(ValidateMaintenanceName, (req, res, next) => {
       const { name } = req.query;
-
+      // Return back General Maintenance Log
       return Conductor.run(new DeleteMaintenanceLogByName(name))
-        .then((result) => {
-          res.send(result);
-        })
+        .then((result) => res.send(result))
         .catch((err) => {
           const error = new Error(err.message);
           error.status = 400;
@@ -83,6 +81,10 @@ module.exports = () => {
     });
 
   /**
+   * @Note Not formatting data beacseu there is a chance that Material-Table returned
+   * datetypes are string which are converted incorrectly so frontend just formats the
+   * datetimes into YYYY-MM-DDThh:mm:ss[Z] strings for Post and Put Ops
+   *
    * @route to add, update, and delete log entries in a maintenance log
    */
   router

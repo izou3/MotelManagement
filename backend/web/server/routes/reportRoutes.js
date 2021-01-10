@@ -14,10 +14,6 @@ const {
   ValidateTaxReportRequest,
 } = require('../../../lib/middlewares/API-Validation/DailyReport');
 
-const {
-  FormatReportDate,
-} = require('../../../lib/middlewares/API-Validation/DateFormat');
-
 // Commands
 const Conductor = require('../../../services/conductor');
 
@@ -52,26 +48,25 @@ module.exports = () => {
         });
     })
     /**
+     * @Note Not formatting data beacseu there is a chance that Material-Table returned
+     * datetypes are string which are converted incorrectly so frontend just formats the
+     * datetimes into YYYY-MM-DDThh:mm:ss[Z] strings
+     *
      * @put Update Record in DailyReport Collection Given the Date and req Object
      */
-    .put(
-      ValidateDate,
-      ValidateRoomRecord,
-      FormatReportDate,
-      (req, res, next) => {
-        const { date } = req.query;
+    .put(ValidateDate, ValidateRoomRecord, (req, res, next) => {
+      const { date } = req.query;
 
-        return Conductor.run(new UpdateDailyReportRoomRecord(date, req.body))
-          .then((result) => {
-            return res.send(result);
-          })
-          .catch((err) => {
-            const error = new Error(err.message);
-            error.status = 400;
-            return next(error);
-          });
-      }
-    )
+      return Conductor.run(new UpdateDailyReportRoomRecord(date, req.body))
+        .then((result) => {
+          return res.send(result);
+        })
+        .catch((err) => {
+          const error = new Error(err.message);
+          error.status = 400;
+          return next(error);
+        });
+    })
     /**
      * ROUTE IS CURRENTLY NOT IN USE
      * @delete Remove Record from DailyReport Collection Given Date and Room Number

@@ -30,7 +30,7 @@ module.exports = (param) => {
   const sqlPool = values[1];
   const app = express();
 
-  // Pug Setup
+  // Pug View Engine Setup
   app.set('view engine', 'pug');
   if (process.env.NODE_ENV === 'production') {
     app.set('views', path.join(__dirname, './views'));
@@ -62,14 +62,14 @@ module.exports = (param) => {
   app.use(require('morgan')('dev', { stream: logger.stream }));
 
   // Rate Limit Setup
-  // Within 15 mins, an IP address can only do 100 requests
+  // Within 5 mins, an IP address can only do 100 requests
   const limiter = new RateLimit({
-    windowMs: 15 * 50 * 1000, // 15 minute
+    windowMs: 5 * 50 * 1000, // 15 minute
     max: 100, // limit number of request per IP
     delayMs: 0, // disables delays
   });
 
-  //  apply to all requests
+  // Apply Rate Limiter
   app.use(limiter);
 
   /**
@@ -77,7 +77,6 @@ module.exports = (param) => {
    */
   app.use((req, res, next) => {
     const { token } = req.cookies;
-
     try {
       if (!token) throw new Error('Undefined Token');
       const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);

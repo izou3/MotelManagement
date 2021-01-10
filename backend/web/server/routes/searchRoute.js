@@ -14,6 +14,7 @@ const {
 const {
   ValidateSearchByName,
   ValidateSearchByBookingID,
+  ValidateSearchByLastName,
   ValidateSearchByDate,
 } = require('../../../lib/middlewares/API-Validation/Search');
 
@@ -39,7 +40,7 @@ const {
 } = require('../../../services/SearchCommands/Customer');
 
 const {
-  SearchBlackListByBookingID,
+  SearchBlackListByLastName,
   SearchBlackListByFirstName,
 } = require('../../../services/SearchCommands/BlackList');
 
@@ -293,7 +294,7 @@ module.exports = (param) => {
    * BlackList Search Routes
    */
 
-  // Search Blacklist customers by first and last name
+  // Search Blacklist customers by first name
   router.get(
     '/blacklist/name',
     ValidateSearchByName,
@@ -313,11 +314,11 @@ module.exports = (param) => {
 
   // Search Blacklist customers by BookingID
   router.get(
-    '/blacklist/id',
-    ValidateSearchByBookingID,
+    '/blacklist/lastName',
+    ValidateSearchByLastName,
     async (req, res, next) => {
-      const { BookingID } = req.query;
-      return Conductor.run(new SearchBlackListByBookingID(BookingID, sqlPool))
+      const { lastName } = req.query;
+      return Conductor.run(new SearchBlackListByLastName(lastName, sqlPool))
         .then((result) => {
           return res.send(result);
         })
