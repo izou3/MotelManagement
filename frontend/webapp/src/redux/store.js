@@ -12,6 +12,7 @@ import { composeWithDevTools } from 'redux-devtools-extension';
 // Config
 import config from '../config';
 
+import { expireStaff } from './thunks/authThunks';
 import { snackBarSuccess } from './actions/actions';
 
 // Reservation States
@@ -58,16 +59,50 @@ const socket = io(Config.serverDomain, {
 
 const socketIoMiddleware = createSocketIoMiddleware(socket, 'server/');
 
-// If JWT Session Has Timed Out, on next action dispatch, logout User
-const checkTokenExpirationMiddleware = (store) => (next) => (action) => {
+/**
+ * Redux middleware to log the user out if the JWT session has timed out
+ * or the user has exceeded the Idle time limit.
+ */
+const checkTokenExpirationAndIdleMiddleware = (store) => (next) => (action) => {
   const authenticationState = store.getState().authState;
   if (
-    authenticationState.isAuthenticated &&
-    authenticationState.expire < Date.now() / 1000
+    (authenticationState.isAuthenticated &&
+      authenticationState.expire < Date.now() / 1000) ||
+    action.type === 'IDLE_USER'
   ) {
-    next({ type: 'server/logout', payload: authenticationState.user.HotelID });
+    // Send to next middleware in chain
+    next(expireStaff());
     next({ type: 'LOGOUT_USER' });
+    next({ type: 'server/logout', payload: authenticationState.user.HotelID }); // Leave Socket Room
     next(snackBarSuccess('Session Timeout! Login Again!'));
+  } else {
+    next(action);
+  }
+};
+
+/**
+ * Redux Middleware that locks the app from being accessible from
+ * 00:00 to 00:02 while the system generates a new DailyReport
+ */
+const lockAppMiddleware = (store) => (next) => (action) => {
+  const authenticationState = store.getState().authState;
+  const currentDate = new Date();
+
+  // Cannot access app from 00:00 to 00:02 while the system generates a new DailyReport
+  if (currentDate.getHours() === 0 && currentDate.getMinutes() < 2) {
+    if (authenticationState.isAuthenticated) {
+      // Send to next middleware in chain
+      next(expireStaff());
+      next({ type: 'LOGOUT_USER' });
+      next({
+        type: 'server/logout',
+        payload: authenticationState.user.HotelID,
+      }); // Leave socket room
+      next(snackBarSuccess('Session Timeout! Login Again!'));
+    }
+    // if user is not logged in, load persist state loading render
+    // or snackbar is user is currently at the login page
+    next(snackBarSuccess('Cannot Login At This Time'));
   } else {
     next(action);
   }
@@ -98,7 +133,8 @@ const configureStore = () => {
       persistedReducer,
       composeWithDevTools(
         applyMiddleware(
-          checkTokenExpirationMiddleware,
+          checkTokenExpirationAndIdleMiddleware,
+          lockAppMiddleware,
           socketIoMiddleware,
           batchDispatchMiddleware,
           thunk
@@ -109,7 +145,8 @@ const configureStore = () => {
   return createStore(
     persistedReducer,
     applyMiddleware(
-      checkTokenExpirationMiddleware,
+      checkTokenExpirationAndIdleMiddleware,
+      lockAppMiddleware,
       socketIoMiddleware,
       batchDispatchMiddleware,
       thunk
