@@ -20,17 +20,17 @@ class SearchBlackListByFirstName {
   }
 }
 
-class SearchBlackListByBookingID {
-  constructor(BookingID, SQLPool) {
+class SearchBlackListByLastName {
+  constructor(lastName, SQLPool) {
     this.pool = SQLPool;
-    this._BookingID = BookingID;
+    this._lastName = lastName;
   }
 
   async execute(HotelID) {
     const BlackList = new BlackListClass(HotelID);
 
     const result = await this.pool.query(
-      BlackList.getBlacklistCustomerByBookingID(this._BookingID)
+      BlackList.getBlacklistCustomerByLastName(this._lastName)
     );
 
     if (result[0].length === 0) {
@@ -40,4 +40,4 @@ class SearchBlackListByBookingID {
   }
 }
 
-module.exports = { SearchBlackListByBookingID, SearchBlackListByFirstName };
+module.exports = { SearchBlackListByLastName, SearchBlackListByFirstName };

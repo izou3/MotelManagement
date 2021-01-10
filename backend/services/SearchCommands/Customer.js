@@ -8,11 +8,9 @@ class SearchCustomersByName {
 
   async execute(HotelID) {
     const Customer = new CustomerClass(HotelID);
-
     const result = await this._pool.query(
       Customer.getIndCustomerByFirstName(this._firstName)
     );
-
     if (result[0].length === 0) {
       throw new Error('Failed to Find Match');
     }

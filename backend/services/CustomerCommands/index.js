@@ -5,12 +5,7 @@ const CustomerClass = require('../../lib/data-access/CustomerClass/index');
 const CurrentReservationClass = require('../../lib/data-access/ReservationClass/CurrentReservation');
 const DailyReportClass = require('../../lib/data-access/ReportClass/DailyReport');
 
-const CheckOutCurrentReservation = async (
-  BookingID,
-  date,
-  roomType,
-  HotelID
-) => {
+const CheckOutCurrentReservation = async (BookingID, date, HotelID) => {
   const Current = new CurrentReservationClass(HotelID);
   const DailyReport = new DailyReportClass(HotelID);
 
@@ -27,18 +22,13 @@ const CheckOutCurrentReservation = async (
     UpdatedResult.PrevResObj = prevRoomObj;
 
     const updatedRoomRecord = {};
-    const updatedHouseKeepingRecord = {
-      status: 'C',
-      type: roomType || 'W',
-      houseKeeper: '',
-      notes: '',
-    };
+    const housekeepingRoomStatus = 'C';
 
-    const UpdatedReport = await DailyReport.updateGuestRecord(
+    const UpdatedReport = await DailyReport.updateGuestRecordWithRoomStatus(
       date,
       prevRoomObj.RoomID,
       updatedRoomRecord,
-      updatedHouseKeepingRecord,
+      housekeepingRoomStatus,
       true,
       session
     );
@@ -57,9 +47,8 @@ const CheckOutCurrentReservation = async (
 };
 
 class CreateNewCustomer {
-  constructor(newCustObj, roomType, SQLPool) {
+  constructor(newCustObj, SQLPool) {
     this._newCustObj = newCustObj;
-    this._roomType = roomType;
     this._pool = SQLPool;
   }
 
@@ -146,7 +135,6 @@ class CreateNewCustomer {
       const UpdatedReport = await CheckOutCurrentReservation(
         BookingID,
         date,
-        this._roomType,
         _HotelID
       );
 
@@ -173,8 +161,6 @@ class UpdateCustomer {
     const IndCustomerArr = [];
     const {
       CustomerID,
-      firstName,
-      lastName,
       email,
       phone,
       StateID,
@@ -192,7 +178,7 @@ class UpdateCustomer {
       comments,
     } = this._updatedCustObj;
 
-    CustomerArr.push(firstName, lastName, email, phone, StateID);
+    CustomerArr.push(email, phone, StateID);
 
     IndCustomerArr.push(
       pricePaid,
