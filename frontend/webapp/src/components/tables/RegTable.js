@@ -47,8 +47,8 @@ export default function RegTable(props) {
 
   const { resList, roomList } = props;
 
-  const handleOpen = (room, checked, BookingID) =>
-    props.handleOpen(room, checked, BookingID);
+  const handleOpen = (room, checked, BookingID, CustomerID) =>
+    props.handleOpen(room, checked, BookingID, CustomerID);
 
   return (
     <TableContainer component={Paper} className={classes.table}>
@@ -60,16 +60,21 @@ export default function RegTable(props) {
             <StyledTableCell>Check-In</StyledTableCell>
             <StyledTableCell>Check-Out</StyledTableCell>
             <StyledTableCell>Name</StyledTableCell>
-            <StyledTableCell>Price Paid</StyledTableCell>
+            <StyledTableCell>Total Price</StyledTableCell>
           </StyledTableRow>
         </TableHead>
         <TableBody>
           {resList.map((res, index) => (
-            <StyledTableRow key={res.RoomID}>
+            <StyledTableRow key={res.RoomID || res.CustomerID}>
               <StyledTableCell>
                 <IconButton
                   onClick={() =>
-                    handleOpen(res.RoomID, res.Checked, res.BookingID)
+                    handleOpen(
+                      res.RoomID,
+                      res.Checked,
+                      res.BookingID,
+                      res.CustomerID
+                    )
                   }
                 >
                   <PageviewIcon />

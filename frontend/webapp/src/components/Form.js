@@ -98,6 +98,11 @@ const FormActions = (props) => {
     hidden1 = '';
     hidden2 = 'none';
     hidden3 = 'none';
+  } else if (type === 10) {
+    button1 = 'Add To BlackList';
+    hidden1 = '';
+    hidden2 = 'none';
+    hidden3 = 'none';
   } else {
     button1 = 'Update';
     button2 = 'Delete';
@@ -147,9 +152,9 @@ const FormActions = (props) => {
 
 /**
  * Stateless Component of the Form that is Rendered
- * @param {*} props.data The data that the form will render/contain
- * @param {*} props.type The Type of Form to be rendered
- * @param {*} props.open Whether the form should be rendered or not
+ * @param {Object} props.data The data that the form will render/contain
+ * @param {Number} props.type The Type of Form to be rendered
+ * @param {Boolean} props.open Whether the form should be rendered or not
  */
 const ResForm = (props) => {
   const classes = useStyles();
@@ -187,8 +192,10 @@ const ResForm = (props) => {
       returnString = `${data.firstName} ${data.lastName}`;
     } else if (type === 9) {
       returnString = `New Staff`;
+    } else if (type === 10) {
+      returnString = 'New BlackList for Guests who not stayed Before';
     } else {
-      returnString = `BookingID: ${data.BookingID}`;
+      returnString = data ? `BookingID: ${data.BookingID}` : null;
     }
     return returnString;
   };
@@ -200,7 +207,7 @@ const ResForm = (props) => {
         <>
           <Formik
             initialValues={{
-              BookingID: data.BookingID,
+              CustomerID: data.CustomerID,
               firstName: data.firstName,
               lastName: data.lastName,
               comments: data.comments,
@@ -574,6 +581,7 @@ const ResForm = (props) => {
                     <Grid container justify="space-evenly">
                       <Grid item xs={5} className={classes.textField}>
                         <Field
+                          disabled={type === 6}
                           fullWidth
                           component={TextField}
                           variant="outlined"
@@ -585,6 +593,7 @@ const ResForm = (props) => {
 
                       <Grid item xs={5} className={classes.textField}>
                         <Field
+                          disabled={type === 6}
                           component={TextField}
                           fullWidth
                           name="lastName"
@@ -692,7 +701,7 @@ const ResForm = (props) => {
                           fullWidth
                           component={TextField}
                           name="pricePaid"
-                          label="Price Paid"
+                          label="Total Price"
                           variant="outlined"
                           margin="normal"
                         />
