@@ -8,7 +8,7 @@ COPY ./package*.json ./
 
 RUN npm install
 
-COPY . .
+COPY ./dist .
 
 EXPOSE 3001
 
@@ -23,7 +23,7 @@ COPY ./package*.json .
 
 RUN npm install
 
-COPY . .
+COPY ./dist .
 
 EXPOSE 3002
 
