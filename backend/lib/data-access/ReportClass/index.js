@@ -16,7 +16,7 @@ class Report extends Motel {
   getReport(query) {
     return this._connection
       .findOne(query)
-      .select('-__v -_id -created_date -Name -HotelID -126') // Rid of Rm 126 from Maintenance Sheets
+      .select('-__v -_id -created_date -Name -HotelID -126') // Rid of Rm 126 from Maintenance Sheets and DailyReports
       .lean();
   }
 

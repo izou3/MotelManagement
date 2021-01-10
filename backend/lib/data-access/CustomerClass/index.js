@@ -182,14 +182,13 @@ class Customers extends Motel {
 
   /**
    * @param {Number} BookingID
-   * @param {[
-   *  first_name, last_name, email, phone, state
-   * ]} updatedCustData
+   * @param {[email, phone, state]} updatedCustData
+   * Can't Change Customer Names
    *
    * @returns A SQL Query for an array of the newly updated Customer Obj
    */
   updateCustomerByID(BookingID, updatedCustData = []) {
-    const sql = `UPDATE ${this._Customer} SET first_name=?, last_name=?, email=?, phone=?, state=? WHERE id = '${BookingID}'`;
+    const sql = `UPDATE ${this._Customer} SET email=?, phone=?, state=? WHERE id = '${BookingID}'`;
     return mysql.format(sql, updatedCustData);
   }
 

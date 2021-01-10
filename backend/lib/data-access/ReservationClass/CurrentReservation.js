@@ -29,6 +29,18 @@ class CurrentReservation extends Reservation {
         this._HotelID = null;
     }
   }
+
+  /**
+   * @returns One document in collection with matching BookingID and Checked Field
+   */
+  getReservationByIDWithCheckField(BookingID, Checked) {
+    return this._connection
+      .findOne({
+        $and: [{ BookingID }, { HotelID: this._HotelID }, { Checked }],
+      })
+      .select('-__v -_id -created_date')
+      .lean();
+  }
 }
 
 module.exports = CurrentReservation;

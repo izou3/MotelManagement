@@ -24,9 +24,6 @@ class Reservation extends Motel {
    * @returns An Array of documents in collection with matching firstName
    */
   getReservationByName(firstName) {
-    console.log(firstName);
-    console.log(this._connection);
-    console.log(this._HotelID);
     return this._connection
       .find({
         $and: [{ firstName }, { HotelID: this._HotelID }],

@@ -58,7 +58,7 @@ class Maintenance extends Report {
       .findOneAndDelete({
         $and: [{ Name: name }, { HotelID: this._HotelID }],
       })
-      .select('-_id -__v')
+      .select('-__v -_id -created_date -Name -HotelID -126')
       .lean();
   }
 

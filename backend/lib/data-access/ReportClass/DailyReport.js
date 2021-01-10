@@ -90,6 +90,41 @@ class DailyReport extends Report {
   }
 
   /**
+   * Update whole record of Room and only room status field of Housekeeping Record for a Room Number
+   * @param {Date} date Date of Report
+   * @param {Number} RoomID The Room to be changed
+   * @param {Object} updatedGuestRoomRecord Room Record
+   * @param {Object} roomStatus Room Status Field of Housekeeping Record
+   * @param {Boolean} isNewReport Whether Report Returned Should be original or new report obj
+   * @param {Object} session
+   * @returns New/Original Report Object
+   */
+  updateGuestRecordWithRoomStatus(
+    date,
+    RoomID,
+    updatedGuestRoomRecord,
+    roomStatus,
+    isNewReport = true,
+    session = null
+  ) {
+    const updatedRecord = { $set: {} };
+    updatedRecord.$set[
+      `Stays.${RoomID}.${this._ReservationRecord}`
+    ] = updatedGuestRoomRecord;
+
+    updatedRecord.$set[
+      `Stays.${RoomID}.${this._HouseKeepingRecord}.status`
+    ] = roomStatus;
+
+    if (session) {
+      return this._connection
+        .findOneAndUpdate({ Date: date }, updatedRecord, { new: isNewReport })
+        .session(session);
+    }
+    return this._connection.findOneAndUpdate({ Date: date }, updatedRecord);
+  }
+
+  /**
    * Update Room Record of Given RoomID and Date of Report
    * @param {Date} date Date of Report
    * @param {Number} RoomID
@@ -119,7 +154,7 @@ class DailyReport extends Report {
   }
 
   /**
-   * Update Housekeeping Record of Given RoomID and Date of Report
+   * Update Full Housekeeping Record of Given RoomID and Date of Report
    * @param {Date} date Date of Report
    * @param {Number} RoomID
    * @param {Object} updatedRoomRecord Housekeeping Record
@@ -138,6 +173,37 @@ class DailyReport extends Report {
     updatedRecord.$set[
       `Stays.${RoomID}.${this._HouseKeepingRecord}`
     ] = updatedHouseKeepingRecord;
+
+    if (session) {
+      return this._connection
+        .findOneAndUpdate({ Date: date }, updatedRecord, { new: isNewReport })
+        .session(session);
+    }
+    return this._connection.findOneAndUpdate({ Date: date }, updatedRecord, {
+      new: isNewReport,
+    });
+  }
+
+  /**
+   * Update only status field of housekeeping record
+   * @param {Date} date Date of Report
+   * @param {Number} RoomID
+   * @param {Object} roomStatus Room Status of Housekeeping Record
+   * @param {Boolean} isNewReport Whether Report Returned Should be original or new report obj
+   * @param {Object} session
+   * @returns New/Original Report Object
+   */
+  updateGuestHousekeepingRecordWithRoomStatus(
+    date,
+    RoomID,
+    roomStatus,
+    isNewReport = true,
+    session = null
+  ) {
+    const updatedRecord = { $set: {} };
+    updatedRecord.$set[
+      `Stays.${RoomID}.${this._HouseKeepingRecord}.status`
+    ] = roomStatus;
 
     if (session) {
       return this._connection
