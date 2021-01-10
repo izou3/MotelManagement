@@ -38,6 +38,7 @@ import {
   addBlackListCust,
   updateBlackListCust,
   removeBlackListCust,
+  addNewBlackListCust,
 } from '../redux/thunks/customerThunks';
 
 import {
@@ -53,8 +54,8 @@ import {
   searchDeleteResFirstName,
   searchDeleteResByCheckIn,
   searchDeleteResByCheckOut,
-  searchBlackListByID,
   searchBlackListByFirstName,
+  searchBlackListByLastName,
 } from '../redux/thunks/searchThunks';
 
 import { logoutStaff } from '../redux/thunks/authThunks';
@@ -81,6 +82,7 @@ import {
   loadSearchFormWithDelData,
   loadSearchFormWithCustData,
   loadSearchFormWithBLCustData,
+  loadFormForNewBLCust,
 } from '../redux/actions/formActions';
 
 import 'react-calendar/dist/Calendar.css';
@@ -146,6 +148,7 @@ const Query = ({
 
   searchResultClose,
   createNewReservation,
+  createNewBLCust,
   closeForm,
   closeSnackBar,
 
@@ -155,6 +158,7 @@ const Query = ({
   loadDelResSearchForm,
   loadCustomerSearchForm,
   loadBLCustomerSearchForm,
+  loadNewBLCustForm,
 
   searchReservationByID,
   searchReservationByName,
@@ -172,7 +176,7 @@ const Query = ({
   searchCustByCheckOut,
 
   searchBLCustByName,
-  searchBLCustByID,
+  searchBLCustByLastName,
 
   searchTypeNone,
   searchTypeReservation,
@@ -209,6 +213,9 @@ const Query = ({
     if (formType === 0) {
       logger('creating a new reservation');
       createNewReservation({ ...resObj, Checked: 2 });
+    } else if (formType === 10) {
+      logger('creating new blacklist cust');
+      createNewBLCust(resObj);
     } else if (searchType === 'customer') {
       logger(`updating a customer ${resObj.BookingID}`);
       updateCust({ ...resObj, CustomerID: formData.CustomerID });
@@ -219,7 +226,7 @@ const Query = ({
       logger(`updating a Del Res${resObj.BookingID}`);
       updateDelRes(resObj);
     } else if (searchType === 'blacklistCustomer') {
-      logger('updating baclkist customer');
+      logger('updating blackist customer');
       updateBLCust(resObj);
     }
   };
@@ -234,19 +241,19 @@ const Query = ({
     } else if (formType === 6) {
       logger('adding a blacklist customer');
       addBLCust({
-        BookingID: data.BookingID,
+        CustomerID: data.CustomerID,
         firstName: data.firstName,
         lastName: data.lastName,
         comments: data.comments,
       });
     } else if (formType === 7) {
       logger('removing a blacklist customer');
-      removeBLCust(data.BookingID);
+      removeBLCust(data.CustomerID);
     }
   };
 
   // handler to open up the form
-  const loadSearchFormData = (room, checked, BookingID = 0) => {
+  const loadSearchFormData = (room, checked, BookingID = 0, CustomerID = 0) => {
     let formObj = {};
     formObj = searchResult.find((obj) => obj.BookingID === BookingID);
     if (searchType === 'reservation') {
@@ -256,6 +263,7 @@ const Query = ({
       logger('here in del reservation search type');
       loadDelResSearchForm(formObj);
     } else if (searchType === 'blacklistCustomer') {
+      formObj = searchResult.find((obj) => obj.CustomerID === CustomerID);
       loadBLCustomerSearchForm(formObj);
     } else {
       logger('here in customer search type');
@@ -320,7 +328,7 @@ const Query = ({
                           errors.textQuery = 'Required';
                         }
                         if (!isNaN(values.textQuery)) {
-                          errors.textQuery = 'Not a Name';
+                          errors.textQuery = 'Not a First Name';
                         }
                       }
 
@@ -338,6 +346,16 @@ const Query = ({
                         }
                       }
 
+                      // Not implemented LastName search for Customers/Reservations
+                      if (values.searchBy === 'LastName') {
+                        if (values.searchType !== 'BlackList') {
+                          errors.searchBy =
+                            'Can Only Search by LastName for BlackList';
+                        }
+                        if (!isNaN(values.textQuery)) {
+                          errors.textQuery = 'Not a Last Name';
+                        }
+                      }
                       return errors;
                     }}
                     onSubmit={(values, { setSubmitting }) => {
@@ -370,10 +388,10 @@ const Query = ({
                         }
                       } else if (values.searchType === 'BlackList') {
                         searchTypeBlackList();
-                        if (values.searchBy === 'BookingID') {
-                          searchBLCustByID(textQuery);
-                        } else if (values.searchBy === 'FirstName') {
+                        if (values.searchBy === 'FirstName') {
                           searchBLCustByName(textQuery);
+                        } else if (values.searchBy === 'LastName') {
+                          searchBLCustByLastName(textQuery);
                         } else {
                           snackBarFail(
                             `Cannot Search by ${values.searchBy} For BlackList`
@@ -462,6 +480,7 @@ const Query = ({
                             >
                               <MenuItem value="BookingID">BookingID</MenuItem>
                               <MenuItem value="FirstName">First Name</MenuItem>
+                              <MenuItem value="LastName">Last Name</MenuItem>
                               <MenuItem value="CheckInPeriod">
                                 Check In Period
                               </MenuItem>
@@ -506,6 +525,15 @@ const Query = ({
               >
                 New Reservation
               </Fab>
+              <Fab
+                variant="extended"
+                size="large"
+                color="primary"
+                className={classes.newResButton}
+                onClick={loadNewBLCustForm}
+              >
+                New BlackList Customer
+              </Fab>
             </Grid>
           </Grid>
         </>
@@ -529,6 +557,8 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
   logout: (redirect) => dispatch(logoutStaff(redirect)),
   createNewReservation: (resObj) => dispatch(createNewRes(resObj)),
+  createNewBLCust: (newBLCustObj) =>
+    dispatch(addNewBlackListCust(newBLCustObj)),
   searchResultClose: () => dispatch(loadSearchResultFail()),
 
   searchReservationByID: (ID) => dispatch(searchResByID(ID)),
@@ -554,7 +584,8 @@ const mapDispatchToProps = (dispatch) => ({
     dispatch(searchCustomerByCheckOut(start, end)),
 
   searchBLCustByName: (name) => dispatch(searchBlackListByFirstName(name)),
-  searchBLCustByID: (ID) => dispatch(searchBlackListByID(ID)),
+  searchBLCustByLastName: (lastName) =>
+    dispatch(searchBlackListByLastName(lastName)),
 
   loadFormOnAction: () => dispatch(loadForm()),
   loadResSearchForm: (data) => dispatch(loadSearchFormWithResData(data)),
@@ -562,6 +593,7 @@ const mapDispatchToProps = (dispatch) => ({
   loadCustomerSearchForm: (data) => dispatch(loadSearchFormWithCustData(data)),
   loadBLCustomerSearchForm: (data) =>
     dispatch(loadSearchFormWithBLCustData(data)),
+  loadNewBLCustForm: () => dispatch(loadFormForNewBLCust()),
 
   searchTypeNone: () => dispatch(searchNone()),
   searchTypeReservation: () => dispatch(searchByReservation()),
