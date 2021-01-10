@@ -77,7 +77,6 @@ const app = express();
      * Set the User if token in defined in the cookie.
      */
     app.use((req, res, next) => {
-      console.log(req.cookies);
       try {
         const { token } = req.cookies;
         if (!token) throw new Error('Undefined Token');
@@ -100,7 +99,7 @@ const app = express();
 
     // Generate Daily Reports
     await agenda.every(
-      '05 00 * * *',
+      '00 00 * * *',
       'LazyU_GenerateDailyReport',
       `Generates New Daily Report`,
       {
@@ -109,7 +108,7 @@ const app = express();
     );
 
     await agenda.every(
-      '05 00 * * *',
+      '00 00 * * *',
       'FairValue_GenerateDailyReport',
       `Generates New Daily Report`,
       {
