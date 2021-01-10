@@ -35,8 +35,25 @@ class UpdateDailyReportRoomRecord {
     session.startTransaction();
 
     try {
-      const originalRes = await CurrentReservation.getReservationByID(
-        this._NewRoomRecord.BookingID
+      /**
+       * @NOTE there can be hypotetical case in which a guest who has a previous record in
+       * the DailyReport (any DailyReport before current day) who is moved to arrivals instead
+       * of being checked-out. And on another day, is checked back in and the user tries to edit
+       * the previous record of DailyReport of the guest's old room in which the below query will
+       * search for the BookingID and Checked as they exist in another room of the current DailyReport
+       * record. This will cause some errors in the frontend can be resolved by refreshing 'ish'.
+       *    For example, if a guest has a record on 10/20 in Rm107, and today is 10/21, and that guest is moved
+       *    to arrivals and then moved back into Current to Rm105 and a user tries to edit the DailyReport
+       *    for 10/20 for Rm 107, then frontend will create another Rm107 record for the time being until refreshed
+       *
+       * HOWEVER, this situation is not pratical as a user wouldn't edit a previous DailyReport record
+       * of a room that has moved to Arrivals after being checked in, and then checked back in
+       * (rare situation firstoff)
+       */
+      // Find By ID and Checked = 1 to make sure guest is still residing at motel
+      const originalRes = await CurrentReservation.getReservationByIDWithCheckField(
+        this._NewRoomRecord.BookingID,
+        1
       );
 
       if (!originalRes) throw new Error('Cannot Update Checked Out Guest');
@@ -70,7 +87,7 @@ class UpdateDailyReportRoomRecord {
           parseFloat(originalRes.tax) + parseFloat(this._NewRoomRecord.tax);
         // checkIn Does Not Change
         originalRes.checkOut = moment(
-          moment(this._NewRoomRecord.endDate).add(1, 'days')
+          moment.utc(this._NewRoomRecord.endDate).add(1, 'days')
         ).format('YYYY-MM-DDT12:00:00[Z]');
       } else {
         // simple update for the guest record with reflecting changes in reservation storied in CurrentReservation
@@ -85,7 +102,7 @@ class UpdateDailyReportRoomRecord {
         //   'YYYY-MM-DDT12:00:00[Z]'
         // );
         originalRes.checkOut = moment(
-          moment(this._NewRoomRecord.endDate).add(1, 'days')
+          moment.utc(this._NewRoomRecord.endDate).add(1, 'days')
         ).format('YYYY-MM-DDT12:00:00[Z]');
       }
 
@@ -138,14 +155,9 @@ class UpdateDailyReportRefund {
 
 /**
  * PLEASE NOTE THE FOLLOWING DEFICIENCIES
- *  1. On Updates/CheckIn/CheckOut Ops in CurrentReservation Collection,
- *     only roomType is preserved and altered accordingly. The houseKeeper
- *     and notes of the houseKeeping room record is erased. This can be solved
- *     by coding them into the query params per request after obtaining from
- *     frontend state.
- *  2. On CheckOut Ops in Current Reservation Collection, if the room number
+ *  1. On CheckOut Ops in Current Reservation Collection, if the room number
  *     is altered on action button, the houseKeeping Record will react correspondingly
- *     to the altered room number and not the room that guest was staying in behand.
+ *     to the altered room number and not the room that guest was staying in before.
  *     This can be solved by sending an update request prior to the checkout or
  *     hard-coding an additional query in checkOut() in Customer Service to obtain the
  *     the previously stored info.

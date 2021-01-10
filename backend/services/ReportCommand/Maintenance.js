@@ -47,7 +47,6 @@ class GenerateNewMaintenanceLog {
       throw new Error('Failed to Insert Maintenance Log');
     }
 
-    console.log(newMaintenanceLog);
     return {
       blankLog: {
         ...blackMaintenanceLog,
@@ -62,26 +61,32 @@ class GenerateNewMaintenanceLog {
   }
 }
 
+/**
+ * @return General Maintenance Sheet
+ */
 class DeleteMaintenanceLogByName {
   constructor(name) {
     this._name = name;
   }
 
   async execute(HotelID) {
+    // No need to check if more than 1 maintenance log exists beacause
+    // if maintenance log being deleted is not General, then there will
+    // always exist atleast 1 maintenance log
     if (this._name === 'General') {
       throw new Error('Cannot Delete General Maintenance Sheet');
     }
 
     const Maintenance = new MaintenanceClass(HotelID);
-    const CurrentMaintenanceLogs = await Maintenance.getMaintenanceLogNames();
-
-    if (CurrentMaintenanceLogs.length === 1) {
-      throw new Error('Cannot Delete Only Maintenance Log Left');
-    }
 
     const result = await Maintenance.deleteMaintenanceLog(this._name);
     if (!result) throw new Error('Maintenance Log Does Not Exist');
-    return result;
+
+    const generalMaintenace = await Maintenance.getReport({
+      $and: [{ Name: 'General' }, { HotelID }],
+    });
+
+    return generalMaintenace;
   }
 }
 
