@@ -28,11 +28,11 @@ const SetTypeAndPayment = (today, checkIn, checkOut, PaymentID) => {
 
   let type;
   const resCheckOut = moment(checkOut);
-  const oneWeek = moment(moment().add(7, 'day')).format('YYYY-MM-DD');
-  const twoWeek = moment(moment().add(14, 'day')).format('YYYY-MM-DD');
-  const threeWeek = moment(moment().add(21, 'day')).format('YYYY-MM-DD');
-  const noWeek = moment(moment().add(28, 'day')).format('YYYY-MM-DD');
-  if (resCheckOut.isBetween(today, oneWeek)) {
+  const oneWeek = moment(moment(checkIn).add(7, 'day')).format('YYYY-MM-DD');
+  const twoWeek = moment(moment(checkIn).add(14, 'day')).format('YYYY-MM-DD');
+  const threeWeek = moment(moment(checkIn).add(21, 'day')).format('YYYY-MM-DD');
+  const noWeek = moment(moment(checkIn).add(28, 'day')).format('YYYY-MM-DD');
+  if (resCheckOut.isBetween(checkIn, oneWeek)) {
     // Either N or S/O
     if (moment(resCheckOut.subtract(1, 'day')).isSame(checkIn, 'day')) {
       type = 'N';
@@ -73,9 +73,8 @@ class SearchAllCurrRes {
 }
 
 class CreateCurrRes {
-  constructor(newResObj, roomType) {
+  constructor(newResObj) {
     this._NewResObj = newResObj;
-    this._RoomType = roomType;
   }
 
   async execute(HotelID) {
@@ -136,7 +135,7 @@ class CreateCurrRes {
         payment,
         startDate: this._NewResObj.checkIn,
         endDate: moment(
-          moment(this._NewResObj.checkOut).subtract(1, 'day')
+          moment.utc(this._NewResObj.checkOut).subtract(1, 'day')
         ).format('YYYY-MM-DDT12:00:00[Z]'),
         paid: true,
         rate: this._NewResObj.pricePaid,
@@ -145,18 +144,13 @@ class CreateCurrRes {
         initial: '',
       };
 
-      const updateHouseKeepingRecord = {
-        status: 'O',
-        type: this._RoomType || 'S',
-        houseKeeper: '',
-        notes: '',
-      };
+      const houseKeepingRoomStatus = 'O';
 
-      const UpdatedReport = await DailyReport.updateGuestRecord(
+      const UpdatedReport = await DailyReport.updateGuestRecordWithRoomStatus(
         today,
         this._NewResObj.RoomID,
         updateRoomRecord,
-        updateHouseKeepingRecord,
+        houseKeepingRoomStatus,
         true,
         session
       );
@@ -239,46 +233,22 @@ class UpdateCurrRes {
       // Room Number Has Been Changed
       if (originalRes.RoomID !== this._UpdateResObj.RoomID) {
         const oldRoomRecord = {};
+        const oldHouseKeepingRecordRoomStatus = 'C';
+        const newHouseKeepingRecordRoomStatus = 'O';
 
-        const oldHouseKeepingRecord = {
-          status: 'C',
-          type:
-            originalRep.Stays[`${originalRes.RoomID}`][
-              DailyReport.HouseKeepingRecord
-            ].type,
-          houseKeeper: '',
-          notes: '',
-        };
-
-        const newHouseKeepingRecord = {
-          status: 'O',
-          type:
-            originalRep.Stays[`${this._UpdateResObj.RoomID}`][
-              DailyReport.HouseKeepingRecord
-            ].type,
-          houseKeeper:
-            originalRep.Stays[`${this._UpdateResObj.RoomID}`][
-              DailyReport.HouseKeepingRecord
-            ].houseKeeper,
-          notes:
-            originalRep.Stays[`${this._UpdateResObj.RoomID}`][
-              DailyReport.HouseKeepingRecord
-            ].notes,
-        };
-
-        const result1 = await DailyReport.updateGuestRecord(
+        const result1 = await DailyReport.updateGuestRecordWithRoomStatus(
           today,
           originalRes.RoomID,
           oldRoomRecord,
-          oldHouseKeepingRecord,
+          oldHouseKeepingRecordRoomStatus,
           false,
           session
         );
 
-        const result2 = await DailyReport.updateGuestHousekeepingRecord(
+        const result2 = await DailyReport.updateGuestHousekeepingRecordWithRoomStatus(
           today,
           this._UpdateResObj.RoomID,
-          newHouseKeepingRecord,
+          newHouseKeepingRecordRoomStatus,
           false,
           session
         );
@@ -304,7 +274,7 @@ class UpdateCurrRes {
         payment: originalRec.payment ? originalRec.payment : '',
         startDate: originalRec.startDate, // checkIn Does Not Change
         endDate: moment(
-          moment(this._UpdateResObj.checkOut).subtract(1, 'day')
+          moment.utc(this._UpdateResObj.checkOut).subtract(1, 'day')
         ).format('YYYY-MM-DDT12:00:00[Z]'),
         paid: paidBool,
         rate: Math.round((newRate + Number.EPSILON) * 100) / 100,
@@ -375,9 +345,8 @@ class UpdateCurrToPendRes {
 }
 
 class UpdateCurrToArrivals {
-  constructor(updateResObj, roomType) {
+  constructor(updateResObj) {
     this._UpdateResObj = updateResObj;
-    this._RoomType = roomType;
   }
 
   async execute(HotelID) {
@@ -397,18 +366,13 @@ class UpdateCurrToArrivals {
       if (!originalRes) throw new Error('Reservation Does Not Exist');
 
       const updatedRoomRecord = {};
-      const updatedHouseKeepingRecord = {
-        status: 'C',
-        type: this._RoomType || 'W',
-        houseKeeper: '',
-        notes: '',
-      };
+      const houseKeepingRoomStatus = 'C';
 
-      const UpdatedReport = await DailyReport.updateGuestRecord(
+      const UpdatedReport = await DailyReport.updateGuestRecordWithRoomStatus(
         today,
         originalRes.RoomID,
         updatedRoomRecord,
-        updatedHouseKeepingRecord,
+        houseKeepingRoomStatus,
         true,
         session
       );
@@ -427,9 +391,8 @@ class UpdateCurrToArrivals {
 }
 
 class CheckInCurrRes {
-  constructor(updateResObj, roomType) {
+  constructor(updateResObj) {
     this._UpdateResObj = updateResObj;
-    this._RoomType = roomType;
   }
 
   async execute(HotelID) {
@@ -476,18 +439,14 @@ class CheckInCurrRes {
         initial: '',
         tax: this._UpdateResObj.tax,
       };
-      const updatedHouseKeepingRecord = {
-        status: 'O',
-        type: this._RoomType || 'W',
-        houseKeeper: '',
-        notes: '',
-      };
 
-      const result2 = await DailyReport.updateGuestRecord(
+      const houseKeepingRoomStatus = 'O';
+
+      const result2 = await DailyReport.updateGuestRecordWithRoomStatus(
         today,
         this._UpdateResObj.RoomID,
         updatedRoomRecord,
-        updatedHouseKeepingRecord,
+        houseKeepingRoomStatus,
         true,
         session
       );
