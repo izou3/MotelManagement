@@ -21,12 +21,12 @@ module.exports = {
             allowNull: false,
           },
           price_paid: {
-            type: Sequelize.DOUBLE(6, 2),
+            type: Sequelize.DOUBLE,
             field: 'price_paid',
             allowNull: false,
           },
           tax: {
-            type: Sequelize.DOUBLE(6, 2),
+            type: Sequelize.DOUBLE,
             field: 'tax',
             allowNull: false,
           },

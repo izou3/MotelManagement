@@ -10,8 +10,8 @@ module.exports = {
         'BlackList',
         {
           BookingID: {
-            type: Sequelize.BIGINT,
-            field: 'BookingID',
+            type: Sequelize.STRING,
+            field: 'CustomerID',
             primaryKey: true,
             allowNull: false,
           },
