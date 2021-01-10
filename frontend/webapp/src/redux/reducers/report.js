@@ -13,10 +13,11 @@ import {
   LOAD_MAINTENANCE_LOG_ON_SEARCH,
   ADD_NEW_MAINTENANCE_LOG,
   LOAD_MAINTENANCE_LOG,
+  DELETE_MAINTENANCE_LOG,
 } from '../actions/reportActions';
 
 const initialReportState = {
-  date: moment().format('YYYY-MM-DD'),
+  date: moment().format('YYYY-MM-DDT12:00:00[Z]'),
   refundAmount: 0,
   refundComments: '',
   report: [],
@@ -67,7 +68,7 @@ export const reportState = (state = initialReportState, action) => {
 };
 
 const initialHouseKeepingState = {
-  date: moment().format('YYYY-MM-DD'),
+  date: moment().format('YYYY-MM-DDT12:00:00[Z]'),
   houseKeepingReport: [],
 };
 
@@ -153,6 +154,16 @@ export const maintenanceState = (state = initialMaintenanceState, action) => {
       return {
         ...state,
         logName: name,
+        logSearchNames: logSearchName,
+        MaintenanceLog: newMaintenanceLog,
+      };
+    }
+    case DELETE_MAINTENANCE_LOG: {
+      const { logSearchName } = payload;
+      const { newMaintenanceLog } = payload;
+      return {
+        ...state,
+        logName: 'General',
         logSearchNames: logSearchName,
         MaintenanceLog: newMaintenanceLog,
       };

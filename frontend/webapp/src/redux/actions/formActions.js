@@ -79,7 +79,6 @@ export const loadSearchFormWithBLCustData = (resData) => ({
 });
 
 export const LOAD_FORM_WITH_STAFF_DATA = 'LOAD_FORM_WITH_STAFF_DATA';
-
 export const loadFormWithStaffData = (staff) => ({
   type: LOAD_FORM_WITH_STAFF_DATA,
   payload: {
@@ -88,7 +87,12 @@ export const loadFormWithStaffData = (staff) => ({
 });
 
 export const LOAD_FORM_F0R_NEW_STAFF = 'LOAD_FORM_F0R_NEW_STAFF';
-
 export const loadFormForNewStaff = () => ({
   type: LOAD_FORM_F0R_NEW_STAFF,
+});
+
+// for form list = 10
+export const LOAD_FORM_F0R_NEW_BLCUST = 'LOAD_FORM_F0R_NEW_BLCUST';
+export const loadFormForNewBLCust = () => ({
+  type: LOAD_FORM_F0R_NEW_BLCUST,
 });

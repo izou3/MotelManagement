@@ -11,6 +11,7 @@ import {
   LOAD_SEARCH_FORM_WITH_BL_CUST_DATA,
   LOAD_FORM_WITH_STAFF_DATA,
   LOAD_FORM_F0R_NEW_STAFF,
+  LOAD_FORM_F0R_NEW_BLCUST,
 } from '../actions/formActions';
 
 /**
@@ -29,6 +30,7 @@ import {
  * 7: Search Result from BlackList Customer
  * 8: Staff Information with Data
  * 9: Create New Staff Form
+ * 10: New BlackList Customer with no prev Record
  */
 const initialFormState = {
   open: false,
@@ -140,6 +142,14 @@ const formState = (state = initialFormState, action) => {
         ...state,
         open: true,
         list: 9,
+        data: {},
+      };
+    }
+    case LOAD_FORM_F0R_NEW_BLCUST: {
+      return {
+        ...state,
+        open: true,
+        list: 10,
         data: {},
       };
     }

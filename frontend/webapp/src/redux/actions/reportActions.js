@@ -108,6 +108,15 @@ export const addNewMaintenanceLog = (
   },
 });
 
+export const DELETE_MAINTENANCE_LOG = 'DELETE_MAINTENANCE_LOG';
+export const deleteMaintenanceLog = (logSearchName, newMaintenanceLog) => ({
+  type: DELETE_MAINTENANCE_LOG,
+  payload: {
+    logSearchName,
+    newMaintenanceLog,
+  },
+});
+
 // Action for Individual Query Operations on Log Entries of a Maintenance Log
 export const LOAD_MAINTENANCE_LOG = 'LOAD_MAINTENANCE_LOG';
 export const loadMaintenanceLog = (maintenanceLog) => ({
