@@ -12,7 +12,7 @@ import NavBar from '../common/NavBar';
 import Footer from '../common/Footer';
 
 //API Key
-import { GOOGLE_MAPS_API } from '../../setup/config/env';
+// import { GOOGLE_MAPS_API } from '../../setup/config/env';
 
 const useStyles = makeStyles(theme => ({
     display: {
@@ -52,6 +52,7 @@ const useStyles = makeStyles(theme => ({
 
 function Location (props) {
     const classes = useStyles();
+    const GOOGLE_MAPS_API = 'AIzaSyD1Who_9wjSntD8fUvuQk67LWvdMIpJdm4';
 
     return (
       <React.Fragment>
