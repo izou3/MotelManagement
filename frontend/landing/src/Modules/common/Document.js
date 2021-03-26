@@ -31,6 +31,9 @@ export default class Document extends React.Component {
     return (
       <html {...htmlAttrs}>
         <head>
+          {/* <script async src="https://www.googletagmanager.com/gtag/js?id=UA-171511378-1"></script>
+          <script src="./analytics"></script> */}
+
           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
           <meta charSet="utf-8" />
           <title>Big Sky Lodge</title>

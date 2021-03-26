@@ -2,10 +2,9 @@
 import React from 'react';
 
 /**
- * picture Imports
+ * Picture Imports
  */
 import MainDisp from '../../img/outsideday.jpg';
-import Amenities from '../../img/amenities.jpg';
 import Single from '../../img/singleQueen2.jpg';
 import Double from '../../img/double2.jpg';
 import DoubleQueen from '../../img/DoubleQueen.jpg';
@@ -122,13 +121,17 @@ function Room (props) {
     <React.Fragment>
       <CssBaseline />
         <Grid container component="main" className={classes.mainDisplay}>
-          <CardMedia
-            component="img"
-            alt="City View"
-            image={MainDisp}
-            title="City View"
-            className={classes.MainPost}
-          />
+          {
+            process.browser ? // render component only if in the brower
+                <CardMedia
+                  component="img"
+                  alt="City View"
+                  image={MainDisp}
+                  title="City View"
+                  className={classes.MainPost}
+                />
+              : (null)
+          }
         </Grid>
         <NavBar {...props}/>
         <Grid
@@ -233,13 +236,16 @@ function Room (props) {
                 title="Single Queen"
                 subheader="Single Queen Bed with Garden View"
               />
-              <CardMedia
-                component="img"
-                alt="Single Queen"
-                image={Single}
-                title="Single Queen"
-                className={classes.image}
-              />
+              {
+                process.browser ?
+                  <CardMedia
+                    component="img"
+                    alt="Single Queen"
+                    image={Single}
+                    title="Single Queen"
+                    className={classes.image}
+                  /> : (null)
+              }
               <CardContent>
                 <Typography variant="body2" component="p">
                   Enjoy our quiet and relaxing single queen rooms facing our fresh
@@ -256,13 +262,16 @@ function Room (props) {
                 title="Scenic Double"
                 subheader="Two Full beds with City View"
               />
-              <CardMedia
-                component="img"
-                alt="2 Full beds"
-                image={Double}
-                title="2 Full Beds"
-                className={classes.image}
-              />
+              {
+                process.browser ?
+                  <CardMedia
+                    component="img"
+                    alt="2 Full beds"
+                    image={Double}
+                    title="2 Full Beds"
+                    className={classes.image}
+                  /> : (null)
+              }
               <CardContent>
                 <Typography variant="body2" component="p">
                   A gorgeous and breathtaking view of Rapid City awaits outside your window.
@@ -279,13 +288,16 @@ function Room (props) {
                 title="Triple Full"
                 subheader="Triple Full Bed with City View"
               />
-              <CardMedia
-                component="img"
-                alt="3 Full beds"
-                image={Triple}
-                title="3 Full Beds"
-                className={classes.image}
-              />
+              {
+                process.browser ?
+                  <CardMedia
+                    component="img"
+                    alt="3 Full beds"
+                    image={Triple}
+                    title="3 Full Beds"
+                    className={classes.image}
+                  /> : (null)
+              }
               <CardContent>
                 <Typography variant="body2" component="p">
                   A gorgeous room with two full beds and an attachment bedroom
@@ -302,13 +314,16 @@ function Room (props) {
                 title="Double Queen with Patio"
                 subheader="2 Queen Beds"
               />
-              <CardMedia
-                component="img"
-                alt="2 Queen Beds"
-                image={DoubleQueen}
-                title="2 Queen Beds"
-                className={classes.image}
-              />
+              {
+                process.browser ?
+                  <CardMedia
+                    component="img"
+                    alt="2 Queen Beds"
+                    image={DoubleQueen}
+                    title="2 Queen Beds"
+                    className={classes.image}
+                  /> : (null)
+              }
               <CardContent>
                 <Typography variant="body2" component="p">
                   Enjoy our extra spacious double queen rooms. Room is equippied with FREE wifi, Dish TV, alarm clock,
@@ -324,13 +339,16 @@ function Room (props) {
                 title="Skyline Suite"
                 subheader="Two Bedroom with Kitchen and Sofa"
               />
-              <CardMedia
-                component="img"
-                alt="Skyline"
-                image={Skyline}
-                title="Skyline"
-                className={classes.image}
-              />
+              {
+                process.browser ?
+                  <CardMedia
+                    component="img"
+                    alt="Skyline"
+                    image={Skyline}
+                    title="Skyline"
+                    className={classes.image}
+                  /> : (null)
+              }
               <CardContent>
                 <Typography variant="body2" component="p">
                   Enjoy our biggest room in house.

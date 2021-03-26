@@ -1,5 +1,4 @@
 import express from 'express';
-const { createProxyMiddleware } = require('http-proxy-middleware');
 import { render } from '@jaredpalmer/after';
 import routes from './setup/routes';
 import Document from './Modules/common/Document';

@@ -48,8 +48,7 @@ const useStyles = makeStyles(theme => ({
  */
 const Rates = [
     'Call Us at (605) 343-4200 for Best Rates, Discounts, and Deals',
-    'Summer Rates: $79 total For Single Queen and $94 for Double Bed',
-    'Off-season Rates: $64 total for Single Queen and $76 for Double Bed',
+    'Summer Rates: $89 For Single Queen and $104 for Double Bed',
     'Please note these rates are not set in stone but a general idea!',
     'Ask us about our suite, groups and stayover discounts'
 ]

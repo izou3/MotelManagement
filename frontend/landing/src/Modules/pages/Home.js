@@ -114,7 +114,7 @@ const useStyles = makeStyles(theme => ({
     borderColor: '#DAA520',
   },
   reviewDivider: {
-    margin: theme.spacing(3,2,3),
+    margin: theme.spacing(2,1,2),
   }
 }));
 
@@ -230,7 +230,7 @@ function Home(props) {
           </Grid>
           <Grid item xs={12} md={4} className={classes.review}>
               <Typography variant="h6">
-              Very friendly and help full staff. Amazing view of Rapid City. I wanted to take the mattress home with . It was so comfortable. Great pressure on the shower. I didn't bring a blower dryer to doy hair and had one I borrowed. I will be back!
+              Very friendly and helpful staff. Amazing view of Rapid City. I wanted to take the mattress home with. It was so comfortable. Great pressure on the shower. I will be back!
               </Typography>
               <Divider className={classes.reviewDivider} />
               <Typography variant="h6">

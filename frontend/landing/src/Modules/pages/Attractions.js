@@ -142,13 +142,16 @@ function Attractions (props) {
     <React.Fragment>
       <CssBaseline />
         <Grid container component="main" className={classes.mainDisplay}>
-          <CardMedia
-            component="img"
-            alt="City View"
-            image={MainDisp}
-            title="City View"
-            className={classes.MainPost}
-          />
+          {
+            process.browser ?
+              <CardMedia
+                component="img"
+                alt="City View"
+                image={MainDisp}
+                title="City View"
+                className={classes.MainPost}
+              /> : (null)
+          }
         </Grid>
         <NavBar {...props}/>
         <Grid
@@ -171,13 +174,16 @@ function Attractions (props) {
               <CardHeader
                 title="Mount Rushmoore"
               />
-              <CardMedia
-                component="img"
-                alt="Rushmoore"
-                image={Rushmoore}
-                title="Rushmoore"
-                className={classes.image}
-              />
+              {
+                process.browser ?
+                  <CardMedia
+                    component="img"
+                    alt="Rushmoore"
+                    image={Rushmoore}
+                    title="Rushmoore"
+                    className={classes.image}
+                  /> : (null)
+              }
               <CardContent>
                 <Typography variant="body2" component="p">
                 Mount Rushmore National Memorial is a massive sculpture carved into Mount Rushmore in the Black Hills region of South Dakota. The memorial depicts U.S. presidents George Washington, Thomas Jefferson, Theodore Roosevelt and Abraham Lincoln.
@@ -191,13 +197,16 @@ function Attractions (props) {
               <CardHeader
                 title="Badlands National Park"
               />
-              <CardMedia
-                component="img"
-                alt="Badlands"
-                image={Badlands}
-                title="Badlands"
-                className={classes.image}
-              />
+              {
+                process.browser ?
+                  <CardMedia
+                    component="img"
+                    alt="Badlands"
+                    image={Badlands}
+                    title="Badlands"
+                    className={classes.image}
+                  /> : (null)
+              }
               <CardContent>
                 <Typography variant="body2" component="p">
                 This National Park consists of 244,000 acres of sharply eroded buttes, pinnacles and spires blended with the largest, protected mixed grass prairie in the United States.
@@ -212,13 +221,16 @@ function Attractions (props) {
                 title="Skyline Drive"
                 subheader="Skyline Drive"
               />
-              <CardMedia
-                component="img"
-                alt="SkylineDrive"
-                image={SkylineDrive}
-                title="SkylineDrive"
-                className={classes.image}
-              />
+              {
+                process.browser ?
+                  <CardMedia
+                    component="img"
+                    alt="SkylineDrive"
+                    image={SkylineDrive}
+                    title="SkylineDrive"
+                    className={classes.image}
+                  /> : (null)
+              }
               <CardContent>
                 <Typography variant="body2" component="p">
                 Take the mile road ending at Dinosaur Park with trails and parking spots along the drive.
@@ -233,13 +245,16 @@ function Attractions (props) {
               <CardHeader
                 title="Custer State Park"
               />
-              <CardMedia
-                component="img"
-                alt="Custer State Park"
-                image={Custer}
-                title="Custer State Park"
-                className={classes.image}
-              />
+              {
+                process.browser ?
+                  <CardMedia
+                    component="img"
+                    alt="Custer State Park"
+                    image={Custer}
+                    title="Custer State Park"
+                    className={classes.image}
+                  /> : (null)
+              }
               <CardContent>
                 <Typography variant="body2" component="p">
                 Custer State Park is a South Dakota State Park and wildlife reserve in the Black Hills, United States. The park is South Dakota's largest and first state park, named after Lt. Colonel George Armstrong Custer.
