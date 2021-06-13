@@ -48,8 +48,6 @@ const useStyles = makeStyles(theme => ({
  */
 const Rates = [
     'Call Us at (605) 343-4200 for Best Rates, Discounts, and Deals',
-    'Summer Rates: $89 For Single Queen and $104 for Double Bed',
-    'Please note these rates are not set in stone but a general idea!',
     'Ask us about our suite, groups and stayover discounts'
 ]
 

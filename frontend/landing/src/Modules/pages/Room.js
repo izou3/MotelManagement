@@ -391,19 +391,43 @@ function Room (props) {
           <Grid item xs={12} className={classes.policy}>
             <Typography variant="h6">Pet Policy: </Typography>
             <Typography variant="body1">
-              . Please declare your dog(s) when making your reservation. We only have limited pet rooms
+              . Please declare your dog when making your reservation. We only have limited pet rooms
+            </Typography>
+            <Typography variant="body1">
+              . One Dog Limit Per Room.
             </Typography>
             <Typography variant="body1">
               . We only accept small to medium sized dogs (under 30 lbs)
             </Typography>
             <Typography variant="body1">
-              . We do charge an additional pet fee of $15 per pet per night as well as a $50 pet deposit.
+              . We do charge an additional pet fee of $20-30 per pet per night based on size as well as a $100 pet deposit.
             </Typography>
             <Typography variant="body1">
-              . The hotel may charge a guest if services are required for excessive cleaning or if damages are incurred as a result of the guest’s pet.
+              . Dogs must NEVER be left unattended in the room at any time.
             </Typography>
             <Typography variant="body1">
-            Hotel management has sole discretion to ask a pet owner to find other accommodations if they deem the pet to be dangerous, harmful, or disruptive to other hotel guests.
+              . There is a $100 fee for each undeclared dog/pet brought into the lodge.
+            </Typography>
+            <Typography variant="body1">
+              . Except for an ADA compliant Service Dog, dogs are not permitted in the breakfast area or picnic area.
+            </Typography>
+            <Typography variant="body1">
+              . Dogs are expected to be quiet, well behaved, and non-destructuve.
+            </Typography>
+            <Typography variant="body1">
+              . Dogs are not allowed in rooms other than which they were registered.
+            </Typography>
+            <Typography variant="body1">
+              . You are required to clean up after your pets on both hotle property and surronding area.
+            </Typography>
+            <Typography variant="body1">
+              . Please do not bathe your dog in the bathtub or sink. Failure to abide will result in additional cleaning fee.
+            </Typography>
+            <Typography variant="body1">
+              . The hotel may charge a guest a $100 cleaning fee if services are required for excessive cleaning or if damages are incurred as a result of the guest’s pet.
+            </Typography>
+            <Typography variant="body1">
+            Hotel management has sole discretion to ask a pet owner to find other accommodations if they deem the pet to be dangerous, harmful, or disruptive to other hotel guests, has damaged hotel property, or for failure to abide by these policies.
             </Typography>
           </Grid>
 
