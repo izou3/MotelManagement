@@ -18,9 +18,9 @@ import { makeStyles } from "@material-ui/core/styles";
  * Pictures
  */
 import MainDisp from '../../img/outsideday.jpg';
-import Rushmoore from '../../img/rushmoore.jpg';
+import Rushmoore from '../../img/rushmore.jpg';
 import Badlands from '../../img/badlands.jpg';
-import SkylineDrive from '../../img/skylinedrive.jpg';
+import SkylineDrive from '../../img/bear_country.jpg';
 import Custer from '../../img/custer.jpg';
 
 //components
@@ -88,15 +88,27 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: 'rgba(0,0,0,0.1)',
     [theme.breakpoints.down('xs')]: {
       height: '300px',
-      margin: theme.spacing(1,1,1),
+      margin: theme.spacing(0,1,1),
     },
     [theme.breakpoints.up('sm')]: {
       height: '350px',
-      margin: theme.spacing(2,2,2)
+      margin: theme.spacing(1,2,2)
     },
     [theme.breakpoints.up('lg')]: {
       height: '500px',
-      margin: theme.spacing(4,4,4)
+      margin: theme.spacing(2,4,4)
+    },
+  },
+  moreAttractions: {
+    backgroundColor: 'rgba(0,0,0,0.1)',
+    [theme.breakpoints.down('xs')]: {
+      margin: theme.spacing(0,1,1),
+    },
+    [theme.breakpoints.up('sm')]: {
+      margin: theme.spacing(1,2,2)
+    },
+    [theme.breakpoints.up('lg')]: {
+      margin: theme.spacing(2,4,4)
     },
   },
   image: {
@@ -209,7 +221,8 @@ function Attractions (props) {
               }
               <CardContent>
                 <Typography variant="body2" component="p">
-                This National Park consists of 244,000 acres of sharply eroded buttes, pinnacles and spires blended with the largest, protected mixed grass prairie in the United States.
+                An hour drive away from the Gorgeous Badlands National Park,
+                this screne landscape consists of 244,000 acres of sharply eroded buttes, pinnacles and spires blended with the largest, protected mixed grass prairie in the United States.
                 </Typography>
               </CardContent>
             </Card>
@@ -218,8 +231,7 @@ function Attractions (props) {
           <Grid item xs={12} sm={5}>
             <Card className={classes.accomodations}>
               <CardHeader
-                title="Skyline Drive"
-                subheader="Skyline Drive"
+                title="Bear Country and Reptile Garden"
               />
               {
                 process.browser ?
@@ -233,8 +245,7 @@ function Attractions (props) {
               }
               <CardContent>
                 <Typography variant="body2" component="p">
-                Take the mile road ending at Dinosaur Park with trails and parking spots along the drive.
-                Experience the Wonderous view of the Black Hills on one and Rapid City on the Other!
+                From your vehicles, observe the wildlife of the Black Hills. Then head on over to Reptile Garden to explore reptiles of all sizes from giant turtles and crocodiles to slithering snakes in beautiful botanical gardens.
                 </Typography>
               </CardContent>
             </Card>
@@ -257,11 +268,61 @@ function Attractions (props) {
               }
               <CardContent>
                 <Typography variant="body2" component="p">
-                Custer State Park is a South Dakota State Park and wildlife reserve in the Black Hills, United States. The park is South Dakota's largest and first state park, named after Lt. Colonel George Armstrong Custer.
+                Custer State Park is a South Dakota State Park and wildlife reserve in the Black Hills, United States. The park is South Dakota's largest and its first state park, named after Lt. Colonel George Armstrong Custer. Home to more thsn 1,400 buffalos, it is one of the world's largest publicly owned bison herds.
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
+
+          <Grid item xs={12} className={classes.RoomDes}>
+            <Typography variant="h5">
+              Other Adventures and Many More
+            </Typography>
+            <Divider className={classes.divider}/>
+          </Grid>
+
+          <Grid container>
+            <Grid item xs={12} sm={4}>
+              <Card className={classes.moreAttractions}>
+                <CardHeader
+                  title="SkyLine Drive"
+                />
+                <CardContent>
+                  <Typography variant="body2" component="p">
+                  Take the mile road ending at Dinosaur Park with trails and parking spots along the drive.
+                  Experience the Wonderous view of the Black Hills on one and Rapid City on the Other!
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <Card className={classes.moreAttractions}>
+                <CardHeader
+                  title="Wind Cave National Park"
+                />
+                <CardContent>
+                  <Typography variant="body2" component="p">
+                  Explore the vast underground Wind Cave, one of the longest and most complex caves in the world.
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <Card className={classes.moreAttractions}>
+                <CardHeader
+                  title="1880 Train "
+                />
+                <CardContent>
+                  <Typography variant="body2" component="p">
+                  Embark on the two-hour, narrated 20-mile round trip between Hill City and Keystone. Passengers view vistas of Harney Peak, mining encampments and participate in good old-fashioned fun.
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+
         </Grid>
         <Footer />
     </React.Fragment>

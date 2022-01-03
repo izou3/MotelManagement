@@ -5,11 +5,11 @@ import React from 'react';
  * Picture Imports
  */
 import MainDisp from '../../img/outsideday.jpg';
-import Single from '../../img/singleQueen2.jpg';
-import Double from '../../img/double2.jpg';
+import Single from '../../img/single.jpg';
+import Double from '../../img/double.jpg';
 import DoubleQueen from '../../img/DoubleQueen.jpg';
 import Skyline from '../../img/Skyline.jpg';
-import Triple from '../../img/double.jpg';
+import Triple from '../../img/triple.jpg';
 
 //MaterialUI components
 import { CssBaseline, Grid, CardMedia, Card, CardHeader, CardContent, Typography, Divider } from '@material-ui/core';
@@ -249,7 +249,7 @@ function Room (props) {
               <CardContent>
                 <Typography variant="body2" component="p">
                   Enjoy our quiet and relaxing single queen rooms facing our fresh
-                  yard out front. Room is equippied with FREE wifi, Dish TV,
+                  yard out front. Room is equippied with FREE wifi, FREE parking, Dish TV,
                   alarm clock, microwave, and mini-fridge. NON-SMOKING. Sleeps 2.
                 </Typography>
               </CardContent>
@@ -275,7 +275,7 @@ function Room (props) {
               <CardContent>
                 <Typography variant="body2" component="p">
                   A gorgeous and breathtaking view of Rapid City awaits outside your window.
-                  Room is equippied with FREE wifi, Dish TV, alarm clock, microwave, and mini-fridge.
+                  Room is equippied with FREE wifi, FREE parking, Dish TV, alarm clock, microwave, and mini-fridge.
                   NON-SMOKING. Sleeps 4.
                 </Typography>
               </CardContent>
@@ -302,7 +302,7 @@ function Room (props) {
                 <Typography variant="body2" component="p">
                   A gorgeous room with two full beds and an attachment bedroom
                   with extra full bed and TV for privacy. Room is equippied with
-                  FREE wifi, Dish TV, xmicrowave, and mini-fridge. NON-SMOKING. Sleeps 5.
+                  FREE wifi, FREE parking, Dish TV, xmicrowave, and mini-fridge. NON-SMOKING. Sleeps 5.
                 </Typography>
               </CardContent>
             </Card>
@@ -326,7 +326,7 @@ function Room (props) {
               }
               <CardContent>
                 <Typography variant="body2" component="p">
-                  Enjoy our extra spacious double queen rooms. Room is equippied with FREE wifi, Dish TV, alarm clock,
+                  Enjoy our extra spacious double queen rooms. Room is equippied with FREE wifi, FREE parking, Dish TV, alarm clock,
                   microwave, and mini-fridge. NON-SMOKING. Sleeps 4.
                 </Typography>
               </CardContent>

@@ -4,7 +4,7 @@ import React from 'react';
 /**
  * Image Imports
  */
-import ScenricDouble from '../../img/double.jpg';
+import ScenricDouble from '../../img/double1.JPG';
 import Amenities from '../../img/amenities.jpg';
 import SkylineSuites from '../../img/suites.jpg';
 import View from '../../img/bsl2.jpg';
@@ -156,8 +156,8 @@ function Home(props) {
               <Typography variant="h6">
                 Lose yourself in the gorgeous and screne surrondings of our 100 mile hot tub as you relax and rest up in
                 our clean and comfy rooms. Enjoy a pinic in our pet park out front or take an adventure into the beautiful Black Hills.
-                As Mom and Pop lodge in the quiet mountain pines, our affordable, clean and quiet rooms are the perfect
-                basecamp for all your endeavours. Just Shoot Us A Call and We'll Get You Started!!
+                As a Mom and Pop lodge in the quiet mountain pines, our affordable, clean and quiet rooms are the perfect
+                basecamp for your Black Hills adventure. Just Shoot Us A Call and We'll Get You Started!!
               </Typography>
               <Button
                 variant="contained"
@@ -221,7 +221,7 @@ function Home(props) {
         >
           <Grid item xs={12} md={4} className={classes.review}>
               <Typography variant="h6">
-              We really loved the place. The owners were very kind and asked us daily if there was anything we needed. The location is perfect, just a few miles from Rapid City. We will book there again next time we go
+              We really loved the place. The owners were very kind and asked us daily if there was anything we needed. The location is perfect, just a few miles from Rapid City.
               </Typography>
               <Divider className={classes.reviewDivider} />
               <Typography variant="h6">

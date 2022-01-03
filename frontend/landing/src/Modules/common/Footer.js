@@ -39,7 +39,7 @@ function Footer(props) {
             <Typography component={'p'} variant={'body1'}>4080 Tower Road Rapid City | South Dakota | 57701 </Typography>
             <Typography component={'p'} variant={'body1'}>rapidcitymotels.bigskylodge@gmail.com</Typography>
             <Typography component={'p'} variant={'body1'}>(605) 348-3200</Typography>
-            <Typography component={'p'} variant={'body1'}>@2020 All Rights Reserved</Typography>
+            <Typography component={'p'} variant={'body1'}>@{new Date().getFullYear()} All Rights Reserved</Typography>
           </Grid>
         </Grid>
     </Hidden>

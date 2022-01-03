@@ -38,9 +38,9 @@ const useStyles = makeStyles(theme => ({
         <Grid container component="main" className={classes.mainDisplay}>
           <CardMedia
             component="img"
-            alt="City View"
+            alt="Garden View"
             image={MainDisp}
-            title="City View"
+            title="Garden View"
             className={classes.MainPost}
           />
         </Grid>
